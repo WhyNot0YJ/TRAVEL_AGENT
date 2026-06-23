@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-06-23T11:32:25.247681Z",
-  "planner_type": "mock",
+  "generated_at": "2026-06-23T11:36:33.8874559Z",
+  "planner_type": "eino",
   "summary": {
     "total_cases": 24,
     "success_cases": 24,
     "failed_cases": 0,
     "success_rate": 1,
     "average_score": 100,
-    "average_duration_ms": 0,
+    "average_duration_ms": 0.041666666666666664,
     "budget_pass_rate": 1,
     "day_match_rate": 1,
     "structure_pass_rate": 1
@@ -30,91 +30,91 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "杭州3日旅行规划",
-        "summary": "从上海出发，围绕自然风光与美食在杭州安排3天轻松节奏路线，预算控制在3000元以内。",
+        "title": "杭州3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 杭州 from 上海 with budget 3000.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天自然风光体验",
+            "theme": "day 1 自然风光 and 美食 route in 杭州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "西湖",
-                "address": "杭州核心游览区",
-                "reason": "契合第1天自然风光体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 170.5,
-                "duration_minutes": 150
+                "address": "杭州 POI 1",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "灵隐寺",
-                "address": "杭州特色街区",
-                "reason": "结合自然风光与美食偏好，补充城市文化和美食体验。",
-                "estimated_cost": 139.5,
+                "address": "杭州 POI 2",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天美食体验",
+            "theme": "day 2 自然风光 and 美食 route in 杭州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "河坊街",
-                "address": "杭州核心游览区",
-                "reason": "契合第2天美食体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 170.5,
+                "address": "杭州 POI 3",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "龙井村",
-                "address": "杭州特色街区",
-                "reason": "结合自然风光与美食偏好，补充城市文化和美食体验。",
-                "estimated_cost": 139.5,
-                "duration_minutes": 120
+                "address": "杭州 POI 4",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天自然风光体验",
+            "theme": "day 3 自然风光 and 美食 route in 杭州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "京杭大运河",
-                "address": "杭州核心游览区",
-                "reason": "契合第3天自然风光体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 170.5,
-                "duration_minutes": 150
+                "address": "杭州 POI 5",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "西湖",
-                "address": "杭州特色街区",
-                "reason": "结合自然风光与美食偏好，补充城市文化和美食体验。",
-                "estimated_cost": 139.5,
-                "duration_minutes": 120
+                "address": "杭州 POI 1",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 675,
-          "food": 675,
-          "hotel": 810,
-          "ticket": 540,
-          "total": 2700
+          "transport": 662.4,
+          "food": 717.6,
+          "hotel": 828,
+          "ticket": 552,
+          "total": 2760
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -135,67 +135,67 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "南京2日旅行规划",
-        "summary": "从上海出发，围绕历史文化与美食在南京安排2天均衡节奏路线，预算控制在1500元以内。",
+        "title": "南京2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 南京 from 上海 with budget 1500.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天历史文化体验",
+            "theme": "day 1 历史文化 and 美食 route in 南京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "中山陵",
-                "address": "南京核心游览区",
-                "reason": "契合第1天历史文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 127.88,
-                "duration_minutes": 150
+                "address": "南京 POI 1",
+                "reason": "matches 历史文化 and 美食 preference in 南京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "夫子庙",
-                "address": "南京特色街区",
-                "reason": "结合历史文化与美食偏好，补充城市文化和美食体验。",
-                "estimated_cost": 104.63,
+                "address": "南京 POI 2",
+                "reason": "matches 历史文化 and 美食 preference in 南京",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天美食体验",
+            "theme": "day 2 历史文化 and 美食 route in 南京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "秦淮河",
-                "address": "南京核心游览区",
-                "reason": "契合第2天美食体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 127.88,
+                "address": "南京 POI 3",
+                "reason": "matches 历史文化 and 美食 preference in 南京",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "南京博物院",
-                "address": "南京特色街区",
-                "reason": "结合历史文化与美食偏好，补充城市文化和美食体验。",
-                "estimated_cost": 104.63,
-                "duration_minutes": 120
+                "address": "南京 POI 4",
+                "reason": "matches 历史文化 and 美食 preference in 南京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 337.5,
-          "food": 337.5,
-          "hotel": 405,
-          "ticket": 270,
-          "total": 1350
+          "transport": 331.2,
+          "food": 358.8,
+          "hotel": 414,
+          "ticket": 276,
+          "total": 1380
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -216,115 +216,116 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "北京4日旅行规划",
-        "summary": "从北京出发，围绕亲子与博物馆在北京安排4天均衡节奏路线，预算控制在5000元以内。",
+        "title": "北京4-day Eino travel plan",
+        "summary": "Eino workflow planned 4 days in 北京 from 北京 with budget 5000.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天亲子体验",
+            "theme": "day 1 亲子 and 博物馆 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "故宫",
-                "address": "北京核心游览区",
-                "reason": "契合第1天亲子体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 213.13,
-                "duration_minutes": 150
+                "address": "北京 POI 1",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "天安门",
-                "address": "北京特色街区",
-                "reason": "结合亲子与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 174.38,
+                "address": "北京 POI 2",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天博物馆体验",
+            "theme": "day 2 亲子 and 博物馆 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "颐和园",
-                "address": "北京核心游览区",
-                "reason": "契合第2天博物馆体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 213.13,
+                "address": "北京 POI 3",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "国家博物馆",
-                "address": "北京特色街区",
-                "reason": "结合亲子与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 174.38,
-                "duration_minutes": 120
+                "address": "北京 POI 4",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天亲子体验",
+            "theme": "day 3 亲子 and 博物馆 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "什刹海",
-                "address": "北京核心游览区",
-                "reason": "契合第3天亲子体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 213.13,
-                "duration_minutes": 150
+                "address": "北京 POI 5",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "故宫",
-                "address": "北京特色街区",
-                "reason": "结合亲子与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 174.38,
-                "duration_minutes": 120
+                "address": "北京 POI 1",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 4,
-            "theme": "第4天博物馆体验",
+            "theme": "day 4 亲子 and 博物馆 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "culture",
                 "name": "天安门",
-                "address": "北京核心游览区",
-                "reason": "契合第4天博物馆体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 213.13,
-                "duration_minutes": 150
+                "address": "北京 POI 2",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "food",
                 "name": "颐和园",
-                "address": "北京特色街区",
-                "reason": "结合亲子与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 174.38,
-                "duration_minutes": 120
+                "address": "北京 POI 3",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
               }
             ]
           }
         ],
         "budget": {
-          "transport": 1125,
-          "food": 1125,
-          "hotel": 1350,
-          "ticket": 900,
-          "total": 4500
+          "transport": 1104,
+          "food": 1196,
+          "hotel": 1380,
+          "ticket": 920,
+          "total": 4600
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -332,7 +333,7 @@
       "case_id": "case_004",
       "description": "测试成都三日美食休闲路线，覆盖轻松节奏和飞行到达后的本地体验安排。",
       "success": true,
-      "duration_ms": 0,
+      "duration_ms": 1,
       "score": 100,
       "errors": [],
       "warnings": [],
@@ -345,91 +346,91 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "成都3日旅行规划",
-        "summary": "从上海出发，围绕美食与休闲在成都安排3天轻松节奏路线，预算控制在2500元以内。",
+        "title": "成都3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 成都 from 上海 with budget 2500.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天美食体验",
+            "theme": "day 1 美食 and 休闲 route in 成都",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "宽窄巷子",
-                "address": "成都核心游览区",
-                "reason": "契合第1天美食体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 142.08,
-                "duration_minutes": 150
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "武侯祠",
-                "address": "成都特色街区",
-                "reason": "结合美食与休闲偏好，补充城市文化和美食体验。",
-                "estimated_cost": 116.25,
+                "address": "成都 POI 2",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天休闲体验",
+            "theme": "day 2 美食 and 休闲 route in 成都",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "锦里",
-                "address": "成都核心游览区",
-                "reason": "契合第2天休闲体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 142.08,
+                "address": "成都 POI 3",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "人民公园",
-                "address": "成都特色街区",
-                "reason": "结合美食与休闲偏好，补充城市文化和美食体验。",
-                "estimated_cost": 116.25,
-                "duration_minutes": 120
+                "address": "成都 POI 4",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天美食体验",
+            "theme": "day 3 美食 and 休闲 route in 成都",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "春熙路",
-                "address": "成都核心游览区",
-                "reason": "契合第3天美食体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 142.08,
-                "duration_minutes": 150
+                "address": "成都 POI 5",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "宽窄巷子",
-                "address": "成都特色街区",
-                "reason": "结合美食与休闲偏好，补充城市文化和美食体验。",
-                "estimated_cost": 116.25,
-                "duration_minutes": 120
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 562.5,
-          "food": 562.5,
-          "hotel": 675,
-          "ticket": 450,
-          "total": 2250
+          "transport": 552,
+          "food": 598,
+          "hotel": 690,
+          "ticket": 460,
+          "total": 2300
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -450,67 +451,67 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "广州2日旅行规划",
-        "summary": "从深圳出发，围绕citywalk与美食在广州安排2天均衡节奏路线，预算控制在1800元以内。",
+        "title": "广州2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 广州 from 深圳 with budget 1800.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天citywalk体验",
+            "theme": "day 1 citywalk and 美食 route in 广州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "沙面",
-                "address": "广州核心游览区",
-                "reason": "契合第1天citywalk体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 153.45,
-                "duration_minutes": 150
+                "address": "广州 POI 1",
+                "reason": "matches citywalk and 美食 preference in 广州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "永庆坊",
-                "address": "广州特色街区",
-                "reason": "结合citywalk与美食偏好，补充城市文化和美食体验。",
-                "estimated_cost": 125.55,
+                "address": "广州 POI 2",
+                "reason": "matches citywalk and 美食 preference in 广州",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天美食体验",
+            "theme": "day 2 citywalk and 美食 route in 广州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "陈家祠",
-                "address": "广州核心游览区",
-                "reason": "契合第2天美食体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 153.45,
+                "address": "广州 POI 3",
+                "reason": "matches citywalk and 美食 preference in 广州",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "北京路",
-                "address": "广州特色街区",
-                "reason": "结合citywalk与美食偏好，补充城市文化和美食体验。",
-                "estimated_cost": 125.55,
-                "duration_minutes": 120
+                "address": "广州 POI 4",
+                "reason": "matches citywalk and 美食 preference in 广州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 405,
-          "food": 405,
-          "hotel": 486,
-          "ticket": 324,
-          "total": 1620
+          "transport": 397.44,
+          "food": 430.56,
+          "hotel": 496.8,
+          "ticket": 331.2,
+          "total": 1656
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -531,91 +532,91 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "西安3日旅行规划",
-        "summary": "从上海出发，围绕历史文化在西安安排3天均衡节奏路线，预算控制在2200元以内。",
+        "title": "西安3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 西安 from 上海 with budget 2200.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天历史文化体验",
+            "theme": "day 1 历史文化 route in 西安",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "兵马俑",
-                "address": "西安核心游览区",
-                "reason": "契合第1天历史文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 125.03,
-                "duration_minutes": 150
+                "address": "西安 POI 1",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "大雁塔",
-                "address": "西安特色街区",
-                "reason": "结合历史文化偏好，补充城市文化和美食体验。",
-                "estimated_cost": 102.3,
+                "address": "西安 POI 2",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天历史文化体验",
+            "theme": "day 2 历史文化 route in 西安",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "大唐不夜城",
-                "address": "西安核心游览区",
-                "reason": "契合第2天历史文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 125.03,
+                "address": "西安 POI 3",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "西安城墙",
-                "address": "西安特色街区",
-                "reason": "结合历史文化偏好，补充城市文化和美食体验。",
-                "estimated_cost": 102.3,
-                "duration_minutes": 120
+                "address": "西安 POI 4",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天历史文化体验",
+            "theme": "day 3 历史文化 route in 西安",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "陕西历史博物馆",
-                "address": "西安核心游览区",
-                "reason": "契合第3天历史文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 125.03,
-                "duration_minutes": 150
+                "address": "西安 POI 5",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "兵马俑",
-                "address": "西安特色街区",
-                "reason": "结合历史文化偏好，补充城市文化和美食体验。",
-                "estimated_cost": 102.3,
-                "duration_minutes": 120
+                "address": "西安 POI 1",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 495,
-          "food": 495,
-          "hotel": 594,
-          "ticket": 396,
-          "total": 1980
+          "transport": 485.76,
+          "food": 526.24,
+          "hotel": 607.2,
+          "ticket": 404.8,
+          "total": 2024
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -636,43 +637,43 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "苏州1日旅行规划",
-        "summary": "从上海出发，围绕园林与轻松在苏州安排1天轻松节奏路线，预算控制在800元以内。",
+        "title": "苏州1-day Eino travel plan",
+        "summary": "Eino workflow planned 1 days in 苏州 from 上海 with budget 800.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天园林体验",
+            "theme": "day 1 园林 and 轻松 route in 苏州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "拙政园",
-                "address": "苏州核心游览区",
-                "reason": "契合第1天园林体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
-                "duration_minutes": 150
+                "address": "苏州 POI 1",
+                "reason": "matches 园林 and 轻松 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "平江路",
-                "address": "苏州特色街区",
-                "reason": "结合园林与轻松偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
+                "address": "苏州 POI 2",
+                "reason": "matches 园林 and 轻松 preference in 苏州",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           }
         ],
         "budget": {
-          "transport": 180,
-          "food": 180,
-          "hotel": 216,
-          "ticket": 144,
-          "total": 720
+          "transport": 176.64,
+          "food": 191.36,
+          "hotel": 220.8,
+          "ticket": 147.2,
+          "total": 736
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -693,67 +694,68 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "未知城市2日旅行规划",
-        "summary": "从上海出发，围绕探索与小众在未知城市安排2天均衡节奏路线，预算控制在1000元以内。",
+        "title": "未知城市2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 未知城市 from 上海 with budget 1000.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天探索体验",
+            "theme": "day 1 探索 and 小众 route in 未知城市",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "城市博物馆",
-                "address": "未知城市核心游览区",
-                "reason": "契合第1天探索体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 85.25,
-                "duration_minutes": 150
+                "address": "未知城市 POI 1",
+                "reason": "matches 探索 and 小众 preference in 未知城市",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "特色街区",
-                "address": "未知城市特色街区",
-                "reason": "结合探索与小众偏好，补充城市文化和美食体验。",
-                "estimated_cost": 69.75,
+                "address": "未知城市 POI 2",
+                "reason": "matches 探索 and 小众 preference in 未知城市",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天小众体验",
+            "theme": "day 2 探索 and 小众 route in 未知城市",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "本地美食街",
-                "address": "未知城市核心游览区",
-                "reason": "契合第2天小众体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 85.25,
+                "address": "未知城市 POI 3",
+                "reason": "matches 探索 and 小众 preference in 未知城市",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "城市公园",
-                "address": "未知城市特色街区",
-                "reason": "结合探索与小众偏好，补充城市文化和美食体验。",
-                "estimated_cost": 69.75,
-                "duration_minutes": 120
+                "address": "未知城市 POI 4",
+                "reason": "matches 探索 and 小众 preference in 未知城市",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 225,
-          "food": 225,
-          "hotel": 270,
-          "ticket": 180,
-          "total": 900
+          "transport": 220.8,
+          "food": 239.2,
+          "hotel": 276,
+          "ticket": 184,
+          "total": 920
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "day 2 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -774,67 +776,67 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "杭州2日旅行规划",
-        "summary": "从南京出发，围绕自然风光与城市漫步在杭州安排2天轻松节奏路线，预算控制在600元以内。",
+        "title": "杭州2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 杭州 from 南京 with budget 600.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天自然风光体验",
+            "theme": "day 1 自然风光 and 城市漫步 route in 杭州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "西湖",
-                "address": "杭州核心游览区",
-                "reason": "契合第1天自然风光体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 51.15,
-                "duration_minutes": 150
+                "address": "杭州 POI 1",
+                "reason": "matches 自然风光 and 城市漫步 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "灵隐寺",
-                "address": "杭州特色街区",
-                "reason": "结合自然风光与城市漫步偏好，补充城市文化和美食体验。",
-                "estimated_cost": 41.85,
+                "address": "杭州 POI 2",
+                "reason": "matches 自然风光 and 城市漫步 preference in 杭州",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天城市漫步体验",
+            "theme": "day 2 自然风光 and 城市漫步 route in 杭州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "河坊街",
-                "address": "杭州核心游览区",
-                "reason": "契合第2天城市漫步体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 51.15,
+                "address": "杭州 POI 3",
+                "reason": "matches 自然风光 and 城市漫步 preference in 杭州",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "龙井村",
-                "address": "杭州特色街区",
-                "reason": "结合自然风光与城市漫步偏好，补充城市文化和美食体验。",
-                "estimated_cost": 41.85,
-                "duration_minutes": 120
+                "address": "杭州 POI 4",
+                "reason": "matches 自然风光 and 城市漫步 preference in 杭州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 135,
-          "food": 135,
-          "hotel": 162,
-          "ticket": 108,
-          "total": 540
+          "transport": 132.48,
+          "food": 143.52,
+          "hotel": 165.6,
+          "ticket": 110.4,
+          "total": 552
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -855,139 +857,140 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "北京5日旅行规划",
-        "summary": "从广州出发，围绕历史文化与博物馆在北京安排5天均衡节奏路线，预算控制在12000元以内。",
+        "title": "北京5-day Eino travel plan",
+        "summary": "Eino workflow planned 5 days in 北京 from 广州 with budget 12000.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天历史文化体验",
+            "theme": "day 1 历史文化 and 博物馆 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "故宫",
-                "address": "北京核心游览区",
-                "reason": "契合第1天历史文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 409.2,
-                "duration_minutes": 150
+                "address": "北京 POI 1",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "天安门",
-                "address": "北京特色街区",
-                "reason": "结合历史文化与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 334.8,
+                "address": "北京 POI 2",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天博物馆体验",
+            "theme": "day 2 历史文化 and 博物馆 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "颐和园",
-                "address": "北京核心游览区",
-                "reason": "契合第2天博物馆体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 409.2,
+                "address": "北京 POI 3",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "国家博物馆",
-                "address": "北京特色街区",
-                "reason": "结合历史文化与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 334.8,
-                "duration_minutes": 120
+                "address": "北京 POI 4",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天亲子体验",
+            "theme": "day 3 历史文化 and 博物馆 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "什刹海",
-                "address": "北京核心游览区",
-                "reason": "契合第3天亲子体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 409.2,
-                "duration_minutes": 150
+                "address": "北京 POI 5",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "故宫",
-                "address": "北京特色街区",
-                "reason": "结合历史文化与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 334.8,
-                "duration_minutes": 120
+                "address": "北京 POI 1",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 4,
-            "theme": "第4天历史文化体验",
+            "theme": "day 4 历史文化 and 博物馆 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "culture",
                 "name": "天安门",
-                "address": "北京核心游览区",
-                "reason": "契合第4天历史文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 409.2,
-                "duration_minutes": 150
+                "address": "北京 POI 2",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "food",
                 "name": "颐和园",
-                "address": "北京特色街区",
-                "reason": "结合历史文化与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 334.8,
-                "duration_minutes": 120
+                "address": "北京 POI 3",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
               }
             ]
           },
           {
             "day": 5,
-            "theme": "第5天博物馆体验",
+            "theme": "day 5 历史文化 and 博物馆 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "nature",
                 "name": "国家博物馆",
-                "address": "北京核心游览区",
-                "reason": "契合第5天博物馆体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 409.2,
-                "duration_minutes": 150
+                "address": "北京 POI 4",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "citywalk",
                 "name": "什刹海",
-                "address": "北京特色街区",
-                "reason": "结合历史文化与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 334.8,
+                "address": "北京 POI 5",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
                 "duration_minutes": 120
               }
             ]
           }
         ],
         "budget": {
-          "transport": 2700,
-          "food": 2700,
-          "hotel": 3240,
-          "ticket": 2160,
-          "total": 10800
+          "transport": 2649.6,
+          "food": 2870.4,
+          "hotel": 3312,
+          "ticket": 2208,
+          "total": 11040
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -1008,67 +1011,85 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "成都2日旅行规划",
-        "summary": "从重庆出发，围绕美食与夜生活在成都安排2天紧凑节奏路线，预算控制在1600元以内。",
+        "title": "成都2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 成都 from 重庆 with budget 1600.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天美食体验",
+            "theme": "day 1 美食 and 夜生活 route in 成都",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "宽窄巷子",
-                "address": "成都核心游览区",
-                "reason": "契合第1天美食体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
-                "duration_minutes": 150
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "武侯祠",
-                "address": "成都特色街区",
-                "reason": "结合美食与夜生活偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
+                "address": "成都 POI 2",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 50,
                 "duration_minutes": 120
+              },
+              {
+                "time": "18:30",
+                "type": "food",
+                "name": "锦里",
+                "address": "成都 POI 3",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 70,
+                "duration_minutes": 150
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天夜生活体验",
+            "theme": "day 2 美食 and 夜生活 route in 成都",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
-                "name": "锦里",
-                "address": "成都核心游览区",
-                "reason": "契合第2天夜生活体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
-                "duration_minutes": 150
+                "type": "nature",
+                "name": "人民公园",
+                "address": "成都 POI 4",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
-                "name": "人民公园",
-                "address": "成都特色街区",
-                "reason": "结合美食与夜生活偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
+                "type": "citywalk",
+                "name": "春熙路",
+                "address": "成都 POI 5",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 30,
                 "duration_minutes": 120
+              },
+              {
+                "time": "18:30",
+                "type": "landmark",
+                "name": "宽窄巷子",
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 360,
-          "food": 360,
-          "hotel": 432,
-          "ticket": 288,
-          "total": 1440
+          "transport": 353.28,
+          "food": 382.72,
+          "hotel": 441.6,
+          "ticket": 294.4,
+          "total": 1472
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -1089,43 +1110,43 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "广州1日旅行规划",
-        "summary": "从佛山出发，围绕城市探索在广州安排1天均衡节奏路线，预算控制在500元以内。",
+        "title": "广州1-day Eino travel plan",
+        "summary": "Eino workflow planned 1 days in 广州 from 佛山 with budget 500.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天城市探索",
+            "theme": "day 1 城市探索 route in 广州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "沙面",
-                "address": "广州核心游览区",
-                "reason": "契合第1天城市探索行程主题，适合作为当天重点体验。",
-                "estimated_cost": 85.25,
-                "duration_minutes": 150
+                "address": "广州 POI 1",
+                "reason": "matches 城市探索 preference in 广州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "永庆坊",
-                "address": "广州特色街区",
-                "reason": "结合城市探索偏好，补充城市文化和美食体验。",
-                "estimated_cost": 69.75,
+                "address": "广州 POI 2",
+                "reason": "matches 城市探索 preference in 广州",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           }
         ],
         "budget": {
-          "transport": 112.5,
-          "food": 112.5,
-          "hotel": 135,
-          "ticket": 90,
-          "total": 450
+          "transport": 110.4,
+          "food": 119.6,
+          "hotel": 138,
+          "ticket": 92,
+          "total": 460
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -1146,163 +1167,164 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "苏州6日旅行规划",
-        "summary": "从杭州出发，围绕园林与博物馆在苏州安排6天轻松节奏路线，预算控制在4800元以内。",
+        "title": "苏州6-day Eino travel plan",
+        "summary": "Eino workflow planned 6 days in 苏州 from 杭州 with budget 4800.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天园林体验",
+            "theme": "day 1 园林 and 博物馆 route in 苏州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "拙政园",
-                "address": "苏州核心游览区",
-                "reason": "契合第1天园林体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
-                "duration_minutes": 150
+                "address": "苏州 POI 1",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "平江路",
-                "address": "苏州特色街区",
-                "reason": "结合园林与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
+                "address": "苏州 POI 2",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天博物馆体验",
+            "theme": "day 2 园林 and 博物馆 route in 苏州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "苏州博物馆",
-                "address": "苏州核心游览区",
-                "reason": "契合第2天博物馆体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
+                "address": "苏州 POI 3",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "七里山塘",
-                "address": "苏州特色街区",
-                "reason": "结合园林与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
-                "duration_minutes": 120
+                "address": "苏州 POI 4",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天美食体验",
+            "theme": "day 3 园林 and 博物馆 route in 苏州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "留园",
-                "address": "苏州核心游览区",
-                "reason": "契合第3天美食体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
-                "duration_minutes": 150
+                "address": "苏州 POI 5",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "拙政园",
-                "address": "苏州特色街区",
-                "reason": "结合园林与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
-                "duration_minutes": 120
+                "address": "苏州 POI 1",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 4,
-            "theme": "第4天园林体验",
+            "theme": "day 4 园林 and 博物馆 route in 苏州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "culture",
                 "name": "平江路",
-                "address": "苏州核心游览区",
-                "reason": "契合第4天园林体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
-                "duration_minutes": 150
+                "address": "苏州 POI 2",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "food",
                 "name": "苏州博物馆",
-                "address": "苏州特色街区",
-                "reason": "结合园林与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
-                "duration_minutes": 120
+                "address": "苏州 POI 3",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
               }
             ]
           },
           {
             "day": 5,
-            "theme": "第5天博物馆体验",
+            "theme": "day 5 园林 and 博物馆 route in 苏州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "nature",
                 "name": "七里山塘",
-                "address": "苏州核心游览区",
-                "reason": "契合第5天博物馆体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
-                "duration_minutes": 150
+                "address": "苏州 POI 4",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "citywalk",
                 "name": "留园",
-                "address": "苏州特色街区",
-                "reason": "结合园林与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
+                "address": "苏州 POI 5",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 30,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 6,
-            "theme": "第6天美食体验",
+            "theme": "day 6 园林 and 博物馆 route in 苏州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "拙政园",
-                "address": "苏州核心游览区",
-                "reason": "契合第6天美食体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
-                "duration_minutes": 150
+                "address": "苏州 POI 1",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "平江路",
-                "address": "苏州特色街区",
-                "reason": "结合园林与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
+                "address": "苏州 POI 2",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           }
         ],
         "budget": {
-          "transport": 1080,
-          "food": 1080,
-          "hotel": 1296,
-          "ticket": 864,
-          "total": 4320
+          "transport": 1059.84,
+          "food": 1148.16,
+          "hotel": 1324.8,
+          "ticket": 883.2,
+          "total": 4416
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -1323,43 +1345,52 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "西安1日旅行规划",
-        "summary": "从郑州出发，围绕历史文化与夜游在西安安排1天紧凑节奏路线，预算控制在900元以内。",
+        "title": "西安1-day Eino travel plan",
+        "summary": "Eino workflow planned 1 days in 西安 from 郑州 with budget 900.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天历史文化体验",
+            "theme": "day 1 历史文化 and 夜游 route in 西安",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "兵马俑",
-                "address": "西安核心游览区",
-                "reason": "契合第1天历史文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 153.45,
-                "duration_minutes": 150
+                "address": "西安 POI 1",
+                "reason": "matches 历史文化 and 夜游 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "大雁塔",
-                "address": "西安特色街区",
-                "reason": "结合历史文化与夜游偏好，补充城市文化和美食体验。",
-                "estimated_cost": 125.55,
+                "address": "西安 POI 2",
+                "reason": "matches 历史文化 and 夜游 preference in 西安",
+                "estimated_cost": 50,
                 "duration_minutes": 120
+              },
+              {
+                "time": "18:30",
+                "type": "food",
+                "name": "大唐不夜城",
+                "address": "西安 POI 3",
+                "reason": "matches 历史文化 and 夜游 preference in 西安",
+                "estimated_cost": 70,
+                "duration_minutes": 150
               }
             ]
           }
         ],
         "budget": {
-          "transport": 202.5,
-          "food": 202.5,
-          "hotel": 243,
-          "ticket": 162,
-          "total": 810
+          "transport": 198.72,
+          "food": 215.28,
+          "hotel": 248.4,
+          "ticket": 165.6,
+          "total": 828
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -1380,67 +1411,67 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "南京2日旅行规划",
-        "summary": "从合肥出发，围绕亲子与博物馆在南京安排2天轻松节奏路线，预算控制在900元以内。",
+        "title": "南京2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 南京 from 合肥 with budget 900.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天亲子体验",
+            "theme": "day 1 亲子 and 博物馆 route in 南京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "中山陵",
-                "address": "南京核心游览区",
-                "reason": "契合第1天亲子体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 76.73,
-                "duration_minutes": 150
+                "address": "南京 POI 1",
+                "reason": "matches 亲子 and 博物馆 preference in 南京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "夫子庙",
-                "address": "南京特色街区",
-                "reason": "结合亲子与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 62.78,
+                "address": "南京 POI 2",
+                "reason": "matches 亲子 and 博物馆 preference in 南京",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天博物馆体验",
+            "theme": "day 2 亲子 and 博物馆 route in 南京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "秦淮河",
-                "address": "南京核心游览区",
-                "reason": "契合第2天博物馆体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 76.73,
+                "address": "南京 POI 3",
+                "reason": "matches 亲子 and 博物馆 preference in 南京",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "南京博物院",
-                "address": "南京特色街区",
-                "reason": "结合亲子与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 62.78,
-                "duration_minutes": 120
+                "address": "南京 POI 4",
+                "reason": "matches 亲子 and 博物馆 preference in 南京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 202.5,
-          "food": 202.5,
-          "hotel": 243,
-          "ticket": 162,
-          "total": 810
+          "transport": 198.72,
+          "food": 215.28,
+          "hotel": 248.4,
+          "ticket": 165.6,
+          "total": 828
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -1461,67 +1492,67 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "杭州2日旅行规划",
-        "summary": "从杭州出发，围绕本地生活与咖啡在杭州安排2天均衡节奏路线，预算控制在1200元以内。",
+        "title": "杭州2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 杭州 from 杭州 with budget 1200.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天本地生活体验",
+            "theme": "day 1 本地生活 and 咖啡 route in 杭州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "西湖",
-                "address": "杭州核心游览区",
-                "reason": "契合第1天本地生活体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 102.3,
-                "duration_minutes": 150
+                "address": "杭州 POI 1",
+                "reason": "matches 本地生活 and 咖啡 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "灵隐寺",
-                "address": "杭州特色街区",
-                "reason": "结合本地生活与咖啡偏好，补充城市文化和美食体验。",
-                "estimated_cost": 83.7,
+                "address": "杭州 POI 2",
+                "reason": "matches 本地生活 and 咖啡 preference in 杭州",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天咖啡体验",
+            "theme": "day 2 本地生活 and 咖啡 route in 杭州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "河坊街",
-                "address": "杭州核心游览区",
-                "reason": "契合第2天咖啡体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 102.3,
+                "address": "杭州 POI 3",
+                "reason": "matches 本地生活 and 咖啡 preference in 杭州",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "龙井村",
-                "address": "杭州特色街区",
-                "reason": "结合本地生活与咖啡偏好，补充城市文化和美食体验。",
-                "estimated_cost": 83.7,
-                "duration_minutes": 120
+                "address": "杭州 POI 4",
+                "reason": "matches 本地生活 and 咖啡 preference in 杭州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 270,
-          "food": 270,
-          "hotel": 324,
-          "ticket": 216,
-          "total": 1080
+          "transport": 264.96,
+          "food": 287.04,
+          "hotel": 331.2,
+          "ticket": 220.8,
+          "total": 1104
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -1542,91 +1573,91 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "北京3日旅行规划",
-        "summary": "从天津出发，围绕老人友好与公园在北京安排3天轻松节奏路线，预算控制在3600元以内。",
+        "title": "北京3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 北京 from 天津 with budget 3600.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天老人友好体验",
+            "theme": "day 1 老人友好 and 公园 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "故宫",
-                "address": "北京核心游览区",
-                "reason": "契合第1天老人友好体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 204.6,
-                "duration_minutes": 150
+                "address": "北京 POI 1",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "天安门",
-                "address": "北京特色街区",
-                "reason": "结合老人友好与公园偏好，补充城市文化和美食体验。",
-                "estimated_cost": 167.4,
+                "address": "北京 POI 2",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天公园体验",
+            "theme": "day 2 老人友好 and 公园 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "颐和园",
-                "address": "北京核心游览区",
-                "reason": "契合第2天公园体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 204.6,
+                "address": "北京 POI 3",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "国家博物馆",
-                "address": "北京特色街区",
-                "reason": "结合老人友好与公园偏好，补充城市文化和美食体验。",
-                "estimated_cost": 167.4,
-                "duration_minutes": 120
+                "address": "北京 POI 4",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天博物馆体验",
+            "theme": "day 3 老人友好 and 公园 route in 北京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "什刹海",
-                "address": "北京核心游览区",
-                "reason": "契合第3天博物馆体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 204.6,
-                "duration_minutes": 150
+                "address": "北京 POI 5",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "故宫",
-                "address": "北京特色街区",
-                "reason": "结合老人友好与公园偏好，补充城市文化和美食体验。",
-                "estimated_cost": 167.4,
-                "duration_minutes": 120
+                "address": "北京 POI 1",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 810,
-          "food": 810,
-          "hotel": 972,
-          "ticket": 648,
-          "total": 3240
+          "transport": 794.88,
+          "food": 861.12,
+          "hotel": 993.6,
+          "ticket": 662.4,
+          "total": 3312
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -1647,115 +1678,152 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "成都4日旅行规划",
-        "summary": "从西安出发，围绕美食与潮流街区在成都安排4天紧凑节奏路线，预算控制在4200元以内。",
+        "title": "成都4-day Eino travel plan",
+        "summary": "Eino workflow planned 4 days in 成都 from 西安 with budget 4200.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天美食体验",
+            "theme": "day 1 美食 and 潮流街区 route in 成都",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "宽窄巷子",
-                "address": "成都核心游览区",
-                "reason": "契合第1天美食体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 179.03,
-                "duration_minutes": 150
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "武侯祠",
-                "address": "成都特色街区",
-                "reason": "结合美食与潮流街区偏好，补充城市文化和美食体验。",
-                "estimated_cost": 146.48,
+                "address": "成都 POI 2",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 50,
                 "duration_minutes": 120
+              },
+              {
+                "time": "18:30",
+                "type": "food",
+                "name": "锦里",
+                "address": "成都 POI 3",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 70,
+                "duration_minutes": 150
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天潮流街区体验",
+            "theme": "day 2 美食 and 潮流街区 route in 成都",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
-                "name": "锦里",
-                "address": "成都核心游览区",
-                "reason": "契合第2天潮流街区体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 179.03,
-                "duration_minutes": 150
+                "type": "nature",
+                "name": "人民公园",
+                "address": "成都 POI 4",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
-                "name": "人民公园",
-                "address": "成都特色街区",
-                "reason": "结合美食与潮流街区偏好，补充城市文化和美食体验。",
-                "estimated_cost": 146.48,
+                "type": "citywalk",
+                "name": "春熙路",
+                "address": "成都 POI 5",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 30,
                 "duration_minutes": 120
+              },
+              {
+                "time": "18:30",
+                "type": "landmark",
+                "name": "宽窄巷子",
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天夜生活体验",
+            "theme": "day 3 美食 and 潮流街区 route in 成都",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
-                "name": "春熙路",
-                "address": "成都核心游览区",
-                "reason": "契合第3天夜生活体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 179.03,
-                "duration_minutes": 150
+                "type": "culture",
+                "name": "武侯祠",
+                "address": "成都 POI 2",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 50,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
-                "name": "宽窄巷子",
-                "address": "成都特色街区",
-                "reason": "结合美食与潮流街区偏好，补充城市文化和美食体验。",
-                "estimated_cost": 146.48,
-                "duration_minutes": 120
+                "type": "food",
+                "name": "锦里",
+                "address": "成都 POI 3",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "18:30",
+                "type": "nature",
+                "name": "人民公园",
+                "address": "成都 POI 4",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 4,
-            "theme": "第4天美食体验",
+            "theme": "day 4 美食 and 潮流街区 route in 成都",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
-                "name": "武侯祠",
-                "address": "成都核心游览区",
-                "reason": "契合第4天美食体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 179.03,
-                "duration_minutes": 150
+                "type": "citywalk",
+                "name": "春熙路",
+                "address": "成都 POI 5",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
-                "name": "锦里",
-                "address": "成都特色街区",
-                "reason": "结合美食与潮流街区偏好，补充城市文化和美食体验。",
-                "estimated_cost": 146.48,
+                "type": "landmark",
+                "name": "宽窄巷子",
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "18:30",
+                "type": "culture",
+                "name": "武侯祠",
+                "address": "成都 POI 2",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           }
         ],
         "budget": {
-          "transport": 945,
-          "food": 945,
-          "hotel": 1134,
-          "ticket": 756,
-          "total": 3780
+          "transport": 927.36,
+          "food": 1004.64,
+          "hotel": 1159.2,
+          "ticket": 772.8,
+          "total": 3864
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -1776,91 +1844,91 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "广州3日旅行规划",
-        "summary": "从上海出发，围绕商务间隙与美食在广州安排3天轻松节奏路线，预算控制在3500元以内。",
+        "title": "广州3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 广州 from 上海 with budget 3500.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天商务间隙体验",
+            "theme": "day 1 商务间隙 and 美食 route in 广州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "沙面",
-                "address": "广州核心游览区",
-                "reason": "契合第1天商务间隙体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 198.92,
-                "duration_minutes": 150
+                "address": "广州 POI 1",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "永庆坊",
-                "address": "广州特色街区",
-                "reason": "结合商务间隙与美食偏好，补充城市文化和美食体验。",
-                "estimated_cost": 162.75,
+                "address": "广州 POI 2",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天美食体验",
+            "theme": "day 2 商务间隙 and 美食 route in 广州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "陈家祠",
-                "address": "广州核心游览区",
-                "reason": "契合第2天美食体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 198.92,
+                "address": "广州 POI 3",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "北京路",
-                "address": "广州特色街区",
-                "reason": "结合商务间隙与美食偏好，补充城市文化和美食体验。",
-                "estimated_cost": 162.75,
-                "duration_minutes": 120
+                "address": "广州 POI 4",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天citywalk体验",
+            "theme": "day 3 商务间隙 and 美食 route in 广州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "珠江夜游",
-                "address": "广州核心游览区",
-                "reason": "契合第3天citywalk体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 198.92,
-                "duration_minutes": 150
+                "address": "广州 POI 5",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "沙面",
-                "address": "广州特色街区",
-                "reason": "结合商务间隙与美食偏好，补充城市文化和美食体验。",
-                "estimated_cost": 162.75,
-                "duration_minutes": 120
+                "address": "广州 POI 1",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 787.5,
-          "food": 787.5,
-          "hotel": 945,
-          "ticket": 630,
-          "total": 3150
+          "transport": 772.8,
+          "food": 837.2,
+          "hotel": 966,
+          "ticket": 644,
+          "total": 3220
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -1881,43 +1949,43 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "苏州1日旅行规划",
-        "summary": "从上海出发，围绕园林与步行在苏州安排1天均衡节奏路线，预算控制在300元以内。",
+        "title": "苏州1-day Eino travel plan",
+        "summary": "Eino workflow planned 1 days in 苏州 from 上海 with budget 300.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天园林体验",
+            "theme": "day 1 园林 and 步行 route in 苏州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "拙政园",
-                "address": "苏州核心游览区",
-                "reason": "契合第1天园林体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 51.15,
-                "duration_minutes": 150
+                "address": "苏州 POI 1",
+                "reason": "matches 园林 and 步行 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "平江路",
-                "address": "苏州特色街区",
-                "reason": "结合园林与步行偏好，补充城市文化和美食体验。",
-                "estimated_cost": 41.85,
+                "address": "苏州 POI 2",
+                "reason": "matches 园林 and 步行 preference in 苏州",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           }
         ],
         "budget": {
-          "transport": 67.5,
-          "food": 67.5,
-          "hotel": 81,
-          "ticket": 54,
-          "total": 270
+          "transport": 66.24,
+          "food": 71.76,
+          "hotel": 82.8,
+          "ticket": 55.2,
+          "total": 276
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -1938,139 +2006,140 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "未知城市5日旅行规划",
-        "summary": "从上海出发，围绕小众与探索在未知城市安排5天均衡节奏路线，预算控制在2500元以内。",
+        "title": "未知城市5-day Eino travel plan",
+        "summary": "Eino workflow planned 5 days in 未知城市 from 上海 with budget 2500.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天小众体验",
+            "theme": "day 1 小众 and 探索 route in 未知城市",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "城市博物馆",
-                "address": "未知城市核心游览区",
-                "reason": "契合第1天小众体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 85.25,
-                "duration_minutes": 150
+                "address": "未知城市 POI 1",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "特色街区",
-                "address": "未知城市特色街区",
-                "reason": "结合小众与探索偏好，补充城市文化和美食体验。",
-                "estimated_cost": 69.75,
+                "address": "未知城市 POI 2",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天探索体验",
+            "theme": "day 2 小众 and 探索 route in 未知城市",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "本地美食街",
-                "address": "未知城市核心游览区",
-                "reason": "契合第2天探索体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 85.25,
+                "address": "未知城市 POI 3",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "城市公园",
-                "address": "未知城市特色街区",
-                "reason": "结合小众与探索偏好，补充城市文化和美食体验。",
-                "estimated_cost": 69.75,
-                "duration_minutes": 120
+                "address": "未知城市 POI 4",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天本地生活体验",
+            "theme": "day 3 小众 and 探索 route in 未知城市",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "地标广场",
-                "address": "未知城市核心游览区",
-                "reason": "契合第3天本地生活体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 85.25,
-                "duration_minutes": 150
+                "address": "未知城市 POI 5",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "城市博物馆",
-                "address": "未知城市特色街区",
-                "reason": "结合小众与探索偏好，补充城市文化和美食体验。",
-                "estimated_cost": 69.75,
-                "duration_minutes": 120
+                "address": "未知城市 POI 1",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 4,
-            "theme": "第4天小众体验",
+            "theme": "day 4 小众 and 探索 route in 未知城市",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "culture",
                 "name": "特色街区",
-                "address": "未知城市核心游览区",
-                "reason": "契合第4天小众体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 85.25,
-                "duration_minutes": 150
+                "address": "未知城市 POI 2",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 50,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "food",
                 "name": "本地美食街",
-                "address": "未知城市特色街区",
-                "reason": "结合小众与探索偏好，补充城市文化和美食体验。",
-                "estimated_cost": 69.75,
-                "duration_minutes": 120
+                "address": "未知城市 POI 3",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 70,
+                "duration_minutes": 150
               }
             ]
           },
           {
             "day": 5,
-            "theme": "第5天探索体验",
+            "theme": "day 5 小众 and 探索 route in 未知城市",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "nature",
                 "name": "城市公园",
-                "address": "未知城市核心游览区",
-                "reason": "契合第5天探索体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 85.25,
-                "duration_minutes": 150
+                "address": "未知城市 POI 4",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "citywalk",
                 "name": "地标广场",
-                "address": "未知城市特色街区",
-                "reason": "结合小众与探索偏好，补充城市文化和美食体验。",
-                "estimated_cost": 69.75,
+                "address": "未知城市 POI 5",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 30,
                 "duration_minutes": 120
               }
             ]
           }
         ],
         "budget": {
-          "transport": 562.5,
-          "food": 562.5,
-          "hotel": 675,
-          "ticket": 450,
-          "total": 2250
+          "transport": 552,
+          "food": 598,
+          "hotel": 690,
+          "ticket": 460,
+          "total": 2300
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "day 2 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -2091,139 +2160,140 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "西安5日旅行规划",
-        "summary": "从深圳出发，围绕历史文化与博物馆在西安安排5天均衡节奏路线，预算控制在9000元以内。",
+        "title": "西安5-day Eino travel plan",
+        "summary": "Eino workflow planned 5 days in 西安 from 深圳 with budget 9000.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天历史文化体验",
+            "theme": "day 1 历史文化 and 博物馆 route in 西安",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "兵马俑",
-                "address": "西安核心游览区",
-                "reason": "契合第1天历史文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 306.9,
-                "duration_minutes": 150
+                "address": "西安 POI 1",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "大雁塔",
-                "address": "西安特色街区",
-                "reason": "结合历史文化与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 251.1,
+                "address": "西安 POI 2",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天博物馆体验",
+            "theme": "day 2 历史文化 and 博物馆 route in 西安",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "大唐不夜城",
-                "address": "西安核心游览区",
-                "reason": "契合第2天博物馆体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 306.9,
+                "address": "西安 POI 3",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "西安城墙",
-                "address": "西安特色街区",
-                "reason": "结合历史文化与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 251.1,
-                "duration_minutes": 120
+                "address": "西安 POI 4",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天夜游体验",
+            "theme": "day 3 历史文化 and 博物馆 route in 西安",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "陕西历史博物馆",
-                "address": "西安核心游览区",
-                "reason": "契合第3天夜游体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 306.9,
-                "duration_minutes": 150
+                "address": "西安 POI 5",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "兵马俑",
-                "address": "西安特色街区",
-                "reason": "结合历史文化与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 251.1,
-                "duration_minutes": 120
+                "address": "西安 POI 1",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 4,
-            "theme": "第4天历史文化体验",
+            "theme": "day 4 历史文化 and 博物馆 route in 西安",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "culture",
                 "name": "大雁塔",
-                "address": "西安核心游览区",
-                "reason": "契合第4天历史文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 306.9,
-                "duration_minutes": 150
+                "address": "西安 POI 2",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 50,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "food",
                 "name": "大唐不夜城",
-                "address": "西安特色街区",
-                "reason": "结合历史文化与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 251.1,
-                "duration_minutes": 120
+                "address": "西安 POI 3",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 70,
+                "duration_minutes": 150
               }
             ]
           },
           {
             "day": 5,
-            "theme": "第5天博物馆体验",
+            "theme": "day 5 历史文化 and 博物馆 route in 西安",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "nature",
                 "name": "西安城墙",
-                "address": "西安核心游览区",
-                "reason": "契合第5天博物馆体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 306.9,
-                "duration_minutes": 150
+                "address": "西安 POI 4",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "citywalk",
                 "name": "陕西历史博物馆",
-                "address": "西安特色街区",
-                "reason": "结合历史文化与博物馆偏好，补充城市文化和美食体验。",
-                "estimated_cost": 251.1,
+                "address": "西安 POI 5",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 30,
                 "duration_minutes": 120
               }
             ]
           }
         ],
         "budget": {
-          "transport": 2025,
-          "food": 2025,
-          "hotel": 2430,
-          "ticket": 1620,
-          "total": 8100
+          "transport": 1987.2,
+          "food": 2152.8,
+          "hotel": 2484,
+          "ticket": 1656,
+          "total": 8280
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -2244,91 +2314,91 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "南京3日旅行规划",
-        "summary": "从上海出发，围绕城市漫步与历史文化在南京安排3天均衡节奏路线，预算控制在2400元以内。",
+        "title": "南京3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 南京 from 上海 with budget 2400.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天城市漫步体验",
+            "theme": "day 1 城市漫步 and 历史文化 route in 南京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "中山陵",
-                "address": "南京核心游览区",
-                "reason": "契合第1天城市漫步体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
-                "duration_minutes": 150
+                "address": "南京 POI 1",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "夫子庙",
-                "address": "南京特色街区",
-                "reason": "结合城市漫步与历史文化偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
+                "address": "南京 POI 2",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天历史文化体验",
+            "theme": "day 2 城市漫步 and 历史文化 route in 南京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "秦淮河",
-                "address": "南京核心游览区",
-                "reason": "契合第2天历史文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
+                "address": "南京 POI 3",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "南京博物院",
-                "address": "南京特色街区",
-                "reason": "结合城市漫步与历史文化偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
-                "duration_minutes": 120
+                "address": "南京 POI 4",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天城市漫步体验",
+            "theme": "day 3 城市漫步 and 历史文化 route in 南京",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "老门东",
-                "address": "南京核心游览区",
-                "reason": "契合第3天城市漫步体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 136.4,
-                "duration_minutes": 150
+                "address": "南京 POI 5",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "中山陵",
-                "address": "南京特色街区",
-                "reason": "结合城市漫步与历史文化偏好，补充城市文化和美食体验。",
-                "estimated_cost": 111.6,
-                "duration_minutes": 120
+                "address": "南京 POI 1",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           }
         ],
         "budget": {
-          "transport": 540,
-          "food": 540,
-          "hotel": 648,
-          "ticket": 432,
-          "total": 2160
+          "transport": 529.92,
+          "food": 574.08,
+          "hotel": 662.4,
+          "ticket": 441.6,
+          "total": 2208
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     },
@@ -2349,115 +2419,116 @@
         "no_illegal_fields": true
       },
       "plan": {
-        "title": "杭州4日旅行规划",
-        "summary": "从上海出发，围绕自然风光与茶文化在杭州安排4天均衡节奏路线，预算控制在4200元以内。",
+        "title": "杭州4-day Eino travel plan",
+        "summary": "Eino workflow planned 4 days in 杭州 from 上海 with budget 4200.",
         "days": [
           {
             "day": 1,
-            "theme": "第1天自然风光体验",
+            "theme": "day 1 自然风光 and 茶文化 route in 杭州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "landmark",
                 "name": "西湖",
-                "address": "杭州核心游览区",
-                "reason": "契合第1天自然风光体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 179.03,
-                "duration_minutes": 150
+                "address": "杭州 POI 1",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "culture",
                 "name": "灵隐寺",
-                "address": "杭州特色街区",
-                "reason": "结合自然风光与茶文化偏好，补充城市文化和美食体验。",
-                "estimated_cost": 146.48,
+                "address": "杭州 POI 2",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 50,
                 "duration_minutes": 120
               }
             ]
           },
           {
             "day": 2,
-            "theme": "第2天茶文化体验",
+            "theme": "day 2 自然风光 and 茶文化 route in 杭州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "food",
                 "name": "河坊街",
-                "address": "杭州核心游览区",
-                "reason": "契合第2天茶文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 179.03,
+                "address": "杭州 POI 3",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 70,
                 "duration_minutes": 150
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "nature",
                 "name": "龙井村",
-                "address": "杭州特色街区",
-                "reason": "结合自然风光与茶文化偏好，补充城市文化和美食体验。",
-                "estimated_cost": 146.48,
-                "duration_minutes": 120
+                "address": "杭州 POI 4",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 3,
-            "theme": "第3天自然风光体验",
+            "theme": "day 3 自然风光 and 茶文化 route in 杭州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "citywalk",
                 "name": "京杭大运河",
-                "address": "杭州核心游览区",
-                "reason": "契合第3天自然风光体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 179.03,
-                "duration_minutes": 150
+                "address": "杭州 POI 5",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "landmark",
                 "name": "西湖",
-                "address": "杭州特色街区",
-                "reason": "结合自然风光与茶文化偏好，补充城市文化和美食体验。",
-                "estimated_cost": 146.48,
-                "duration_minutes": 120
+                "address": "杭州 POI 1",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
               }
             ]
           },
           {
             "day": 4,
-            "theme": "第4天茶文化体验",
+            "theme": "day 4 自然风光 and 茶文化 route in 杭州",
             "items": [
               {
                 "time": "09:30",
-                "type": "sightseeing",
+                "type": "culture",
                 "name": "灵隐寺",
-                "address": "杭州核心游览区",
-                "reason": "契合第4天茶文化体验行程主题，适合作为当天重点体验。",
-                "estimated_cost": 179.03,
-                "duration_minutes": 150
+                "address": "杭州 POI 2",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
               },
               {
                 "time": "14:30",
-                "type": "local_experience",
+                "type": "food",
                 "name": "河坊街",
-                "address": "杭州特色街区",
-                "reason": "结合自然风光与茶文化偏好，补充城市文化和美食体验。",
-                "estimated_cost": 146.48,
-                "duration_minutes": 120
+                "address": "杭州 POI 3",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
               }
             ]
           }
         ],
         "budget": {
-          "transport": 945,
-          "food": 945,
-          "hotel": 1134,
-          "ticket": 756,
-          "total": 3780
+          "transport": 927.36,
+          "food": 1004.64,
+          "hotel": 1159.2,
+          "ticket": 772.8,
+          "total": 3864
         },
         "warnings": [
-          "MockPlanner 仅用于评估框架联调，未校验真实营业时间、交通距离和实时价格。"
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
         ]
       }
     }

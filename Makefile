@@ -1,4 +1,4 @@
-.PHONY: test harness harness-mock harness-eino fmt vet
+.PHONY: test harness harness-mock harness-eino server fmt vet
 
 test:
 	go test ./...
@@ -11,6 +11,9 @@ harness-mock:
 
 harness-eino:
 	go run ./cmd/harness -planner eino
+
+server:
+	go run ./cmd/server
 
 fmt:
 	gofmt -w .

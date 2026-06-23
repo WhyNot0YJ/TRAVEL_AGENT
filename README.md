@@ -51,6 +51,32 @@ go run ./cmd/harness -planner eino
 go run ./cmd/harness -planner eino -dataset testdata/travel_cases.json -report reports/eval_report.json
 ```
 
+## HTTP API
+
+启动 Gin server：
+
+```bash
+set TRAVEL_AGENT_HTTP_ADDR=:8080
+set TRAVEL_AGENT_PLANNER=mock
+go run ./cmd/server
+```
+
+同步创建旅行计划：
+
+```bash
+curl -X POST http://localhost:8080/api/v1/travel/plans \
+  -H "Content-Type: application/json" \
+  -d "{\"departure_city\":\"上海\",\"destination_city\":\"杭州\",\"days\":3,\"budget\":3000,\"interests\":[\"自然风光\",\"美食\"],\"transport_mode\":\"train_taxi\",\"pace\":\"relaxed\"}"
+```
+
+查询计划：
+
+```bash
+curl http://localhost:8080/api/v1/travel/plans/{plan_id}
+```
+
+当前 HTTP API 使用内存 store，同步返回结果；Redis、异步任务和 SSE 会在后续阶段接入。
+
 说明：
 
 * `mock`：不依赖 Eino，不经过 Graph，只用于基础 Harness 测试。
