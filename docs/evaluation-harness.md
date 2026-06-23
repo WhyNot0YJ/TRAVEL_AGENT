@@ -42,6 +42,16 @@ TravelPlanner Interface
   -> LLM Schema Generator / Mock Plan Generator fallback
 ```
 
+Eino Tools 默认使用 mock mode。可通过环境变量切换 real tools：
+
+```bash
+TRAVEL_AGENT_TOOL_MODE=real
+TRAVEL_AGENT_AMAP_API_KEY=your-key
+go run ./cmd/harness -planner eino
+```
+
+如果未配置 key 或外部 API 调用失败，real tools 会 fallback 到 mock tools，并在 `TravelPlan.warnings` 中记录原因。
+
 ## 4. 核心接口
 
 ```go
@@ -172,7 +182,7 @@ make harness-eino
 7. GenerateTravelPlanNode
 8. ValidatePlanNode
 
-当前 Eino 模式仍然使用 Mock Tools，不评估真实地图、真实天气和真实路线 API。LLM 默认不启用；启用后，GenerateTravelPlanNode 会优先使用 provider-native JSON Schema 结构化输出，失败时 fallback 到 deterministic generator。
+当前 Eino 模式默认使用 Mock Tools；启用 `TRAVEL_AGENT_TOOL_MODE=real` 后可调用高德 POI、路线和天气 API。LLM 默认不启用；启用后，GenerateTravelPlanNode 会优先使用 provider-native JSON Schema 结构化输出，失败时 fallback 到 deterministic generator。
 
 DeepSeek 模式使用 strict tool calling beta：
 

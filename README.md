@@ -54,7 +54,7 @@ go run ./cmd/harness -planner eino -dataset testdata/travel_cases.json -report r
 说明：
 
 * `mock`：不依赖 Eino，不经过 Graph，只用于基础 Harness 测试。
-* `eino`：经过 CloudWeGo Eino Graph / Workflow。默认使用 Mock Tools 和 deterministic plan generator；设置 LLM 环境变量后可调用真实 LLM，但仍不调用真实地图、天气或路线 API。
+* `eino`：经过 CloudWeGo Eino Graph / Workflow。默认使用 Mock Tools 和 deterministic plan generator；设置 LLM 环境变量后可调用真实 LLM，设置 Tool 环境变量后可调用真实高德 POI、路线和天气 API。
 
 ## LLM 模式
 
@@ -76,6 +76,31 @@ go run ./cmd/harness -planner eino
 ```
 
 如果 LLM 未启用、配置缺失、provider 不支持 schema 输出、tool call 缺失、返回结构无效或业务校验失败，Eino planner 会自动 fallback 到 deterministic generator，并在 `warnings` 中记录原因。
+
+## 外部 Tool 模式
+
+Eino Tools 默认使用本地 mock：
+
+```bash
+go run ./cmd/harness -planner eino
+```
+
+如需使用真实高德 POI、路线和天气 API：
+
+```bash
+set TRAVEL_AGENT_TOOL_MODE=real
+set TRAVEL_AGENT_AMAP_API_KEY=your-amap-key
+go run ./cmd/harness -planner eino
+```
+
+可选配置：
+
+* `TRAVEL_AGENT_AMAP_BASE_URL`
+* `TRAVEL_AGENT_WEATHER_API_KEY`
+* `TRAVEL_AGENT_WEATHER_BASE_URL`
+* `TRAVEL_AGENT_EXTERNAL_API_TIMEOUT`
+
+real tool 初始化失败、请求失败或响应缺字段时，会自动 fallback 到 mock tool，并在 `warnings` 中说明原因。
 
 ## 如何添加新的测试用例
 

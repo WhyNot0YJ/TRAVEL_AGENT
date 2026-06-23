@@ -1,6 +1,10 @@
 package eino
 
-import "travel-agent/internal/domain"
+import (
+	"context"
+
+	"travel-agent/internal/domain"
+)
 
 // TravelPlanningState is the internal state passed between Eino graph nodes.
 type TravelPlanningState struct {
@@ -20,12 +24,29 @@ type TravelPlanningState struct {
 	Trace                 []TraceEvent         `json:"trace"`
 }
 
+type POITool interface {
+	Run(ctx context.Context, input POIToolInput) ([]MockPOI, error)
+}
+
+type WeatherTool interface {
+	Run(ctx context.Context, input WeatherToolInput) ([]MockWeather, error)
+}
+
+type RouteTool interface {
+	Run(ctx context.Context, input RouteToolInput) ([]MockRoute, error)
+}
+
+type BudgetTool interface {
+	Run(ctx context.Context, input BudgetToolInput) (domainBudget, error)
+}
+
 // MockPOI is a deterministic POI returned by the local POI tool.
 type MockPOI struct {
 	Name                     string  `json:"name"`
 	City                     string  `json:"city"`
 	Category                 string  `json:"category"`
 	Address                  string  `json:"address"`
+	Location                 string  `json:"location,omitempty"`
 	SuggestedDurationMinutes int     `json:"suggested_duration_minutes"`
 	EstimatedCost            float64 `json:"estimated_cost"`
 }

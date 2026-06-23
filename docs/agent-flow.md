@@ -13,7 +13,8 @@
 * 已实现 Mock Weather Tool
 * 已实现 Mock Route Tool
 * 已实现 Mock Budget Tool
-* 未接入真实外部 API
+* 已支持 real/mock Tool mode
+* 已接入高德 POI、天气、路线 API adapter，默认不启用
 * 未接入 Gin
 
 ## 2. 流程图
@@ -53,9 +54,10 @@ TravelRequest
 
 职责：
 
-* 调用 `MockPOITool`
-* 根据目的地城市返回稳定 POI 列表
-* 对未知城市返回通用兜底 POI
+* 调用 POI Tool 接口
+* mock mode 使用 `MockPOITool`
+* real mode 使用 `RealPOITool` 调用高德 POI 搜索
+* real tool 失败时 fallback 到 mock，并追加 warning
 
 ### GetWeatherToolNode
 
@@ -65,9 +67,10 @@ TravelRequest
 
 职责：
 
-* 调用 `MockWeatherTool`
-* 根据城市和天数生成固定天气
-* 如果存在雨天，向 warnings 中追加提示
+* 调用 Weather Tool 接口
+* mock mode 使用 `MockWeatherTool`
+* real mode 使用 `RealWeatherTool` 查询高德天气
+* real tool 失败时 fallback 到 mock，并追加 warning
 
 ### ComputeRouteToolNode
 
@@ -77,9 +80,10 @@ TravelRequest
 
 职责：
 
-* 调用 `MockRouteTool`
-* 根据 POI 顺序生成模拟交通耗时和距离
-* 不调用真实路线规划 API
+* 调用 Route Tool 接口
+* mock mode 使用 `MockRouteTool`
+* real mode 使用 `RealRouteTool` 调用高德路径规划
+* real tool 失败时 fallback 到 mock，并追加 warning
 
 ### EstimateBudgetToolNode
 
@@ -172,14 +176,29 @@ Chat Completions
 
 ## 5. Mock Tools
 
-当前 Mock Tools 均为稳定、可复现的本地实现：
+当前 Tools 支持 `mock` 和 `real` 两种模式：
+
+```text
+TRAVEL_AGENT_TOOL_MODE=mock
+TRAVEL_AGENT_TOOL_MODE=real
+```
+
+默认是 `mock`。real mode 需要配置：
+
+* `TRAVEL_AGENT_AMAP_API_KEY`
+* `TRAVEL_AGENT_AMAP_BASE_URL`
+* `TRAVEL_AGENT_WEATHER_API_KEY`
+* `TRAVEL_AGENT_WEATHER_BASE_URL`
+* `TRAVEL_AGENT_EXTERNAL_API_TIMEOUT`
+
+Mock Tools 均为稳定、可复现的本地实现：
 
 * `MockPOITool`：返回常见城市 POI 和未知城市兜底 POI
 * `MockWeatherTool`：根据城市和天数生成固定天气
 * `MockRouteTool`：根据 POI 顺序生成模拟路线耗时和距离
 * `MockBudgetTool`：生成预算拆分，并控制总额不明显超过用户预算
 
-这些工具不会调用真实外部 API，也不会读取 API Key。它们的目的不是提供真实旅行建议，而是验证 Eino Graph / Workflow 编排链路。
+Mock Tools 不会调用真实外部 API，也不会读取 API Key。real tools 的原始响应只在 `internal/agent/eino` 内解析，不污染 `internal/domain`。
 
 ## 6. 后续计划
 

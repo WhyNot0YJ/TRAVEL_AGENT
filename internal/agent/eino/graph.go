@@ -23,22 +23,23 @@ func buildTravelGraph(ctx context.Context, generator TravelPlanGenerator) (compo
 	if generator == nil {
 		generator = deterministicPlanGenerator{}
 	}
+	tools := defaultToolSet()
 
 	graph := compose.NewGraph[domain.TravelRequest, *domain.TravelPlan]()
 
 	if err := graph.AddLambdaNode(nodeParse, compose.InvokableLambda(parseTravelRequestNode)); err != nil {
 		return nil, fmt.Errorf("add parse node: %w", err)
 	}
-	if err := graph.AddLambdaNode(nodePOI, compose.InvokableLambda(searchPOIsToolNode(MockPOITool{}))); err != nil {
+	if err := graph.AddLambdaNode(nodePOI, compose.InvokableLambda(searchPOIsToolNode(tools.POI))); err != nil {
 		return nil, fmt.Errorf("add poi node: %w", err)
 	}
-	if err := graph.AddLambdaNode(nodeWeather, compose.InvokableLambda(getWeatherToolNode(MockWeatherTool{}))); err != nil {
+	if err := graph.AddLambdaNode(nodeWeather, compose.InvokableLambda(getWeatherToolNode(tools.Weather))); err != nil {
 		return nil, fmt.Errorf("add weather node: %w", err)
 	}
-	if err := graph.AddLambdaNode(nodeRoute, compose.InvokableLambda(computeRouteToolNode(MockRouteTool{}))); err != nil {
+	if err := graph.AddLambdaNode(nodeRoute, compose.InvokableLambda(computeRouteToolNode(tools.Route))); err != nil {
 		return nil, fmt.Errorf("add route node: %w", err)
 	}
-	if err := graph.AddLambdaNode(nodeBudget, compose.InvokableLambda(estimateBudgetToolNode(MockBudgetTool{}))); err != nil {
+	if err := graph.AddLambdaNode(nodeBudget, compose.InvokableLambda(estimateBudgetToolNode(tools.Budget))); err != nil {
 		return nil, fmt.Errorf("add budget node: %w", err)
 	}
 	if err := graph.AddLambdaNode(nodeOptimize, compose.InvokableLambda(optimizeItineraryNode)); err != nil {

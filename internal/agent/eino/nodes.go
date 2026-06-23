@@ -2,6 +2,7 @@ package eino
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -48,7 +49,7 @@ func parseTravelRequestNode(ctx context.Context, req domain.TravelRequest) (Trav
 	return appendTrace(state, "ParseTravelRequestNode", "request normalized", started, true), nil
 }
 
-func searchPOIsToolNode(tool MockPOITool) func(context.Context, TravelPlanningState) (TravelPlanningState, error) {
+func searchPOIsToolNode(tool POITool) func(context.Context, TravelPlanningState) (TravelPlanningState, error) {
 	return func(ctx context.Context, state TravelPlanningState) (TravelPlanningState, error) {
 		started := time.Now()
 		pois, err := tool.Run(ctx, POIToolInput{
@@ -56,6 +57,11 @@ func searchPOIsToolNode(tool MockPOITool) func(context.Context, TravelPlanningSt
 			Interests: state.Interests,
 		})
 		if err != nil {
+			if isFallbackError(err) && len(pois) > 0 {
+				state.Warnings = append(state.Warnings, err.Error())
+				state.POIs = pois
+				return appendTrace(state, "SearchPOIsToolNode", fmt.Sprintf("loaded %d fallback pois", len(pois)), started, true), nil
+			}
 			state = appendTrace(state, "SearchPOIsToolNode", err.Error(), started, false)
 			return state, err
 		}
@@ -64,7 +70,7 @@ func searchPOIsToolNode(tool MockPOITool) func(context.Context, TravelPlanningSt
 	}
 }
 
-func getWeatherToolNode(tool MockWeatherTool) func(context.Context, TravelPlanningState) (TravelPlanningState, error) {
+func getWeatherToolNode(tool WeatherTool) func(context.Context, TravelPlanningState) (TravelPlanningState, error) {
 	return func(ctx context.Context, state TravelPlanningState) (TravelPlanningState, error) {
 		started := time.Now()
 		weather, err := tool.Run(ctx, WeatherToolInput{
@@ -72,6 +78,11 @@ func getWeatherToolNode(tool MockWeatherTool) func(context.Context, TravelPlanni
 			Days: state.NormalizedDays,
 		})
 		if err != nil {
+			if isFallbackError(err) && len(weather) > 0 {
+				state.Warnings = append(state.Warnings, err.Error())
+				state.Weather = weather
+				return appendTrace(state, "GetWeatherToolNode", fmt.Sprintf("loaded %d fallback weather records", len(weather)), started, true), nil
+			}
 			state = appendTrace(state, "GetWeatherToolNode", err.Error(), started, false)
 			return state, err
 		}
@@ -85,7 +96,7 @@ func getWeatherToolNode(tool MockWeatherTool) func(context.Context, TravelPlanni
 	}
 }
 
-func computeRouteToolNode(tool MockRouteTool) func(context.Context, TravelPlanningState) (TravelPlanningState, error) {
+func computeRouteToolNode(tool RouteTool) func(context.Context, TravelPlanningState) (TravelPlanningState, error) {
 	return func(ctx context.Context, state TravelPlanningState) (TravelPlanningState, error) {
 		started := time.Now()
 		routes, err := tool.Run(ctx, RouteToolInput{
@@ -93,6 +104,11 @@ func computeRouteToolNode(tool MockRouteTool) func(context.Context, TravelPlanni
 			Mode: state.TransportMode,
 		})
 		if err != nil {
+			if isFallbackError(err) && len(routes) > 0 {
+				state.Warnings = append(state.Warnings, err.Error())
+				state.Routes = routes
+				return appendTrace(state, "ComputeRouteToolNode", fmt.Sprintf("computed %d fallback route segments", len(routes)), started, true), nil
+			}
 			state = appendTrace(state, "ComputeRouteToolNode", err.Error(), started, false)
 			return state, err
 		}
@@ -101,7 +117,7 @@ func computeRouteToolNode(tool MockRouteTool) func(context.Context, TravelPlanni
 	}
 }
 
-func estimateBudgetToolNode(tool MockBudgetTool) func(context.Context, TravelPlanningState) (TravelPlanningState, error) {
+func estimateBudgetToolNode(tool BudgetTool) func(context.Context, TravelPlanningState) (TravelPlanningState, error) {
 	return func(ctx context.Context, state TravelPlanningState) (TravelPlanningState, error) {
 		started := time.Now()
 		budget, err := tool.Run(ctx, BudgetToolInput{
@@ -123,6 +139,11 @@ func estimateBudgetToolNode(tool MockBudgetTool) func(context.Context, TravelPla
 		}
 		return appendTrace(state, "EstimateBudgetToolNode", "budget estimated", started, true), nil
 	}
+}
+
+func isFallbackError(err error) bool {
+	var fallbackErr *ToolFallbackError
+	return errors.As(err, &fallbackErr)
 }
 
 func optimizeItineraryNode(ctx context.Context, state TravelPlanningState) (TravelPlanningState, error) {

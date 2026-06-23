@@ -60,6 +60,35 @@ submit_travel_plan
 
 如果 provider 不支持 JSON Schema 输出或返回结构不符合本地校验，系统不会降级到 prompt-only JSON，而是 fallback 到 deterministic generator。
 
-## 5. 尚未接入
+## 5. 高德 / 天气 / POI Tools
 
-地图 POI、路线规划、天气、酒店、票务等真实外部 API 尚未接入。后续阶段接入时，需要继续从环境变量读取 Key，并保留 Mock Tools fallback。
+阶段 4 已为 Eino Tools 增加真实外部 API 能力。默认仍使用 Mock Tools；只有显式设置 real mode 且配置 API Key 时才调用真实外部接口。
+
+| 变量 | 说明 | 默认值 |
+| --- | --- | --- |
+| `TRAVEL_AGENT_TOOL_MODE` | Tool 模式：`mock` 或 `real` | `mock` |
+| `TRAVEL_AGENT_AMAP_API_KEY` | 高德 Web 服务 Key | 空 |
+| `TRAVEL_AGENT_AMAP_BASE_URL` | 高德 Web 服务 Base URL | `https://restapi.amap.com/v3` |
+| `TRAVEL_AGENT_WEATHER_API_KEY` | 天气 API Key；为空时复用高德 Key | 空 |
+| `TRAVEL_AGENT_WEATHER_BASE_URL` | 天气 API Base URL；为空时复用高德 Base URL | 空 |
+| `TRAVEL_AGENT_EXTERNAL_API_TIMEOUT` | 外部 API timeout，可写 `10s` 或秒数 | `10s` |
+
+当前 real tools：
+
+* `RealPOITool`：调用高德 `place/text` 搜索 POI，并转换为内部 POI 类型。
+* `RealWeatherTool`：先调用高德 `geocode/geo` 获取 adcode，再调用 `weather/weatherInfo` 查询预报。
+* `RealRouteTool`：使用 POI 坐标调用高德路径规划接口，按交通模式选择 walking / bicycling / driving。
+
+所有 real tool 都有 Mock fallback。以下情况会 fallback，并在最终 `TravelPlan.warnings` 中说明原因：
+
+* real mode 下未配置 API Key
+* HTTP 请求失败或超时
+* 高德返回非成功状态
+* 响应缺少必要字段
+* 路线计算缺少 POI 坐标
+
+外部 API 原始响应不会进入 `internal/domain`；只会转换为 Eino 内部状态使用的 POI、Weather、Route 数据。
+
+## 6. 尚未接入
+
+酒店、票务、支付、用户系统等外部 API 尚未接入。后续阶段接入时，需要继续从环境变量读取 Key，并保留 Mock fallback。
