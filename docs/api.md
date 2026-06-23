@@ -155,3 +155,13 @@ Example:
 ```bash
 curl -N http://localhost:8080/api/v1/travel/plans/{task_id}/stream
 ```
+
+## Frontend Integration Notes
+
+The React H5 client uses the existing contract without additional endpoints:
+
+* `POST /api/v1/travel/plans` creates a task.
+* `GET /api/v1/travel/plans/:task_id/stream` streams progress and the final `done` event.
+* `GET /api/v1/travel/plans/:task_id` is used as a polling fallback when SSE disconnects.
+
+Set `VITE_API_BASE_URL` for the web app when the frontend is not served behind the same origin as the API. In local Vite development, leaving it empty uses the dev-server `/api` proxy.

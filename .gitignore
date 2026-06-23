@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+node_modules/
+web/node_modules/
+web/dist/
+web/.vite/
+*.log

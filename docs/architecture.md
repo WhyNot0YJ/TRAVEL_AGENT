@@ -15,6 +15,25 @@ HTTP Client
   -> MockPlanner / EinoTravelPlanner
 ```
 
+## Frontend H5 Flow
+
+Stage 8 adds a React + TypeScript H5 client under `web`.
+
+```text
+React H5
+  -> typed API client
+  -> POST /api/v1/travel/plans
+  -> GET /api/v1/travel/plans/:task_id/stream
+  -> optional GET /api/v1/travel/plans/:task_id polling fallback
+  -> Gin Router
+  -> TravelPlanService
+  -> EventBus / TaskStore / agent.TravelPlanner
+```
+
+The frontend keeps API types in `web/src/api/types.ts` and request helpers in `web/src/api/client.ts`. `VITE_API_BASE_URL` controls the backend base URL. When it is empty, local Vite dev uses its `/api` proxy to `http://localhost:8080`.
+
+The frontend does not depend on Eino, Redis, or planner internals. It only consumes task creation, task lookup, and SSE events.
+
 ## Backend Layers
 
 * `cmd/harness`：本地评估入口。

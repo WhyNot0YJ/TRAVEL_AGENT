@@ -97,6 +97,34 @@ curl -N http://localhost:8080/api/v1/travel/plans/{task_id}/stream
 
 事件类型包括 `progress`、`warning`、`error`、`done`。任务已完成时，新连接会立即收到最终事件。
 
+## React H5 Frontend
+
+The H5 client lives in `web` and is built with Vite, React, and TypeScript. It talks to the Gin API through the same async task contract:
+
+```bash
+cd web
+npm install
+npm run dev
+```
+
+By default, Vite proxies `/api` to `http://localhost:8080`. To call another backend directly:
+
+```bash
+set VITE_API_BASE_URL=http://localhost:8080
+npm run dev
+```
+
+Production build:
+
+```bash
+cd web
+npm run typecheck
+npm run lint
+npm run build
+```
+
+The first screen is the route planner itself. The form creates a task with `POST /api/v1/travel/plans`, subscribes to `GET /api/v1/travel/plans/{task_id}/stream`, falls back to `GET /api/v1/travel/plans/{task_id}` polling if SSE disconnects, and renders the final `TravelPlan`.
+
 说明：
 
 * `mock`：不依赖 Eino，不经过 Graph，只用于基础 Harness 测试。
