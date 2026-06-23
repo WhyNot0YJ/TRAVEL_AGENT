@@ -77,3 +77,27 @@ func TestHandlerValidationAndNotFound(t *testing.T) {
 		t.Fatalf("expected 404, got %d", rec.Code)
 	}
 }
+
+func TestHandlerStreamCompletedTask(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60))
+	router := gin.New()
+	handler := NewHandler(service)
+	router.GET("/plans/:task_id/stream", handler.StreamPlan)
+
+	created, err := service.CreateTask(httptest.NewRequest(http.MethodPost, "/", nil).Context(), validCreateRequest(), "127.0.0.1")
+	if err != nil {
+		t.Fatalf("CreateTask returned error: %v", err)
+	}
+	waitForTask(t, service, created.TaskID)
+
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/plans/"+created.TaskID+"/stream", nil))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", rec.Code, rec.Body.String())
+	}
+	body := rec.Body.String()
+	if !strings.Contains(body, "event:done") || !strings.Contains(body, created.TaskID) {
+		t.Fatalf("expected done SSE event, got %s", body)
+	}
+}

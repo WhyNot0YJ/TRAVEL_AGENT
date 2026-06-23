@@ -15,6 +15,7 @@ func NewRouter(service *travel.TravelPlanService) *gin.Engine {
 	{
 		v1.POST("/travel/plans", handler.CreatePlan)
 		v1.GET("/travel/plans/:task_id", handler.GetPlan)
+		v1.GET("/travel/plans/:task_id/stream", handler.StreamPlan)
 	}
 	return router
 }

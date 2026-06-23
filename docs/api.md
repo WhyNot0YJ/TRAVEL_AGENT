@@ -2,9 +2,7 @@
 
 ## Current Stage
 
-当前 HTTP API 已改为异步任务模式，支持 request hash 去重、任务状态查询、缓存复用和限流。Redis 可用时使用 Redis；Redis 未配置或不可用时，开发环境降级到内存实现。
-
-SSE 尚未接入。
+当前 HTTP API 使用异步任务模式，支持 request hash 去重、任务状态查询、缓存复用、限流和 SSE 流式事件。Redis 可用时使用 Redis；Redis 未配置或不可用时，开发环境降级到内存实现。
 
 ## Environment
 
@@ -116,4 +114,44 @@ When failed:
   "status": "failed",
   "error": "planner error"
 }
+```
+
+## GET /api/v1/travel/plans/:task_id/stream
+
+订阅任务事件流。
+
+Headers:
+
+```text
+Content-Type: text/event-stream
+Cache-Control: no-cache
+Connection: keep-alive
+```
+
+Event types:
+
+* `progress`
+* `warning`
+* `error`
+* `done`
+* `heartbeat`
+
+Event payload:
+
+```json
+{
+  "type": "progress",
+  "task_id": "task_xxx",
+  "status": "running",
+  "message": "planner started",
+  "created_at": "2026-06-23T10:00:00Z"
+}
+```
+
+如果任务已完成，新连接会立即返回 `done` 或 `error`。
+
+Example:
+
+```bash
+curl -N http://localhost:8080/api/v1/travel/plans/{task_id}/stream
 ```

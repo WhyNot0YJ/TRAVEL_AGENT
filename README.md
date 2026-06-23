@@ -87,7 +87,15 @@ set TRAVEL_AGENT_CACHE_TTL_SECONDS=1800
 set TRAVEL_AGENT_RATE_LIMIT_PER_MINUTE=60
 ```
 
-Redis 不可用时，开发环境会降级为内存任务 store 和内存限流。SSE 会在后续阶段接入。
+Redis 不可用时，开发环境会降级为内存任务 store 和内存限流。真实数据库持久化会在后续阶段接入。
+
+订阅任务事件流：
+
+```bash
+curl -N http://localhost:8080/api/v1/travel/plans/{task_id}/stream
+```
+
+事件类型包括 `progress`、`warning`、`error`、`done`。任务已完成时，新连接会立即收到最终事件。
 
 说明：
 

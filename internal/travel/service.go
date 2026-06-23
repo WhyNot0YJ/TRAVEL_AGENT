@@ -18,17 +18,26 @@ type TravelPlanService struct {
 	planner     agent.TravelPlanner
 	store       TaskStore
 	rateLimiter RateLimiter
+	events      *EventBus
 	now         func() time.Time
 }
 
-func NewTravelPlanService(planner agent.TravelPlanner, store TaskStore, limiter RateLimiter) *TravelPlanService {
+func NewTravelPlanService(planner agent.TravelPlanner, store TaskStore, limiter RateLimiter, buses ...*EventBus) *TravelPlanService {
 	if limiter == nil {
 		limiter = NewMemoryRateLimiter(60)
+	}
+	var bus *EventBus
+	if len(buses) > 0 {
+		bus = buses[0]
+	}
+	if bus == nil {
+		bus = NewEventBus()
 	}
 	return &TravelPlanService{
 		planner:     planner,
 		store:       store,
 		rateLimiter: limiter,
+		events:      bus,
 		now:         time.Now,
 	}
 }
@@ -73,6 +82,7 @@ func (s *TravelPlanService) CreateTask(ctx context.Context, req CreatePlanReques
 	if err := s.store.Create(ctx, task); err != nil {
 		return CreateTaskResponse{}, err
 	}
+	s.publish(TaskEvent{Type: EventProgress, TaskID: task.ID, Status: task.Status, Message: "task created", CreatedAt: now})
 
 	go s.runTask(task)
 	return CreateTaskResponse{
@@ -91,6 +101,10 @@ func (s *TravelPlanService) GetTask(ctx context.Context, id string) (GetTaskResp
 	return taskResponse(task), nil
 }
 
+func (s *TravelPlanService) Subscribe(taskID string) (<-chan TaskEvent, func()) {
+	return s.events.Subscribe(taskID)
+}
+
 func (s *TravelPlanService) runTask(task Task) {
 	ctx := context.Background()
 	defer func() {
@@ -99,6 +113,7 @@ func (s *TravelPlanService) runTask(task Task) {
 			task.Error = fmt.Sprintf("panic: %v", recovered)
 			task.UpdatedAt = s.now().UTC()
 			_ = s.store.Update(ctx, task)
+			s.publish(TaskEvent{Type: EventError, TaskID: task.ID, Status: task.Status, Message: task.Error, CreatedAt: task.UpdatedAt})
 		}
 	}()
 
@@ -108,19 +123,31 @@ func (s *TravelPlanService) runTask(task Task) {
 		log.Printf("update task running failed task_id=%s: %v", task.ID, err)
 		return
 	}
+	s.publish(TaskEvent{Type: EventProgress, TaskID: task.ID, Status: task.Status, Message: "planner started", CreatedAt: task.UpdatedAt})
 
 	plan, err := s.planner.Plan(ctx, task.Request)
 	task.UpdatedAt = s.now().UTC()
 	if err != nil {
 		task.Status = TaskFailed
 		task.Error = err.Error()
+		s.publish(TaskEvent{Type: EventError, TaskID: task.ID, Status: task.Status, Message: task.Error, CreatedAt: task.UpdatedAt})
 	} else {
 		task.Status = TaskSucceeded
 		task.Plan = plan
 		task.Error = ""
+		for _, warning := range plan.Warnings {
+			s.publish(TaskEvent{Type: EventWarning, TaskID: task.ID, Status: task.Status, Message: warning, CreatedAt: task.UpdatedAt})
+		}
+		s.publish(TaskEvent{Type: EventDone, TaskID: task.ID, Status: task.Status, Message: "planner finished", Plan: plan, CreatedAt: task.UpdatedAt})
 	}
 	if err := s.store.Update(ctx, task); err != nil {
 		log.Printf("update task finished failed task_id=%s: %v", task.ID, err)
+	}
+}
+
+func (s *TravelPlanService) publish(event TaskEvent) {
+	if s != nil && s.events != nil {
+		s.events.Publish(event)
 	}
 }
 
