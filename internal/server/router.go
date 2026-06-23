@@ -14,7 +14,7 @@ func NewRouter(service *travel.TravelPlanService) *gin.Engine {
 	v1 := router.Group("/api/v1")
 	{
 		v1.POST("/travel/plans", handler.CreatePlan)
-		v1.GET("/travel/plans/:id", handler.GetPlan)
+		v1.GET("/travel/plans/:task_id", handler.GetPlan)
 	}
 	return router
 }

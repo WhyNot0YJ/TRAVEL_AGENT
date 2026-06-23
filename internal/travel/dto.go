@@ -29,14 +29,21 @@ func (r CreatePlanRequest) ToDomain(id string) domain.TravelRequest {
 	}
 }
 
-type CreatePlanResponse struct {
-	PlanID string             `json:"plan_id"`
-	Plan   *domain.TravelPlan `json:"plan"`
+type CreateTaskResponse struct {
+	TaskID      string     `json:"task_id"`
+	RequestHash string     `json:"request_hash"`
+	Status      TaskStatus `json:"status"`
+	Cached      bool       `json:"cached"`
 }
 
-type GetPlanResponse struct {
-	PlanID string             `json:"plan_id"`
-	Plan   *domain.TravelPlan `json:"plan"`
+type GetTaskResponse struct {
+	TaskID      string             `json:"task_id"`
+	RequestHash string             `json:"request_hash"`
+	Status      TaskStatus         `json:"status"`
+	Plan        *domain.TravelPlan `json:"plan,omitempty"`
+	Error       string             `json:"error,omitempty"`
+	CreatedAt   string             `json:"created_at"`
+	UpdatedAt   string             `json:"updated_at"`
 }
 
 type ErrorResponse struct {

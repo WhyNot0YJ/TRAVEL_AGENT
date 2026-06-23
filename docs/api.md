@@ -2,23 +2,20 @@
 
 ## Current Stage
 
-当前阶段提供 Gin HTTP API，同步调用 `TravelPlanner` 并使用内存 store 保存最近生成的计划。
+当前 HTTP API 已改为异步任务模式，支持 request hash 去重、任务状态查询、缓存复用和限流。Redis 可用时使用 Redis；Redis 未配置或不可用时，开发环境降级到内存实现。
 
-尚未接入 Redis、数据库、异步任务或 SSE。
+SSE 尚未接入。
 
-## Base URL
-
-默认监听：
-
-```text
-http://localhost:8080
-```
-
-可通过环境变量配置：
+## Environment
 
 ```text
 TRAVEL_AGENT_HTTP_ADDR=:8080
 TRAVEL_AGENT_PLANNER=mock|eino
+TRAVEL_AGENT_REDIS_ADDR=localhost:6379
+TRAVEL_AGENT_REDIS_PASSWORD=
+TRAVEL_AGENT_REDIS_DB=0
+TRAVEL_AGENT_CACHE_TTL_SECONDS=1800
+TRAVEL_AGENT_RATE_LIMIT_PER_MINUTE=60
 ```
 
 ## Error Response
@@ -31,9 +28,16 @@ TRAVEL_AGENT_PLANNER=mock|eino
 }
 ```
 
+Common status:
+
+* `400`：请求无效
+* `404`：任务不存在
+* `429`：触发限流
+* `500`：服务内部错误
+
 ## POST /api/v1/travel/plans
 
-同步创建旅行计划。
+创建异步路线规划任务。相同请求会通过 `request_hash` 复用已有任务或命中缓存。
 
 Request:
 
@@ -53,7 +57,31 @@ Response:
 
 ```json
 {
-  "plan_id": "plan_xxx",
+  "task_id": "task_xxx",
+  "request_hash": "sha256...",
+  "status": "pending",
+  "cached": false
+}
+```
+
+Status:
+
+* `202`：任务已创建或复用
+* `400`：请求 JSON 或必填字段无效
+* `429`：请求过于频繁
+* `500`：任务创建失败
+
+## GET /api/v1/travel/plans/:task_id
+
+查询任务状态和结果。
+
+Response:
+
+```json
+{
+  "task_id": "task_xxx",
+  "request_hash": "sha256...",
+  "status": "succeeded",
   "plan": {
     "title": "杭州3日旅行规划",
     "summary": "...",
@@ -66,31 +94,26 @@ Response:
       "total": 0
     },
     "warnings": []
-  }
+  },
+  "created_at": "2026-06-23T10:00:00Z",
+  "updated_at": "2026-06-23T10:00:01Z"
 }
 ```
 
-Status:
+Status values:
 
-* `200`：创建成功
-* `400`：请求 JSON 或必填字段无效
-* `500`：planner 或服务内部错误
+* `pending`
+* `running`
+* `succeeded`
+* `failed`
 
-## GET /api/v1/travel/plans/:id
-
-根据 `plan_id` 查询内存 store 中的计划。
-
-Response:
+When failed:
 
 ```json
 {
-  "plan_id": "plan_xxx",
-  "plan": {}
+  "task_id": "task_xxx",
+  "request_hash": "sha256...",
+  "status": "failed",
+  "error": "planner error"
 }
 ```
-
-Status:
-
-* `200`：查询成功
-* `404`：计划不存在
-* `500`：服务内部错误

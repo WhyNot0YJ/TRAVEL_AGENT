@@ -61,7 +61,7 @@ set TRAVEL_AGENT_PLANNER=mock
 go run ./cmd/server
 ```
 
-同步创建旅行计划：
+创建异步旅行规划任务：
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/travel/plans \
@@ -69,13 +69,25 @@ curl -X POST http://localhost:8080/api/v1/travel/plans \
   -d "{\"departure_city\":\"上海\",\"destination_city\":\"杭州\",\"days\":3,\"budget\":3000,\"interests\":[\"自然风光\",\"美食\"],\"transport_mode\":\"train_taxi\",\"pace\":\"relaxed\"}"
 ```
 
-查询计划：
+查询任务：
 
 ```bash
-curl http://localhost:8080/api/v1/travel/plans/{plan_id}
+curl http://localhost:8080/api/v1/travel/plans/{task_id}
 ```
 
-当前 HTTP API 使用内存 store，同步返回结果；Redis、异步任务和 SSE 会在后续阶段接入。
+当前 HTTP API 返回任务状态。POST 返回 `task_id`、`request_hash`、`status` 和 `cached`，GET 返回 `pending` / `running` / `succeeded` / `failed` 以及最终 plan 或错误。
+
+Redis 配置：
+
+```bash
+set TRAVEL_AGENT_REDIS_ADDR=localhost:6379
+set TRAVEL_AGENT_REDIS_PASSWORD=
+set TRAVEL_AGENT_REDIS_DB=0
+set TRAVEL_AGENT_CACHE_TTL_SECONDS=1800
+set TRAVEL_AGENT_RATE_LIMIT_PER_MINUTE=60
+```
+
+Redis 不可用时，开发环境会降级为内存任务 store 和内存限流。SSE 会在后续阶段接入。
 
 说明：
 

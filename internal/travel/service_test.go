@@ -4,38 +4,94 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	"travel-agent/internal/domain"
 )
 
-func TestTravelPlanServiceCreateAndGet(t *testing.T) {
-	service := NewTravelPlanService(stubPlanner{}, NewMemoryPlanStore())
-	resp, err := service.CreatePlan(context.Background(), CreatePlanRequest{
+func TestTravelPlanServiceCreateTaskAndGet(t *testing.T) {
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60))
+	resp, err := service.CreateTask(context.Background(), validCreateRequest(), "127.0.0.1")
+	if err != nil {
+		t.Fatalf("CreateTask returned error: %v", err)
+	}
+	if resp.TaskID == "" || resp.RequestHash == "" || resp.Status != TaskPending {
+		t.Fatalf("unexpected create response: %#v", resp)
+	}
+
+	got := waitForTask(t, service, resp.TaskID)
+	if got.Status != TaskSucceeded || got.Plan == nil {
+		t.Fatalf("expected succeeded task with plan, got %#v", got)
+	}
+}
+
+func TestTravelPlanServiceReusesRequestHash(t *testing.T) {
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60))
+	first, err := service.CreateTask(context.Background(), validCreateRequest(), "127.0.0.1")
+	if err != nil {
+		t.Fatalf("first CreateTask returned error: %v", err)
+	}
+	second, err := service.CreateTask(context.Background(), validCreateRequest(), "127.0.0.1")
+	if err != nil {
+		t.Fatalf("second CreateTask returned error: %v", err)
+	}
+	if first.TaskID != second.TaskID {
+		t.Fatalf("expected duplicate request to reuse task id, got %s and %s", first.TaskID, second.TaskID)
+	}
+}
+
+func TestTravelPlanServiceRateLimit(t *testing.T) {
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(1))
+	if _, err := service.CreateTask(context.Background(), validCreateRequest(), "127.0.0.1"); err != nil {
+		t.Fatalf("first CreateTask returned error: %v", err)
+	}
+	req := validCreateRequest()
+	req.DestinationCity = "南京"
+	_, err := service.CreateTask(context.Background(), req, "127.0.0.1")
+	if !errors.Is(err, ErrRateLimited) {
+		t.Fatalf("expected ErrRateLimited, got %v", err)
+	}
+}
+
+func TestRequestHashStable(t *testing.T) {
+	req := validCreateRequest().ToDomain("one")
+	first, err := RequestHash(req)
+	if err != nil {
+		t.Fatalf("RequestHash returned error: %v", err)
+	}
+	req.ID = "two"
+	second, err := RequestHash(req)
+	if err != nil {
+		t.Fatalf("RequestHash returned error: %v", err)
+	}
+	if first != second {
+		t.Fatalf("request hash should ignore generated ids")
+	}
+}
+
+func waitForTask(t *testing.T, service *TravelPlanService, id string) GetTaskResponse {
+	t.Helper()
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		got, err := service.GetTask(context.Background(), id)
+		if err != nil {
+			t.Fatalf("GetTask returned error: %v", err)
+		}
+		if got.Status == TaskSucceeded || got.Status == TaskFailed {
+			return got
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatalf("task %s did not finish", id)
+	return GetTaskResponse{}
+}
+
+func validCreateRequest() CreatePlanRequest {
+	return CreatePlanRequest{
 		DepartureCity:   "上海",
 		DestinationCity: "杭州",
 		Days:            2,
 		Budget:          1000,
-	})
-	if err != nil {
-		t.Fatalf("CreatePlan returned error: %v", err)
-	}
-	if resp.PlanID == "" || resp.Plan == nil {
-		t.Fatalf("unexpected create response: %#v", resp)
-	}
-	got, err := service.GetPlan(context.Background(), resp.PlanID)
-	if err != nil {
-		t.Fatalf("GetPlan returned error: %v", err)
-	}
-	if got.Plan.Title != resp.Plan.Title {
-		t.Fatalf("unexpected stored plan: %#v", got.Plan)
-	}
-}
-
-func TestTravelPlanServiceGetNotFound(t *testing.T) {
-	service := NewTravelPlanService(stubPlanner{}, NewMemoryPlanStore())
-	_, err := service.GetPlan(context.Background(), "missing")
-	if !errors.Is(err, ErrPlanNotFound) {
-		t.Fatalf("expected ErrPlanNotFound, got %v", err)
 	}
 }
 

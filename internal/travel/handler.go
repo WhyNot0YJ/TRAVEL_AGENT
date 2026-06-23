@@ -21,23 +21,27 @@ func (h *Handler) CreatePlan(c *gin.Context) {
 		respondError(c, http.StatusBadRequest, "invalid_request", err.Error())
 		return
 	}
-	resp, err := h.service.CreatePlan(c.Request.Context(), req)
-	if err != nil {
-		respondError(c, http.StatusInternalServerError, "planner_error", err.Error())
+	resp, err := h.service.CreateTask(c.Request.Context(), req, c.ClientIP())
+	if errors.Is(err, ErrRateLimited) {
+		respondError(c, http.StatusTooManyRequests, "rate_limited", "rate limit exceeded")
 		return
 	}
-	c.JSON(http.StatusOK, resp)
+	if err != nil {
+		respondError(c, http.StatusInternalServerError, "task_error", err.Error())
+		return
+	}
+	c.JSON(http.StatusAccepted, resp)
 }
 
 func (h *Handler) GetPlan(c *gin.Context) {
-	id := c.Param("id")
+	id := c.Param("task_id")
 	if id == "" {
-		respondError(c, http.StatusBadRequest, "invalid_request", "plan id is required")
+		respondError(c, http.StatusBadRequest, "invalid_request", "task id is required")
 		return
 	}
-	resp, err := h.service.GetPlan(c.Request.Context(), id)
-	if errors.Is(err, ErrPlanNotFound) {
-		respondError(c, http.StatusNotFound, "not_found", "plan not found")
+	resp, err := h.service.GetTask(c.Request.Context(), id)
+	if errors.Is(err, ErrTaskNotFound) {
+		respondError(c, http.StatusNotFound, "not_found", "task not found")
 		return
 	}
 	if err != nil {
