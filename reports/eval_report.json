@@ -1,0 +1,2536 @@
+{
+  "generated_at": "2026-06-23T11:18:30.7824925Z",
+  "planner_type": "eino",
+  "summary": {
+    "total_cases": 24,
+    "success_cases": 24,
+    "failed_cases": 0,
+    "success_rate": 1,
+    "average_score": 100,
+    "average_duration_ms": 0,
+    "budget_pass_rate": 1,
+    "day_match_rate": 1,
+    "structure_pass_rate": 1
+  },
+  "cases": [
+    {
+      "case_id": "case_001",
+      "description": "测试杭州三日休闲自然与美食路线，覆盖常规多兴趣、多日、预算充足的基线路径。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "杭州3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 杭州 from 上海 with budget 3000.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 自然风光 and 美食 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "西湖",
+                "address": "杭州 POI 1",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "灵隐寺",
+                "address": "杭州 POI 2",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 自然风光 and 美食 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "河坊街",
+                "address": "杭州 POI 3",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "龙井村",
+                "address": "杭州 POI 4",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 自然风光 and 美食 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "京杭大运河",
+                "address": "杭州 POI 5",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "西湖",
+                "address": "杭州 POI 1",
+                "reason": "matches 自然风光 and 美食 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 662.4,
+          "food": 717.6,
+          "hotel": 828,
+          "ticket": 552,
+          "total": 2760
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_002",
+      "description": "测试南京两日历史文化与美食路线，覆盖短途周末游和均衡节奏。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "南京2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 南京 from 上海 with budget 1500.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 历史文化 and 美食 route in 南京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "中山陵",
+                "address": "南京 POI 1",
+                "reason": "matches 历史文化 and 美食 preference in 南京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "夫子庙",
+                "address": "南京 POI 2",
+                "reason": "matches 历史文化 and 美食 preference in 南京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 历史文化 and 美食 route in 南京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "秦淮河",
+                "address": "南京 POI 3",
+                "reason": "matches 历史文化 and 美食 preference in 南京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "南京博物院",
+                "address": "南京 POI 4",
+                "reason": "matches 历史文化 and 美食 preference in 南京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 331.2,
+          "food": 358.8,
+          "hotel": 414,
+          "ticket": 276,
+          "total": 1380
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_003",
+      "description": "测试北京四日亲子博物馆路线，覆盖同城出发目的地和亲子主题结构完整性。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "北京4-day Eino travel plan",
+        "summary": "Eino workflow planned 4 days in 北京 from 北京 with budget 5000.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 亲子 and 博物馆 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "故宫",
+                "address": "北京 POI 1",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "天安门",
+                "address": "北京 POI 2",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 亲子 and 博物馆 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "颐和园",
+                "address": "北京 POI 3",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "国家博物馆",
+                "address": "北京 POI 4",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 亲子 and 博物馆 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "什刹海",
+                "address": "北京 POI 5",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "故宫",
+                "address": "北京 POI 1",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 4,
+            "theme": "day 4 亲子 and 博物馆 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "culture",
+                "name": "天安门",
+                "address": "北京 POI 2",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "food",
+                "name": "颐和园",
+                "address": "北京 POI 3",
+                "reason": "matches 亲子 and 博物馆 preference in 北京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 1104,
+          "food": 1196,
+          "hotel": 1380,
+          "ticket": 920,
+          "total": 4600
+        },
+        "warnings": [
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_004",
+      "description": "测试成都三日美食休闲路线，覆盖轻松节奏和飞行到达后的本地体验安排。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "成都3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 成都 from 上海 with budget 2500.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 美食 and 休闲 route in 成都",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "宽窄巷子",
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "武侯祠",
+                "address": "成都 POI 2",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 美食 and 休闲 route in 成都",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "锦里",
+                "address": "成都 POI 3",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "人民公园",
+                "address": "成都 POI 4",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 美食 and 休闲 route in 成都",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "春熙路",
+                "address": "成都 POI 5",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "宽窄巷子",
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 休闲 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 552,
+          "food": 598,
+          "hotel": 690,
+          "ticket": 460,
+          "total": 2300
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_005",
+      "description": "测试广州两日 citywalk 与美食路线，覆盖近距离高铁出行和步行交通偏好。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "广州2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 广州 from 深圳 with budget 1800.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 citywalk and 美食 route in 广州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "沙面",
+                "address": "广州 POI 1",
+                "reason": "matches citywalk and 美食 preference in 广州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "永庆坊",
+                "address": "广州 POI 2",
+                "reason": "matches citywalk and 美食 preference in 广州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 citywalk and 美食 route in 广州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "陈家祠",
+                "address": "广州 POI 3",
+                "reason": "matches citywalk and 美食 preference in 广州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "北京路",
+                "address": "广州 POI 4",
+                "reason": "matches citywalk and 美食 preference in 广州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 397.44,
+          "food": 430.56,
+          "hotel": 496.8,
+          "ticket": 331.2,
+          "total": 1656
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_006",
+      "description": "测试西安三日历史文化路线，覆盖单一强主题兴趣和预算较紧的跨城飞行场景。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "西安3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 西安 from 上海 with budget 2200.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 历史文化 route in 西安",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "兵马俑",
+                "address": "西安 POI 1",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "大雁塔",
+                "address": "西安 POI 2",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 历史文化 route in 西安",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "大唐不夜城",
+                "address": "西安 POI 3",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "西安城墙",
+                "address": "西安 POI 4",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 历史文化 route in 西安",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "陕西历史博物馆",
+                "address": "西安 POI 5",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "兵马俑",
+                "address": "西安 POI 1",
+                "reason": "matches 历史文化 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 485.76,
+          "food": 526.24,
+          "hotel": 607.2,
+          "ticket": 404.8,
+          "total": 2024
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_007",
+      "description": "测试苏州一日轻松游，覆盖最短有效天数和单日路线结构。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "苏州1-day Eino travel plan",
+        "summary": "Eino workflow planned 1 days in 苏州 from 上海 with budget 800.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 园林 and 轻松 route in 苏州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "拙政园",
+                "address": "苏州 POI 1",
+                "reason": "matches 园林 and 轻松 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "平江路",
+                "address": "苏州 POI 2",
+                "reason": "matches 园林 and 轻松 preference in 苏州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 176.64,
+          "food": 191.36,
+          "hotel": 220.8,
+          "ticket": 147.2,
+          "total": 736
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_008",
+      "description": "测试未知城市兜底路线，覆盖 POI 不存在时仍能生成完整结构和目的地关键词。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "未知城市2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 未知城市 from 上海 with budget 1000.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 探索 and 小众 route in 未知城市",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "城市博物馆",
+                "address": "未知城市 POI 1",
+                "reason": "matches 探索 and 小众 preference in 未知城市",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "特色街区",
+                "address": "未知城市 POI 2",
+                "reason": "matches 探索 and 小众 preference in 未知城市",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 探索 and 小众 route in 未知城市",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "本地美食街",
+                "address": "未知城市 POI 3",
+                "reason": "matches 探索 and 小众 preference in 未知城市",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "城市公园",
+                "address": "未知城市 POI 4",
+                "reason": "matches 探索 and 小众 preference in 未知城市",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 220.8,
+          "food": 239.2,
+          "hotel": 276,
+          "ticket": 184,
+          "total": 920
+        },
+        "warnings": [
+          "day 2 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_009",
+      "description": "测试杭州低预算两日游，覆盖预算约束下总预算不超过阈值。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "杭州2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 杭州 from 南京 with budget 600.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 自然风光 and 城市漫步 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "西湖",
+                "address": "杭州 POI 1",
+                "reason": "matches 自然风光 and 城市漫步 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "灵隐寺",
+                "address": "杭州 POI 2",
+                "reason": "matches 自然风光 and 城市漫步 preference in 杭州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 自然风光 and 城市漫步 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "河坊街",
+                "address": "杭州 POI 3",
+                "reason": "matches 自然风光 and 城市漫步 preference in 杭州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "龙井村",
+                "address": "杭州 POI 4",
+                "reason": "matches 自然风光 and 城市漫步 preference in 杭州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 132.48,
+          "food": 143.52,
+          "hotel": 165.6,
+          "ticket": 110.4,
+          "total": 552
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_010",
+      "description": "测试北京高预算五日深度游，覆盖长一点行程和高预算拆分稳定性。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "北京5-day Eino travel plan",
+        "summary": "Eino workflow planned 5 days in 北京 from 广州 with budget 12000.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 历史文化 and 博物馆 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "故宫",
+                "address": "北京 POI 1",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "天安门",
+                "address": "北京 POI 2",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 历史文化 and 博物馆 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "颐和园",
+                "address": "北京 POI 3",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "国家博物馆",
+                "address": "北京 POI 4",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 历史文化 and 博物馆 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "什刹海",
+                "address": "北京 POI 5",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "故宫",
+                "address": "北京 POI 1",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 4,
+            "theme": "day 4 历史文化 and 博物馆 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "culture",
+                "name": "天安门",
+                "address": "北京 POI 2",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "food",
+                "name": "颐和园",
+                "address": "北京 POI 3",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              }
+            ]
+          },
+          {
+            "day": 5,
+            "theme": "day 5 历史文化 and 博物馆 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "nature",
+                "name": "国家博物馆",
+                "address": "北京 POI 4",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "citywalk",
+                "name": "什刹海",
+                "address": "北京 POI 5",
+                "reason": "matches 历史文化 and 博物馆 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 2649.6,
+          "food": 2870.4,
+          "hotel": 3312,
+          "ticket": 2208,
+          "total": 11040
+        },
+        "warnings": [
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_011",
+      "description": "测试成都紧凑两日美食路线，覆盖 intensive 节奏下每天更多活动项的生成能力。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "成都2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 成都 from 重庆 with budget 1600.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 美食 and 夜生活 route in 成都",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "宽窄巷子",
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "武侯祠",
+                "address": "成都 POI 2",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              },
+              {
+                "time": "18:30",
+                "type": "food",
+                "name": "锦里",
+                "address": "成都 POI 3",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 美食 and 夜生活 route in 成都",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "nature",
+                "name": "人民公园",
+                "address": "成都 POI 4",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "citywalk",
+                "name": "春熙路",
+                "address": "成都 POI 5",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "18:30",
+                "type": "landmark",
+                "name": "宽窄巷子",
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 夜生活 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 353.28,
+          "food": 382.72,
+          "hotel": 441.6,
+          "ticket": 294.4,
+          "total": 1472
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_012",
+      "description": "测试广州空兴趣输入，覆盖兴趣缺省时是否能回退到城市探索主题。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "广州1-day Eino travel plan",
+        "summary": "Eino workflow planned 1 days in 广州 from 佛山 with budget 500.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 城市探索 route in 广州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "沙面",
+                "address": "广州 POI 1",
+                "reason": "matches 城市探索 preference in 广州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "永庆坊",
+                "address": "广州 POI 2",
+                "reason": "matches 城市探索 preference in 广州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 110.4,
+          "food": 119.6,
+          "hotel": 138,
+          "ticket": 92,
+          "total": 460
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_013",
+      "description": "测试苏州长天数低强度路线，覆盖 POI 循环分配和多日结构连续性。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "苏州6-day Eino travel plan",
+        "summary": "Eino workflow planned 6 days in 苏州 from 杭州 with budget 4800.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 园林 and 博物馆 route in 苏州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "拙政园",
+                "address": "苏州 POI 1",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "平江路",
+                "address": "苏州 POI 2",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 园林 and 博物馆 route in 苏州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "苏州博物馆",
+                "address": "苏州 POI 3",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "七里山塘",
+                "address": "苏州 POI 4",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 园林 and 博物馆 route in 苏州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "留园",
+                "address": "苏州 POI 5",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "拙政园",
+                "address": "苏州 POI 1",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 4,
+            "theme": "day 4 园林 and 博物馆 route in 苏州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "culture",
+                "name": "平江路",
+                "address": "苏州 POI 2",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "food",
+                "name": "苏州博物馆",
+                "address": "苏州 POI 3",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              }
+            ]
+          },
+          {
+            "day": 5,
+            "theme": "day 5 园林 and 博物馆 route in 苏州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "nature",
+                "name": "七里山塘",
+                "address": "苏州 POI 4",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "citywalk",
+                "name": "留园",
+                "address": "苏州 POI 5",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 6,
+            "theme": "day 6 园林 and 博物馆 route in 苏州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "拙政园",
+                "address": "苏州 POI 1",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "平江路",
+                "address": "苏州 POI 2",
+                "reason": "matches 园林 and 博物馆 preference in 苏州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 1059.84,
+          "food": 1148.16,
+          "hotel": 1324.8,
+          "ticket": 883.2,
+          "total": 4416
+        },
+        "warnings": [
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_014",
+      "description": "测试西安一日高强度历史路线，覆盖短天数和 intensive 节奏组合。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "西安1-day Eino travel plan",
+        "summary": "Eino workflow planned 1 days in 西安 from 郑州 with budget 900.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 历史文化 and 夜游 route in 西安",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "兵马俑",
+                "address": "西安 POI 1",
+                "reason": "matches 历史文化 and 夜游 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "大雁塔",
+                "address": "西安 POI 2",
+                "reason": "matches 历史文化 and 夜游 preference in 西安",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              },
+              {
+                "time": "18:30",
+                "type": "food",
+                "name": "大唐不夜城",
+                "address": "西安 POI 3",
+                "reason": "matches 历史文化 and 夜游 preference in 西安",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 198.72,
+          "food": 215.28,
+          "hotel": 248.4,
+          "ticket": 165.6,
+          "total": 828
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_015",
+      "description": "测试南京亲子低预算路线，覆盖亲子主题和低预算双约束。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "南京2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 南京 from 合肥 with budget 900.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 亲子 and 博物馆 route in 南京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "中山陵",
+                "address": "南京 POI 1",
+                "reason": "matches 亲子 and 博物馆 preference in 南京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "夫子庙",
+                "address": "南京 POI 2",
+                "reason": "matches 亲子 and 博物馆 preference in 南京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 亲子 and 博物馆 route in 南京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "秦淮河",
+                "address": "南京 POI 3",
+                "reason": "matches 亲子 and 博物馆 preference in 南京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "南京博物院",
+                "address": "南京 POI 4",
+                "reason": "matches 亲子 and 博物馆 preference in 南京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 198.72,
+          "food": 215.28,
+          "hotel": 248.4,
+          "ticket": 165.6,
+          "total": 828
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_016",
+      "description": "测试杭州同城周末路线，覆盖出发城市与目的地相同但仍需生成完整计划。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "杭州2-day Eino travel plan",
+        "summary": "Eino workflow planned 2 days in 杭州 from 杭州 with budget 1200.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 本地生活 and 咖啡 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "西湖",
+                "address": "杭州 POI 1",
+                "reason": "matches 本地生活 and 咖啡 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "灵隐寺",
+                "address": "杭州 POI 2",
+                "reason": "matches 本地生活 and 咖啡 preference in 杭州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 本地生活 and 咖啡 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "河坊街",
+                "address": "杭州 POI 3",
+                "reason": "matches 本地生活 and 咖啡 preference in 杭州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "龙井村",
+                "address": "杭州 POI 4",
+                "reason": "matches 本地生活 and 咖啡 preference in 杭州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 264.96,
+          "food": 287.04,
+          "hotel": 331.2,
+          "ticket": 220.8,
+          "total": 1104
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_017",
+      "description": "测试北京老人慢节奏路线，覆盖 relaxed 节奏下活动密度和结构稳定性。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "北京3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 北京 from 天津 with budget 3600.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 老人友好 and 公园 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "故宫",
+                "address": "北京 POI 1",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "天安门",
+                "address": "北京 POI 2",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 老人友好 and 公园 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "颐和园",
+                "address": "北京 POI 3",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "国家博物馆",
+                "address": "北京 POI 4",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 老人友好 and 公园 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "什刹海",
+                "address": "北京 POI 5",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "故宫",
+                "address": "北京 POI 1",
+                "reason": "matches 老人友好 and 公园 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 794.88,
+          "food": 861.12,
+          "hotel": 993.6,
+          "ticket": 662.4,
+          "total": 3312
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_018",
+      "description": "测试成都年轻人高强度路线，覆盖多兴趣和紧凑节奏下预算合规。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "成都4-day Eino travel plan",
+        "summary": "Eino workflow planned 4 days in 成都 from 西安 with budget 4200.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 美食 and 潮流街区 route in 成都",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "宽窄巷子",
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "武侯祠",
+                "address": "成都 POI 2",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              },
+              {
+                "time": "18:30",
+                "type": "food",
+                "name": "锦里",
+                "address": "成都 POI 3",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 美食 and 潮流街区 route in 成都",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "nature",
+                "name": "人民公园",
+                "address": "成都 POI 4",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "citywalk",
+                "name": "春熙路",
+                "address": "成都 POI 5",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "18:30",
+                "type": "landmark",
+                "name": "宽窄巷子",
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 美食 and 潮流街区 route in 成都",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "culture",
+                "name": "武侯祠",
+                "address": "成都 POI 2",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "food",
+                "name": "锦里",
+                "address": "成都 POI 3",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "18:30",
+                "type": "nature",
+                "name": "人民公园",
+                "address": "成都 POI 4",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 4,
+            "theme": "day 4 美食 and 潮流街区 route in 成都",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "春熙路",
+                "address": "成都 POI 5",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "宽窄巷子",
+                "address": "成都 POI 1",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "18:30",
+                "type": "culture",
+                "name": "武侯祠",
+                "address": "成都 POI 2",
+                "reason": "matches 美食 and 潮流街区 preference in 成都",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 927.36,
+          "food": 1004.64,
+          "hotel": 1159.2,
+          "ticket": 772.8,
+          "total": 3864
+        },
+        "warnings": [
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_019",
+      "description": "测试广州商务间隙路线，覆盖工作日短时 citywalk 和轻量安排。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "广州3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 广州 from 上海 with budget 3500.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 商务间隙 and 美食 route in 广州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "沙面",
+                "address": "广州 POI 1",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "永庆坊",
+                "address": "广州 POI 2",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 商务间隙 and 美食 route in 广州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "陈家祠",
+                "address": "广州 POI 3",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "北京路",
+                "address": "广州 POI 4",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 商务间隙 and 美食 route in 广州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "珠江夜游",
+                "address": "广州 POI 5",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "沙面",
+                "address": "广州 POI 1",
+                "reason": "matches 商务间隙 and 美食 preference in 广州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 772.8,
+          "food": 837.2,
+          "hotel": 966,
+          "ticket": 644,
+          "total": 3220
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_020",
+      "description": "测试苏州极低预算一日游，覆盖预算下限附近的非负预算和结构完整性。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "苏州1-day Eino travel plan",
+        "summary": "Eino workflow planned 1 days in 苏州 from 上海 with budget 300.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 园林 and 步行 route in 苏州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "拙政园",
+                "address": "苏州 POI 1",
+                "reason": "matches 园林 and 步行 preference in 苏州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "平江路",
+                "address": "苏州 POI 2",
+                "reason": "matches 园林 and 步行 preference in 苏州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 66.24,
+          "food": 71.76,
+          "hotel": 82.8,
+          "ticket": 55.2,
+          "total": 276
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_021",
+      "description": "测试未知城市长天数兜底，覆盖未知目的地和多日 POI 复用的稳定性。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "未知城市5-day Eino travel plan",
+        "summary": "Eino workflow planned 5 days in 未知城市 from 上海 with budget 2500.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 小众 and 探索 route in 未知城市",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "城市博物馆",
+                "address": "未知城市 POI 1",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "特色街区",
+                "address": "未知城市 POI 2",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 小众 and 探索 route in 未知城市",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "本地美食街",
+                "address": "未知城市 POI 3",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "城市公园",
+                "address": "未知城市 POI 4",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 小众 and 探索 route in 未知城市",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "地标广场",
+                "address": "未知城市 POI 5",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "城市博物馆",
+                "address": "未知城市 POI 1",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 4,
+            "theme": "day 4 小众 and 探索 route in 未知城市",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "culture",
+                "name": "特色街区",
+                "address": "未知城市 POI 2",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "food",
+                "name": "本地美食街",
+                "address": "未知城市 POI 3",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              }
+            ]
+          },
+          {
+            "day": 5,
+            "theme": "day 5 小众 and 探索 route in 未知城市",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "nature",
+                "name": "城市公园",
+                "address": "未知城市 POI 4",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "citywalk",
+                "name": "地标广场",
+                "address": "未知城市 POI 5",
+                "reason": "matches 小众 and 探索 preference in 未知城市",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 552,
+          "food": 598,
+          "hotel": 690,
+          "ticket": 460,
+          "total": 2300
+        },
+        "warnings": [
+          "day 2 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_022",
+      "description": "测试西安高预算深度文化路线，覆盖高预算和多日历史主题组合。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "西安5-day Eino travel plan",
+        "summary": "Eino workflow planned 5 days in 西安 from 深圳 with budget 9000.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 历史文化 and 博物馆 route in 西安",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "兵马俑",
+                "address": "西安 POI 1",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "大雁塔",
+                "address": "西安 POI 2",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 历史文化 and 博物馆 route in 西安",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "大唐不夜城",
+                "address": "西安 POI 3",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "西安城墙",
+                "address": "西安 POI 4",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 历史文化 and 博物馆 route in 西安",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "陕西历史博物馆",
+                "address": "西安 POI 5",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "兵马俑",
+                "address": "西安 POI 1",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 4,
+            "theme": "day 4 历史文化 and 博物馆 route in 西安",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "culture",
+                "name": "大雁塔",
+                "address": "西安 POI 2",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "food",
+                "name": "大唐不夜城",
+                "address": "西安 POI 3",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              }
+            ]
+          },
+          {
+            "day": 5,
+            "theme": "day 5 历史文化 and 博物馆 route in 西安",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "nature",
+                "name": "西安城墙",
+                "address": "西安 POI 4",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "citywalk",
+                "name": "陕西历史博物馆",
+                "address": "西安 POI 5",
+                "reason": "matches 历史文化 and 博物馆 preference in 西安",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 1987.2,
+          "food": 2152.8,
+          "hotel": 2484,
+          "ticket": 1656,
+          "total": 8280
+        },
+        "warnings": [
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_023",
+      "description": "测试南京空交通方式输入，覆盖交通方式缺省时 Eino 节点默认值处理。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "南京3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 南京 from 上海 with budget 2400.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 城市漫步 and 历史文化 route in 南京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "中山陵",
+                "address": "南京 POI 1",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "夫子庙",
+                "address": "南京 POI 2",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 城市漫步 and 历史文化 route in 南京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "秦淮河",
+                "address": "南京 POI 3",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "南京博物院",
+                "address": "南京 POI 4",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 城市漫步 and 历史文化 route in 南京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "老门东",
+                "address": "南京 POI 5",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "中山陵",
+                "address": "南京 POI 1",
+                "reason": "matches 城市漫步 and 历史文化 preference in 南京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 529.92,
+          "food": 574.08,
+          "hotel": 662.4,
+          "ticket": 441.6,
+          "total": 2208
+        },
+        "warnings": [
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    },
+    {
+      "case_id": "case_024",
+      "description": "测试杭州空节奏输入，覆盖 pace 缺省时 Eino 节点默认 balanced 的兼容性。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true
+      },
+      "plan": {
+        "title": "杭州4-day Eino travel plan",
+        "summary": "Eino workflow planned 4 days in 杭州 from 上海 with budget 4200.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 自然风光 and 茶文化 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "西湖",
+                "address": "杭州 POI 1",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "灵隐寺",
+                "address": "杭州 POI 2",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 自然风光 and 茶文化 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "河坊街",
+                "address": "杭州 POI 3",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "龙井村",
+                "address": "杭州 POI 4",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 自然风光 and 茶文化 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "京杭大运河",
+                "address": "杭州 POI 5",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "西湖",
+                "address": "杭州 POI 1",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 4,
+            "theme": "day 4 自然风光 and 茶文化 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "culture",
+                "name": "灵隐寺",
+                "address": "杭州 POI 2",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "food",
+                "name": "河坊街",
+                "address": "杭州 POI 3",
+                "reason": "matches 自然风光 and 茶文化 preference in 杭州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 927.36,
+          "food": 1004.64,
+          "hotel": 1159.2,
+          "ticket": 772.8,
+          "total": 3864
+        },
+        "warnings": [
+          "day 4 weather is rainy; keep indoor backup options",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+        ]
+      }
+    }
+  ]
+}

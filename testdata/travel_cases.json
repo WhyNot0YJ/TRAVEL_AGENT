@@ -1,0 +1,458 @@
+[
+  {
+    "id": "case_001",
+    "description": "测试杭州三日休闲自然与美食路线，覆盖常规多兴趣、多日、预算充足的基线路径。",
+    "input": {
+      "id": "case_001",
+      "departure_city": "上海",
+      "destination_city": "杭州",
+      "days": 3,
+      "budget": 3000,
+      "interests": ["自然风光", "美食"],
+      "transport_mode": "train_taxi",
+      "pace": "relaxed"
+    },
+    "expectation": {
+      "min_days": 3,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["杭州"]
+    }
+  },
+  {
+    "id": "case_002",
+    "description": "测试南京两日历史文化与美食路线，覆盖短途周末游和均衡节奏。",
+    "input": {
+      "id": "case_002",
+      "departure_city": "上海",
+      "destination_city": "南京",
+      "days": 2,
+      "budget": 1500,
+      "interests": ["历史文化", "美食"],
+      "transport_mode": "train_walk",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 2,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["南京"]
+    }
+  },
+  {
+    "id": "case_003",
+    "description": "测试北京四日亲子博物馆路线，覆盖同城出发目的地和亲子主题结构完整性。",
+    "input": {
+      "id": "case_003",
+      "departure_city": "北京",
+      "destination_city": "北京",
+      "days": 4,
+      "budget": 5000,
+      "interests": ["亲子", "博物馆"],
+      "transport_mode": "subway_taxi",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 4,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["北京"]
+    }
+  },
+  {
+    "id": "case_004",
+    "description": "测试成都三日美食休闲路线，覆盖轻松节奏和飞行到达后的本地体验安排。",
+    "input": {
+      "id": "case_004",
+      "departure_city": "上海",
+      "destination_city": "成都",
+      "days": 3,
+      "budget": 2500,
+      "interests": ["美食", "休闲"],
+      "transport_mode": "flight_taxi",
+      "pace": "relaxed"
+    },
+    "expectation": {
+      "min_days": 3,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["成都"]
+    }
+  },
+  {
+    "id": "case_005",
+    "description": "测试广州两日 citywalk 与美食路线，覆盖近距离高铁出行和步行交通偏好。",
+    "input": {
+      "id": "case_005",
+      "departure_city": "深圳",
+      "destination_city": "广州",
+      "days": 2,
+      "budget": 1800,
+      "interests": ["citywalk", "美食"],
+      "transport_mode": "train_walk",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 2,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["广州"]
+    }
+  },
+  {
+    "id": "case_006",
+    "description": "测试西安三日历史文化路线，覆盖单一强主题兴趣和预算较紧的跨城飞行场景。",
+    "input": {
+      "id": "case_006",
+      "departure_city": "上海",
+      "destination_city": "西安",
+      "days": 3,
+      "budget": 2200,
+      "interests": ["历史文化"],
+      "transport_mode": "flight_subway",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 3,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["西安"]
+    }
+  },
+  {
+    "id": "case_007",
+    "description": "测试苏州一日轻松游，覆盖最短有效天数和单日路线结构。",
+    "input": {
+      "id": "case_007",
+      "departure_city": "上海",
+      "destination_city": "苏州",
+      "days": 1,
+      "budget": 800,
+      "interests": ["园林", "轻松"],
+      "transport_mode": "train_walk",
+      "pace": "relaxed"
+    },
+    "expectation": {
+      "min_days": 1,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["苏州"]
+    }
+  },
+  {
+    "id": "case_008",
+    "description": "测试未知城市兜底路线，覆盖 POI 不存在时仍能生成完整结构和目的地关键词。",
+    "input": {
+      "id": "case_008",
+      "departure_city": "上海",
+      "destination_city": "未知城市",
+      "days": 2,
+      "budget": 1000,
+      "interests": ["探索", "小众"],
+      "transport_mode": "train_walk",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 2,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["未知城市"]
+    }
+  },
+  {
+    "id": "case_009",
+    "description": "测试杭州低预算两日游，覆盖预算约束下总预算不超过阈值。",
+    "input": {
+      "id": "case_009",
+      "departure_city": "南京",
+      "destination_city": "杭州",
+      "days": 2,
+      "budget": 600,
+      "interests": ["自然风光", "城市漫步"],
+      "transport_mode": "train_walk",
+      "pace": "relaxed"
+    },
+    "expectation": {
+      "min_days": 2,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["杭州"]
+    }
+  },
+  {
+    "id": "case_010",
+    "description": "测试北京高预算五日深度游，覆盖长一点行程和高预算拆分稳定性。",
+    "input": {
+      "id": "case_010",
+      "departure_city": "广州",
+      "destination_city": "北京",
+      "days": 5,
+      "budget": 12000,
+      "interests": ["历史文化", "博物馆", "亲子"],
+      "transport_mode": "flight_subway",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 5,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["北京"]
+    }
+  },
+  {
+    "id": "case_011",
+    "description": "测试成都紧凑两日美食路线，覆盖 intensive 节奏下每天更多活动项的生成能力。",
+    "input": {
+      "id": "case_011",
+      "departure_city": "重庆",
+      "destination_city": "成都",
+      "days": 2,
+      "budget": 1600,
+      "interests": ["美食", "夜生活"],
+      "transport_mode": "train_taxi",
+      "pace": "intensive"
+    },
+    "expectation": {
+      "min_days": 2,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["成都"]
+    }
+  },
+  {
+    "id": "case_012",
+    "description": "测试广州空兴趣输入，覆盖兴趣缺省时是否能回退到城市探索主题。",
+    "input": {
+      "id": "case_012",
+      "departure_city": "佛山",
+      "destination_city": "广州",
+      "days": 1,
+      "budget": 500,
+      "interests": [],
+      "transport_mode": "subway_walk",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 1,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["广州"]
+    }
+  },
+  {
+    "id": "case_013",
+    "description": "测试苏州长天数低强度路线，覆盖 POI 循环分配和多日结构连续性。",
+    "input": {
+      "id": "case_013",
+      "departure_city": "杭州",
+      "destination_city": "苏州",
+      "days": 6,
+      "budget": 4800,
+      "interests": ["园林", "博物馆", "美食"],
+      "transport_mode": "train_walk",
+      "pace": "relaxed"
+    },
+    "expectation": {
+      "min_days": 6,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["苏州"]
+    }
+  },
+  {
+    "id": "case_014",
+    "description": "测试西安一日高强度历史路线，覆盖短天数和 intensive 节奏组合。",
+    "input": {
+      "id": "case_014",
+      "departure_city": "郑州",
+      "destination_city": "西安",
+      "days": 1,
+      "budget": 900,
+      "interests": ["历史文化", "夜游"],
+      "transport_mode": "train_subway",
+      "pace": "intensive"
+    },
+    "expectation": {
+      "min_days": 1,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["西安"]
+    }
+  },
+  {
+    "id": "case_015",
+    "description": "测试南京亲子低预算路线，覆盖亲子主题和低预算双约束。",
+    "input": {
+      "id": "case_015",
+      "departure_city": "合肥",
+      "destination_city": "南京",
+      "days": 2,
+      "budget": 900,
+      "interests": ["亲子", "博物馆"],
+      "transport_mode": "train_subway",
+      "pace": "relaxed"
+    },
+    "expectation": {
+      "min_days": 2,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["南京"]
+    }
+  },
+  {
+    "id": "case_016",
+    "description": "测试杭州同城周末路线，覆盖出发城市与目的地相同但仍需生成完整计划。",
+    "input": {
+      "id": "case_016",
+      "departure_city": "杭州",
+      "destination_city": "杭州",
+      "days": 2,
+      "budget": 1200,
+      "interests": ["本地生活", "咖啡"],
+      "transport_mode": "subway_walk",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 2,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["杭州"]
+    }
+  },
+  {
+    "id": "case_017",
+    "description": "测试北京老人慢节奏路线，覆盖 relaxed 节奏下活动密度和结构稳定性。",
+    "input": {
+      "id": "case_017",
+      "departure_city": "天津",
+      "destination_city": "北京",
+      "days": 3,
+      "budget": 3600,
+      "interests": ["老人友好", "公园", "博物馆"],
+      "transport_mode": "train_taxi",
+      "pace": "relaxed"
+    },
+    "expectation": {
+      "min_days": 3,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["北京"]
+    }
+  },
+  {
+    "id": "case_018",
+    "description": "测试成都年轻人高强度路线，覆盖多兴趣和紧凑节奏下预算合规。",
+    "input": {
+      "id": "case_018",
+      "departure_city": "西安",
+      "destination_city": "成都",
+      "days": 4,
+      "budget": 4200,
+      "interests": ["美食", "潮流街区", "夜生活"],
+      "transport_mode": "flight_taxi",
+      "pace": "intensive"
+    },
+    "expectation": {
+      "min_days": 4,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["成都"]
+    }
+  },
+  {
+    "id": "case_019",
+    "description": "测试广州商务间隙路线，覆盖工作日短时 citywalk 和轻量安排。",
+    "input": {
+      "id": "case_019",
+      "departure_city": "上海",
+      "destination_city": "广州",
+      "days": 3,
+      "budget": 3500,
+      "interests": ["商务间隙", "美食", "citywalk"],
+      "transport_mode": "flight_taxi",
+      "pace": "relaxed"
+    },
+    "expectation": {
+      "min_days": 3,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["广州"]
+    }
+  },
+  {
+    "id": "case_020",
+    "description": "测试苏州极低预算一日游，覆盖预算下限附近的非负预算和结构完整性。",
+    "input": {
+      "id": "case_020",
+      "departure_city": "上海",
+      "destination_city": "苏州",
+      "days": 1,
+      "budget": 300,
+      "interests": ["园林", "步行"],
+      "transport_mode": "train_walk",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 1,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["苏州"]
+    }
+  },
+  {
+    "id": "case_021",
+    "description": "测试未知城市长天数兜底，覆盖未知目的地和多日 POI 复用的稳定性。",
+    "input": {
+      "id": "case_021",
+      "departure_city": "上海",
+      "destination_city": "未知城市",
+      "days": 5,
+      "budget": 2500,
+      "interests": ["小众", "探索", "本地生活"],
+      "transport_mode": "train_walk",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 5,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["未知城市"]
+    }
+  },
+  {
+    "id": "case_022",
+    "description": "测试西安高预算深度文化路线，覆盖高预算和多日历史主题组合。",
+    "input": {
+      "id": "case_022",
+      "departure_city": "深圳",
+      "destination_city": "西安",
+      "days": 5,
+      "budget": 9000,
+      "interests": ["历史文化", "博物馆", "夜游"],
+      "transport_mode": "flight_taxi",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 5,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["西安"]
+    }
+  },
+  {
+    "id": "case_023",
+    "description": "测试南京空交通方式输入，覆盖交通方式缺省时 Eino 节点默认值处理。",
+    "input": {
+      "id": "case_023",
+      "departure_city": "上海",
+      "destination_city": "南京",
+      "days": 3,
+      "budget": 2400,
+      "interests": ["城市漫步", "历史文化"],
+      "transport_mode": "",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 3,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["南京"]
+    }
+  },
+  {
+    "id": "case_024",
+    "description": "测试杭州空节奏输入，覆盖 pace 缺省时 Eino 节点默认 balanced 的兼容性。",
+    "input": {
+      "id": "case_024",
+      "departure_city": "上海",
+      "destination_city": "杭州",
+      "days": 4,
+      "budget": 4200,
+      "interests": ["自然风光", "茶文化"],
+      "transport_mode": "train_taxi",
+      "pace": ""
+    },
+    "expectation": {
+      "min_days": 4,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["杭州"]
+    }
+  }
+]
