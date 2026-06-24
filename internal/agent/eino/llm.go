@@ -72,7 +72,7 @@ func (g llmPlanGenerator) Generate(ctx context.Context, state TravelPlanningStat
 	attemptsMade := 0
 	started := time.Now()
 	if g.disabledReason != "" {
-		lastErr = fmt.Errorf(g.disabledReason)
+		lastErr = fmt.Errorf("%s", g.disabledReason)
 	} else if g.client == nil {
 		lastErr = fmt.Errorf("missing_api_key")
 	} else {

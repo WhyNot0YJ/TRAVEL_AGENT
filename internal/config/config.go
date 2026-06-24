@@ -19,6 +19,11 @@ type Config struct {
 	RedisDB            int
 	CacheTTL           time.Duration
 	RateLimitPerMinute int
+	SQLEnabled         bool
+	SQLDSN             string
+	SQLMaxOpenConns    int
+	SQLMaxIdleConns    int
+	SQLConnMaxLifetime time.Duration
 }
 
 func Load() Config {
@@ -30,6 +35,11 @@ func Load() Config {
 		RedisDB:            envInt("TRAVEL_AGENT_REDIS_DB", 0),
 		CacheTTL:           time.Duration(envInt("TRAVEL_AGENT_CACHE_TTL_SECONDS", 1800)) * time.Second,
 		RateLimitPerMinute: envInt("TRAVEL_AGENT_RATE_LIMIT_PER_MINUTE", 60),
+		SQLEnabled:         parseBool(os.Getenv("TRAVEL_AGENT_SQL_ENABLED")),
+		SQLDSN:             strings.TrimSpace(os.Getenv("TRAVEL_AGENT_SQL_DSN")),
+		SQLMaxOpenConns:    envInt("TRAVEL_AGENT_SQL_MAX_OPEN_CONNS", 10),
+		SQLMaxIdleConns:    envInt("TRAVEL_AGENT_SQL_MAX_IDLE_CONNS", 5),
+		SQLConnMaxLifetime: time.Duration(envInt("TRAVEL_AGENT_SQL_CONN_MAX_LIFETIME_SECONDS", 1800)) * time.Second,
 	}
 }
 
@@ -41,6 +51,15 @@ func BuildPlanner(plannerType string) (agent.TravelPlanner, error) {
 		return einoagent.NewEinoTravelPlanner()
 	default:
 		return nil, fmt.Errorf("unsupported planner type: %s", plannerType)
+	}
+}
+
+func parseBool(value string) bool {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "1", "true", "yes", "y", "on", "enabled":
+		return true
+	default:
+		return false
 	}
 }
 

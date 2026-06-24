@@ -10,7 +10,8 @@ HTTP Client
   -> Travel Handler
   -> TravelPlanService
   -> EventBus
-  -> TaskStore / RateLimiter (Redis or memory fallback)
+  -> TaskStore (MySQL, Redis, or memory fallback)
+  -> RateLimiter (Redis or memory fallback)
   -> agent.TravelPlanner
   -> MockPlanner / EinoTravelPlanner
 ```
@@ -38,7 +39,7 @@ The frontend does not depend on Eino, Redis, or planner internals. It only consu
 
 * `cmd/harness`：本地评估入口。
 * `cmd/server`：Gin HTTP server 入口。
-* `internal/config`：读取 HTTP 地址和 planner 类型。
+* `internal/config`：读取 HTTP、planner、Redis、限流和 MySQL 配置。
 * `internal/server`：router、request id、logging、recovery、CORS。
 * `internal/travel`：HTTP DTO、handler、service、任务 store、request_hash 缓存、限流、EventBus。
 * `internal/redis`：Redis client 初始化和可用性检查。
@@ -48,11 +49,15 @@ The frontend does not depend on Eino, Redis, or planner internals. It only consu
 
 ## Current Storage
 
-Redis 可用时，任务、request_hash 索引和限流计数写入 Redis。
+MySQL 可选启用。启用并连接成功时，`TravelPlanService` 使用 `MySQLTaskStore` 保存任务状态、请求 hash 和最终 TravelPlan。服务重启后可继续查询已完成任务。
 
-Redis 未配置或不可用时，开发环境自动降级为内存任务 store 和内存限流。内存模式下服务重启后任务会丢失。
+Redis 仍用于限流；当未启用 MySQL 时，Redis 也可继续作为任务缓存和 request hash 索引。Redis 未配置或不可用时，开发环境自动降级为内存任务 store 和内存限流。内存模式下服务重启后任务会丢失。
 
-真实数据库持久化将在后续阶段接入。
+职责边界：
+
+* MySQL：长期任务状态、最终计划、后续 planner run/event trace。
+* Redis：短期缓存、request hash 复用、限流计数。
+* 内存：本地开发 fallback。
 
 ## SSE Flow
 

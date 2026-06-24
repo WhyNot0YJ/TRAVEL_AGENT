@@ -89,6 +89,25 @@ set TRAVEL_AGENT_RATE_LIMIT_PER_MINUTE=60
 
 Redis 不可用时，开发环境会降级为内存任务 store 和内存限流。真实数据库持久化会在后续阶段接入。
 
+MySQL 持久化是可选能力。先执行迁移：
+
+```bash
+mysql -u root -p travel_agent < migrations/mysql/001_travel_persistence.sql
+```
+
+启用 MySQL task store：
+
+```bash
+set TRAVEL_AGENT_SQL_ENABLED=true
+set TRAVEL_AGENT_SQL_DSN=user:pass@tcp(localhost:3306)/travel_agent?parseTime=true&charset=utf8mb4&loc=UTC
+set TRAVEL_AGENT_SQL_MAX_OPEN_CONNS=10
+set TRAVEL_AGENT_SQL_MAX_IDLE_CONNS=5
+set TRAVEL_AGENT_SQL_CONN_MAX_LIFETIME_SECONDS=1800
+go run ./cmd/server
+```
+
+未配置 SQL 或连接失败时，server 会继续使用 Redis/内存 store。Redis 仍可用于限流和无 SQL 模式下的短期任务缓存；MySQL 用于长期保存任务和最终计划。
+
 订阅任务事件流：
 
 ```bash
