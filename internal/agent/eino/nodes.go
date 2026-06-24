@@ -184,6 +184,102 @@ func optimizeItineraryNode(ctx context.Context, state TravelPlanningState) (Trav
 	return appendTrace(state, "OptimizeItineraryNode", fmt.Sprintf("built %d itinerary days", len(days)), started, true), nil
 }
 
+func validateRouteFeasibilityNode(ctx context.Context, state TravelPlanningState) (TravelPlanningState, error) {
+	started := time.Now()
+	if err := ctx.Err(); err != nil {
+		return state, err
+	}
+	result := validateRouteFeasibility(state)
+	state.RouteValidation = result
+	state.Warnings = append(state.Warnings, result.Warnings...)
+	return appendTrace(state, "ValidateRouteFeasibilityNode", fmt.Sprintf("route feasibility score=%d checks=%d", result.Score, len(result.Checks)), started, true), nil
+}
+
+func validateRouteFeasibility(state TravelPlanningState) RouteValidationResult {
+	result := RouteValidationResult{Score: 100}
+	addCheck := func(name string, passed bool, message string, penalty int) {
+		result.Checks = append(result.Checks, RouteValidationCheck{Name: name, Passed: passed, Message: message})
+		if !passed {
+			result.Score = maxInt(result.Score-penalty, 0)
+			warning := fmt.Sprintf("route feasibility: check=%s score=%d message=%s", name, result.Score, message)
+			result.Warnings = append(result.Warnings, warning)
+		}
+	}
+
+	minItems, maxItems := paceItemRange(state.Pace)
+	paceOK := true
+	for _, day := range state.Itinerary {
+		count := len(day.Items)
+		if count < minItems || count > maxItems {
+			paceOK = false
+			break
+		}
+	}
+	addCheck("daily_pace", paceOK, fmt.Sprintf("daily item count should match %s pace (%d-%d items)", fallbackValue(state.Pace, "balanced"), minItems, maxItems), 12)
+
+	longRoute := false
+	longest := 0
+	for _, route := range state.Routes {
+		if route.DurationMinutes > longest {
+			longest = route.DurationMinutes
+		}
+		if route.DurationMinutes > 90 {
+			longRoute = true
+		}
+	}
+	addCheck("route_duration", !longRoute, fmt.Sprintf("longest adjacent route is %d minutes", longest), 15)
+
+	missingCoords := false
+	for _, poi := range state.POIs {
+		if strings.TrimSpace(poi.Location) == "" {
+			missingCoords = true
+			break
+		}
+	}
+	addCheck("poi_coordinates", !missingCoords, "some POIs do not have coordinates; route duration may use mock fallback", 10)
+
+	rainConflict := false
+	for _, weather := range state.Weather {
+		if !conditionContainsRain(weather.Condition) && weather.Condition != "rainy" {
+			continue
+		}
+		if !dayHasIndoorOption(state.Itinerary, weather.Day) {
+			rainConflict = true
+			break
+		}
+	}
+	addCheck("weather_backup", !rainConflict, "rainy days should include at least one indoor-friendly option", 10)
+
+	sum := state.Budget.Transport + state.Budget.Food + state.Budget.Hotel + state.Budget.Ticket
+	budgetOK := state.Budget.Total > 0 && sum >= state.Budget.Total*0.85 && sum <= state.Budget.Total*1.15
+	addCheck("budget_breakdown", budgetOK, fmt.Sprintf("budget components total %.2f vs total %.2f", sum, state.Budget.Total), 10)
+
+	duplicate := false
+	for _, day := range state.Itinerary {
+		seen := map[string]struct{}{}
+		for _, item := range day.Items {
+			name := strings.TrimSpace(item.Name)
+			if name == "" {
+				continue
+			}
+			if _, ok := seen[name]; ok {
+				duplicate = true
+				break
+			}
+			seen[name] = struct{}{}
+		}
+	}
+	addCheck("duplicate_poi", !duplicate, "same-day itinerary should not repeat the same POI", 12)
+
+	if len(state.Routes) == 0 && len(state.POIs) > 1 {
+		addCheck("route_data_available", false, "route data is unavailable for adjacent POIs", 10)
+	} else {
+		addCheck("route_data_available", true, "route data is available or not needed", 0)
+	}
+
+	return result
+}
+
 func generateTravelPlanNode(generator TravelPlanGenerator) func(context.Context, TravelPlanningState) (*domain.TravelPlan, error) {
 	return func(ctx context.Context, state TravelPlanningState) (*domain.TravelPlan, error) {
 		started := time.Now()
@@ -191,6 +287,7 @@ func generateTravelPlanNode(generator TravelPlanGenerator) func(context.Context,
 		if err != nil {
 			return nil, err
 		}
+		plan.Warnings = mergeWarnings(state.Warnings, plan.Warnings)
 		_ = appendTrace(state, "GenerateTravelPlanNode", "travel plan generated", started, true)
 		return plan, nil
 	}
@@ -272,4 +369,48 @@ func interestsText(interests []string) string {
 		return interests[0]
 	}
 	return interests[0] + " and " + interests[1]
+}
+
+func paceItemRange(pace string) (int, int) {
+	switch strings.ToLower(strings.TrimSpace(pace)) {
+	case "relaxed":
+		return 1, 2
+	case "intensive":
+		return 3, 4
+	default:
+		return 2, 3
+	}
+}
+
+func dayHasIndoorOption(days []domain.TravelDay, dayNumber int) bool {
+	for _, day := range days {
+		if day.Day != dayNumber {
+			continue
+		}
+		for _, item := range day.Items {
+			text := strings.ToLower(item.Type + " " + item.Name + " " + item.Reason)
+			for _, token := range []string{"museum", "文化", "博物馆", "寺", "美食", "food", "indoor", "室内"} {
+				if strings.Contains(text, strings.ToLower(token)) {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func mergeWarnings(primary, secondary []string) []string {
+	out := make([]string, 0, len(primary)+len(secondary))
+	seen := map[string]struct{}{}
+	for _, warning := range append(primary, secondary...) {
+		if strings.TrimSpace(warning) == "" {
+			continue
+		}
+		if _, ok := seen[warning]; ok {
+			continue
+		}
+		seen[warning] = struct{}{}
+		out = append(out, warning)
+	}
+	return out
 }

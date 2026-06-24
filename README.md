@@ -239,6 +239,27 @@ tool fallback: tool=poi provider=amap stage=request category=provider_error mock
 
 当前分类包括 `configuration`、`timeout`、`provider_error`、`invalid_json`、`missing_field`、`request_error` 和 `unknown`。默认 `TRAVEL_AGENT_TOOL_MODE=mock` 不会调用任何外部 API；`real` mode 配置不完整或 provider 异常时会降级到 mock，避免本地 Harness 因外部依赖不可用而失败。
 
+## 路线真实性校验
+
+Eino planner 会在生成最终计划前执行轻量路线真实性校验。该校验只写入内部状态和 `TravelPlan.warnings`，不改变 `domain.TravelPlan` schema。
+
+当前检查：
+
+* 每日 POI 数量是否匹配 `pace`
+* 相邻 POI route duration 是否过长
+* POI 坐标是否缺失
+* 雨天是否有室内友好备选
+* 预算拆分是否与总额大致一致
+* 同一天是否重复明显相同 POI
+
+warning 示例：
+
+```text
+route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback
+```
+
+这不是地图级精准排程；真实 API 不可用时仍允许 mock Harness 稳定通过。
+
 ## 如何添加新的测试用例
 
 在 `testdata/travel_cases.json` 中新增一条 case。每条 case 必须包含唯一 `id`、清晰说明覆盖范围的 `description`、与 `id` 一致的 `input.id`、完整的 `input`，以及包含 `min_days`、`max_budget_ratio`、`required_keywords` 的 `expectation`。

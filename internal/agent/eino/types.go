@@ -8,20 +8,21 @@ import (
 
 // TravelPlanningState is the internal state passed between Eino graph nodes.
 type TravelPlanningState struct {
-	Request               domain.TravelRequest `json:"request"`
-	NormalizedDestination string               `json:"normalized_destination"`
-	NormalizedDays        int                  `json:"normalized_days"`
-	NormalizedBudget      float64              `json:"normalized_budget"`
-	Interests             []string             `json:"interests"`
-	TransportMode         string               `json:"transport_mode"`
-	Pace                  string               `json:"pace"`
-	POIs                  []MockPOI            `json:"pois"`
-	Weather               []MockWeather        `json:"weather"`
-	Routes                []MockRoute          `json:"routes"`
-	Budget                domain.TravelBudget  `json:"budget"`
-	Itinerary             []domain.TravelDay   `json:"itinerary"`
-	Warnings              []string             `json:"warnings"`
-	Trace                 []TraceEvent         `json:"trace"`
+	Request               domain.TravelRequest  `json:"request"`
+	NormalizedDestination string                `json:"normalized_destination"`
+	NormalizedDays        int                   `json:"normalized_days"`
+	NormalizedBudget      float64               `json:"normalized_budget"`
+	Interests             []string              `json:"interests"`
+	TransportMode         string                `json:"transport_mode"`
+	Pace                  string                `json:"pace"`
+	POIs                  []MockPOI             `json:"pois"`
+	Weather               []MockWeather         `json:"weather"`
+	Routes                []MockRoute           `json:"routes"`
+	Budget                domain.TravelBudget   `json:"budget"`
+	Itinerary             []domain.TravelDay    `json:"itinerary"`
+	RouteValidation       RouteValidationResult `json:"route_validation"`
+	Warnings              []string              `json:"warnings"`
+	Trace                 []TraceEvent          `json:"trace"`
 }
 
 type POITool interface {
@@ -74,6 +75,18 @@ type TraceEvent struct {
 	Message    string `json:"message"`
 	DurationMs int64  `json:"duration_ms"`
 	Success    bool   `json:"success"`
+}
+
+type RouteValidationResult struct {
+	Score    int                    `json:"score"`
+	Checks   []RouteValidationCheck `json:"checks"`
+	Warnings []string               `json:"warnings"`
+}
+
+type RouteValidationCheck struct {
+	Name    string `json:"name"`
+	Passed  bool   `json:"passed"`
+	Message string `json:"message"`
 }
 
 // POIToolInput is the input for MockPOITool.

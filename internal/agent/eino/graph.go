@@ -15,6 +15,7 @@ const (
 	nodeRoute        = "compute_route"
 	nodeBudget       = "estimate_budget"
 	nodeOptimize     = "optimize_itinerary"
+	nodeRouteCheck   = "validate_route_feasibility"
 	nodeGeneratePlan = "generate_travel_plan"
 	nodeValidatePlan = "validate_plan"
 )
@@ -45,6 +46,9 @@ func buildTravelGraph(ctx context.Context, generator TravelPlanGenerator) (compo
 	if err := graph.AddLambdaNode(nodeOptimize, compose.InvokableLambda(optimizeItineraryNode)); err != nil {
 		return nil, fmt.Errorf("add optimize node: %w", err)
 	}
+	if err := graph.AddLambdaNode(nodeRouteCheck, compose.InvokableLambda(validateRouteFeasibilityNode)); err != nil {
+		return nil, fmt.Errorf("add route feasibility node: %w", err)
+	}
 	if err := graph.AddLambdaNode(nodeGeneratePlan, compose.InvokableLambda(generateTravelPlanNode(generator))); err != nil {
 		return nil, fmt.Errorf("add generate node: %w", err)
 	}
@@ -59,7 +63,8 @@ func buildTravelGraph(ctx context.Context, generator TravelPlanGenerator) (compo
 		{nodeWeather, nodeRoute},
 		{nodeRoute, nodeBudget},
 		{nodeBudget, nodeOptimize},
-		{nodeOptimize, nodeGeneratePlan},
+		{nodeOptimize, nodeRouteCheck},
+		{nodeRouteCheck, nodeGeneratePlan},
 		{nodeGeneratePlan, nodeValidatePlan},
 		{nodeValidatePlan, compose.END},
 	}

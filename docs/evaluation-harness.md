@@ -230,6 +230,24 @@ UI Harness 关注交互、状态展示、SSE/done 渲染和移动端可用性；
 
 当前 Eino 模式默认使用 Mock Tools；启用 `TRAVEL_AGENT_TOOL_MODE=real` 后可调用高德 POI、路线和天气 API。LLM 默认不启用；启用后，GenerateTravelPlanNode 会优先使用 provider-native JSON Schema 结构化输出，失败时 fallback 到 deterministic generator。
 
+阶段 12 起，Eino 内部会运行轻量路线真实性校验。该校验不改变 `domain.TravelPlan` schema，结果通过 `TravelPlan.warnings` 反映：
+
+```text
+route feasibility: check=route_duration score=85 message=longest adjacent route is 120 minutes
+```
+
+当前检查项包括：
+
+* `daily_pace`
+* `route_duration`
+* `poi_coordinates`
+* `weather_backup`
+* `budget_breakdown`
+* `duplicate_poi`
+* `route_data_available`
+
+基础 Harness 评分仍保持原有结构/天数/预算/关键词规则；真实性 warning 后续会在增强指标中聚合。
+
 LLM 相关 warning 当前仍作为 case warnings 输出，后续 Harness 可基于稳定字段聚合：
 
 ```text
@@ -282,9 +300,9 @@ func (p *EinoTravelPlanner) Plan(ctx context.Context, req domain.TravelRequest) 
 ## 12. 当前限制
 
 1. 当前使用 MockPlanner，不代表真实 Agent 效果
-2. 当前不评估真实路线距离
+2. 当前只做轻量路线真实性校验，不做地图级精准排程
 3. 当前不校验真实景点营业时间
-4. 当前不调用真实天气 API
+4. 当前默认不调用真实天气 API
 5. 当前不统计 Token 消耗
 6. 当前只做基础规则评估，不做语义质量评估
 7. 当前 LLM 输出会做结构和业务校验，但不评价真实路线可达性

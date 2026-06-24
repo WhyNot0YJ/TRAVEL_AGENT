@@ -28,6 +28,7 @@ TravelRequest
   -> ComputeRouteToolNode
   -> EstimateBudgetToolNode
   -> OptimizeItineraryNode
+  -> ValidateRouteFeasibilityNode
   -> GenerateTravelPlanNode (LLM schema output or deterministic fallback)
   -> ValidatePlanNode
   -> TravelPlan
@@ -110,6 +111,31 @@ TravelRequest
 * 每天至少生成 2 个 TravelItem
 * 根据兴趣和城市生成每日主题
 * `relaxed` 节奏保持轻量安排，`intensive` 节奏可安排更多 item
+
+### ValidateRouteFeasibilityNode
+
+输入：`TravelPlanningState`
+
+输出：`TravelPlanningState`
+
+职责：
+
+* 对路线真实性做内部校验，不修改 `internal/domain`
+* 检查每日 POI 数量是否匹配 pace
+* 检查相邻 POI route duration 是否过长
+* 检查 POI 坐标是否缺失
+* 检查雨天是否有室内友好备选
+* 检查预算拆分是否与 total 大致一致
+* 检查同一天是否重复明显相同 POI
+* 在 `TravelPlanningState.RouteValidation` 中记录 score/checks，并把 warning 合并到最终 `TravelPlan.warnings`
+
+warning 格式示例：
+
+```text
+route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback
+```
+
+当前真实性校验是轻量规则校验，不做地图级精准排程，也不会在真实 API 不可用时让默认 mock Harness 失败。
 
 ### GenerateTravelPlanNode
 
@@ -229,7 +255,7 @@ tool fallback: tool=route provider=amap stage=request category=missing_field moc
 1. 增加 Eino Callback Trace 和更细粒度节点耗时统计
 2. 将 tool fallback 分类汇总到 Harness 指标
 3. 增加 Tool 调用轨迹评估
-4. 增加真实路线可达性、营业时间和天气影响校验
+4. 扩展营业时间和更细粒度天气影响校验
 5. 增加 Token 消耗、外部 API 成功率和失败快照统计
 6. 将节点级事件通过 event reporter 推送到 `TravelPlanService`，再由 SSE 输出给前端
 
