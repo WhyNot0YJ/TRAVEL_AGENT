@@ -121,6 +121,13 @@ type TravelPlanner interface {
 * BudgetPassRate：预算合规率
 * DayMatchRate：天数匹配率
 * StructurePassRate：结构完整率
+* ToolFallbackRate：出现 tool fallback warning 的 case 占比
+* LLMFallbackRate：出现 LLM fallback warning 的 case 占比
+* ExternalAPISuccessRate：当前基于 warning 的外部 API 成功率代理值；无外部调用时按成功计
+* AverageNodeDurationMs：从 LLM trace / fallback warning 中解析到的平均节点耗时
+* AverageTokenUsage：provider 返回 token usage 时的平均 total token；unknown 不计入平均
+* RouteFeasibilityPassRate：没有 route feasibility warning 的 case 占比
+* WarningRate：有 warning 的 case 占比
 
 ## 7. 报告格式
 
@@ -130,8 +137,30 @@ type TravelPlanner interface {
 {
   "generated_at": "...",
   "planner_type": "eino",
-  "summary": {},
-  "cases": []
+  "summary": {
+    "tool_fallback_rate": 0,
+    "llm_fallback_rate": 1,
+    "external_api_success_rate": 1,
+    "average_node_duration_ms": 0,
+    "average_token_usage": 0,
+    "route_feasibility_pass_rate": 0,
+    "warning_rate": 1
+  },
+  "cases": [
+    {
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
+      }
+    }
+  ]
 }
 ```
 
@@ -145,6 +174,8 @@ type TravelPlanner interface {
 * Errors
 * Warnings
 * Checks
+* Diagnostics
+* Failure：失败 case 的输入、错误和脱敏 warnings 快照
 * Plan
 
 ## 8. 如何运行
@@ -155,6 +186,7 @@ go run ./cmd/harness
 go run ./cmd/harness -planner mock
 go run ./cmd/harness -planner eino
 go run ./cmd/harness -dataset testdata/travel_cases.json -report reports/eval_report.json
+go run ./cmd/harness -planner eino -repeat 3 -concurrency 4
 make harness
 make harness-mock
 make harness-eino

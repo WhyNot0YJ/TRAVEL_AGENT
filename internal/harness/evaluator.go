@@ -15,6 +15,27 @@ type EvaluationChecks struct {
 	StructureComplete bool `json:"structure_complete"`
 	KeywordsMatched   bool `json:"keywords_matched"`
 	NoIllegalFields   bool `json:"no_illegal_fields"`
+	RouteFeasible     bool `json:"route_feasible"`
+}
+
+type CaseDiagnostics struct {
+	ToolFallbacks        int   `json:"tool_fallbacks"`
+	LLMFallbacks         int   `json:"llm_fallbacks"`
+	ExternalAPISuccesses int   `json:"external_api_successes"`
+	ExternalAPICalls     int   `json:"external_api_calls"`
+	NodeDurationMs       int64 `json:"node_duration_ms"`
+	NodeDurationSamples  int   `json:"node_duration_samples"`
+	PromptTokens         int   `json:"prompt_tokens"`
+	CompletionTokens     int   `json:"completion_tokens"`
+	TotalTokens          int   `json:"total_tokens"`
+	TokenUsageKnown      bool  `json:"token_usage_known"`
+	RouteFeasibilityWarn bool  `json:"route_feasibility_warn"`
+}
+
+type FailureSnapshot struct {
+	Input    domain.TravelRequest `json:"input"`
+	Errors   []string             `json:"errors"`
+	Warnings []string             `json:"warnings"`
 }
 
 // CaseResult is the per-case output stored in the report.
@@ -27,6 +48,8 @@ type CaseResult struct {
 	Errors      []string           `json:"errors"`
 	Warnings    []string           `json:"warnings"`
 	Checks      EvaluationChecks   `json:"checks"`
+	Diagnostics CaseDiagnostics    `json:"diagnostics"`
+	Failure     *FailureSnapshot   `json:"failure,omitempty"`
 	Plan        *domain.TravelPlan `json:"plan"`
 }
 
@@ -66,8 +89,18 @@ func (e *Evaluator) Evaluate(tc TravelCase, plan *domain.TravelPlan, plannerErr 
 	result.Checks.StructureComplete = checkStructure(plan, &result)
 	result.Checks.KeywordsMatched = checkKeywords(tc, plan, &result)
 	result.Checks.NoIllegalFields = checkIllegalFields(plan, &result)
+	result.Warnings = mergeCaseWarnings(result.Warnings, plan.Warnings)
+	result.Diagnostics = analyzeWarnings(result.Warnings)
+	result.Checks.RouteFeasible = !result.Diagnostics.RouteFeasibilityWarn
 	result.Score = score(result.Checks)
 	result.Success = len(result.Errors) == 0
+	if !result.Success {
+		result.Failure = &FailureSnapshot{
+			Input:    tc.Input,
+			Errors:   append([]string{}, result.Errors...),
+			Warnings: append([]string{}, result.Warnings...),
+		}
+	}
 
 	return result
 }
@@ -233,4 +266,66 @@ func score(checks EvaluationChecks) float64 {
 		return 100
 	}
 	return total
+}
+
+func mergeCaseWarnings(existing, planWarnings []string) []string {
+	merged := make([]string, 0, len(existing)+len(planWarnings))
+	seen := map[string]struct{}{}
+	for _, warning := range append(existing, planWarnings...) {
+		if strings.TrimSpace(warning) == "" {
+			continue
+		}
+		if _, ok := seen[warning]; ok {
+			continue
+		}
+		seen[warning] = struct{}{}
+		merged = append(merged, warning)
+	}
+	return merged
+}
+
+func analyzeWarnings(warnings []string) CaseDiagnostics {
+	var d CaseDiagnostics
+	for _, warning := range warnings {
+		switch {
+		case strings.HasPrefix(warning, "tool fallback:"):
+			d.ToolFallbacks++
+			d.ExternalAPICalls++
+		case strings.HasPrefix(warning, "LLM fallback:"):
+			d.LLMFallbacks++
+			d.NodeDurationMs += parseIntField(warning, "duration_ms")
+			d.NodeDurationSamples++
+		case strings.HasPrefix(warning, "LLM trace:"):
+			d.NodeDurationMs += parseIntField(warning, "duration_ms")
+			d.NodeDurationSamples++
+			if !strings.Contains(warning, "total_tokens=unknown") {
+				d.PromptTokens += int(parseIntField(warning, "prompt_tokens"))
+				d.CompletionTokens += int(parseIntField(warning, "completion_tokens"))
+				d.TotalTokens += int(parseIntField(warning, "total_tokens"))
+				d.TokenUsageKnown = true
+			}
+		case strings.HasPrefix(warning, "route feasibility:"):
+			d.RouteFeasibilityWarn = true
+		}
+	}
+	if d.ExternalAPICalls == 0 {
+		d.ExternalAPISuccesses = 1
+		d.ExternalAPICalls = 1
+	}
+	return d
+}
+
+func parseIntField(text, key string) int64 {
+	prefix := key + "="
+	for _, field := range strings.Fields(text) {
+		if !strings.HasPrefix(field, prefix) {
+			continue
+		}
+		raw := strings.Trim(strings.TrimPrefix(field, prefix), ",;")
+		var value int64
+		if _, err := fmt.Sscanf(raw, "%d", &value); err == nil {
+			return value
+		}
+	}
+	return 0
 }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-24T03:44:27.7744289Z",
+  "generated_at": "2026-06-24T03:48:51.4654419Z",
   "planner_type": "eino",
   "summary": {
     "total_cases": 24,
@@ -10,7 +10,14 @@
     "average_duration_ms": 0,
     "budget_pass_rate": 1,
     "day_match_rate": 1,
-    "structure_pass_rate": 1
+    "structure_pass_rate": 1,
+    "tool_fallback_rate": 0,
+    "llm_fallback_rate": 1,
+    "external_api_success_rate": 1,
+    "average_node_duration_ms": 0,
+    "average_token_usage": 0,
+    "route_feasibility_pass_rate": 0,
+    "warning_rate": 1
   },
   "cases": [
     {
@@ -20,14 +27,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "杭州3-day Eino travel plan",
@@ -127,14 +152,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "南京2-day Eino travel plan",
@@ -210,14 +253,33 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "day 4 weather is rainy; keep indoor backup options",
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "北京4-day Eino travel plan",
@@ -342,14 +404,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "成都3-day Eino travel plan",
@@ -449,14 +529,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "广州2-day Eino travel plan",
@@ -532,14 +630,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "西安3-day Eino travel plan",
@@ -639,14 +755,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "苏州1-day Eino travel plan",
@@ -698,14 +832,33 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "day 2 weather is rainy; keep indoor backup options",
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "未知城市2-day Eino travel plan",
@@ -782,14 +935,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "杭州2-day Eino travel plan",
@@ -865,14 +1036,33 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "day 4 weather is rainy; keep indoor backup options",
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "北京5-day Eino travel plan",
@@ -1021,14 +1211,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "成都2-day Eino travel plan",
@@ -1122,14 +1330,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "广州1-day Eino travel plan",
@@ -1181,14 +1407,33 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "day 4 weather is rainy; keep indoor backup options",
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "苏州6-day Eino travel plan",
@@ -1361,14 +1606,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "西安1-day Eino travel plan",
@@ -1429,14 +1692,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "南京2-day Eino travel plan",
@@ -1512,14 +1793,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "杭州2-day Eino travel plan",
@@ -1595,14 +1894,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "北京3-day Eino travel plan",
@@ -1702,14 +2019,33 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "day 4 weather is rainy; keep indoor backup options",
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "成都4-day Eino travel plan",
@@ -1870,14 +2206,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "广州3-day Eino travel plan",
@@ -1977,14 +2331,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "苏州1-day Eino travel plan",
@@ -2036,14 +2408,33 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "day 2 weather is rainy; keep indoor backup options",
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "未知城市5-day Eino travel plan",
@@ -2192,14 +2583,33 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "day 4 weather is rainy; keep indoor backup options",
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "西安5-day Eino travel plan",
@@ -2348,14 +2758,32 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "南京3-day Eino travel plan",
@@ -2455,14 +2883,33 @@
       "duration_ms": 0,
       "score": 100,
       "errors": [],
-      "warnings": [],
+      "warnings": [
+        "day 4 weather is rainy; keep indoor backup options",
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+      ],
       "checks": {
         "planner_succeeded": true,
         "day_matched": true,
         "budget_passed": true,
         "structure_complete": true,
         "keywords_matched": true,
-        "no_illegal_fields": true
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 0,
+        "llm_fallbacks": 1,
+        "external_api_successes": 1,
+        "external_api_calls": 1,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
       },
       "plan": {
         "title": "杭州4-day Eino travel plan",
