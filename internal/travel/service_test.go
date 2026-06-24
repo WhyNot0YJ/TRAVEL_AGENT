@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"travel-agent/internal/agent"
 	"travel-agent/internal/domain"
 )
 
@@ -50,6 +51,46 @@ func TestTravelPlanServiceRateLimit(t *testing.T) {
 	_, err := service.CreateTask(context.Background(), req, "127.0.0.1")
 	if !errors.Is(err, ErrRateLimited) {
 		t.Fatalf("expected ErrRateLimited, got %v", err)
+	}
+}
+
+func TestTravelPlanServicePublishesRequestIDAndNodeEvents(t *testing.T) {
+	planner := &eventPlanner{entered: make(chan struct{}), release: make(chan struct{})}
+	service := NewTravelPlanService(planner, NewMemoryTaskStore(), NewMemoryRateLimiter(60))
+	ctx := WithRequestID(context.Background(), "req-test")
+	resp, err := service.CreateTask(ctx, validCreateRequest(), "127.0.0.1")
+	if err != nil {
+		t.Fatalf("CreateTask returned error: %v", err)
+	}
+	<-planner.entered
+
+	events, unsubscribe := service.Subscribe(resp.TaskID)
+	defer unsubscribe()
+	close(planner.release)
+
+	var sawNode, sawDone bool
+	deadline := time.After(2 * time.Second)
+	for !sawDone {
+		select {
+		case event := <-events:
+			if event.RequestID != "req-test" {
+				t.Fatalf("expected request id on event, got %#v", event)
+			}
+			if event.Type == EventNode {
+				sawNode = true
+				if event.NodeName != "UnitTestNode" || event.NodeStatus != "success" || event.DurationMs != 12 {
+					t.Fatalf("unexpected node event: %#v", event)
+				}
+			}
+			if event.Type == EventDone {
+				sawDone = true
+			}
+		case <-deadline:
+			t.Fatal("timed out waiting for node/done events")
+		}
+	}
+	if !sawNode {
+		t.Fatal("expected node event")
 	}
 }
 
@@ -119,4 +160,22 @@ func (stubPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*domain.
 		}},
 		Budget: domain.TravelBudget{Total: 100},
 	}, nil
+}
+
+type eventPlanner struct {
+	entered chan struct{}
+	release chan struct{}
+}
+
+func (p *eventPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*domain.TravelPlan, error) {
+	close(p.entered)
+	<-p.release
+	agent.ReportPlannerEvent(ctx, agent.PlannerTraceEvent{
+		Name:           "UnitTestNode",
+		Kind:           "node",
+		Status:         "success",
+		Duration:       12 * time.Millisecond,
+		FallbackReason: "unit test node",
+	})
+	return stubPlanner{}.Plan(ctx, req)
 }

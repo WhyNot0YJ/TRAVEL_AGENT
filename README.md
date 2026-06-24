@@ -115,7 +115,9 @@ go run ./cmd/server
 curl -N http://localhost:8080/api/v1/travel/plans/{task_id}/stream
 ```
 
-事件类型包括 `progress`、`warning`、`error`、`done`。任务已完成时，新连接会立即收到最终事件。
+事件类型包括 `progress`、`node`、`warning`、`error`、`done`。任务已完成时，新连接会立即收到最终事件。
+
+`node` 事件用于观测 planner 节点耗时，包含 `request_id`、`task_id`、`node_name`、`node_status` 和 `duration_ms`。不需要节点级进度的前端可以忽略该事件。
 
 ## React H5 Frontend
 

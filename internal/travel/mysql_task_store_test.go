@@ -25,7 +25,7 @@ func TestMySQLTaskStoreCreateAndGet(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO travel_tasks")).
-		WithArgs(task.ID, task.RequestHash, task.Status, sqlmock.AnyArg(), nil, task.CreatedAt.UTC(), task.UpdatedAt.UTC()).
+		WithArgs(task.ID, task.RequestID, task.RequestHash, task.Status, sqlmock.AnyArg(), nil, task.CreatedAt.UTC(), task.UpdatedAt.UTC()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -33,9 +33,9 @@ func TestMySQLTaskStoreCreateAndGet(t *testing.T) {
 		t.Fatalf("Create returned error: %v", err)
 	}
 
-	rows := sqlmock.NewRows([]string{"id", "request_hash", "status", "request_json", "error_text", "created_at", "updated_at", "plan_json"}).
-		AddRow(task.ID, task.RequestHash, string(task.Status), mustJSONValue(t, task.Request), "", task.CreatedAt.UTC(), task.UpdatedAt.UTC(), nil)
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT t.id, t.request_hash, t.status")).
+	rows := sqlmock.NewRows([]string{"id", "request_id", "request_hash", "status", "request_json", "error_text", "created_at", "updated_at", "plan_json"}).
+		AddRow(task.ID, task.RequestID, task.RequestHash, string(task.Status), mustJSONValue(t, task.Request), "", task.CreatedAt.UTC(), task.UpdatedAt.UTC(), nil)
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT t.id, COALESCE(t.request_id, ''), t.request_hash, t.status")).
 		WithArgs(task.ID).
 		WillReturnRows(rows)
 
@@ -74,7 +74,7 @@ func TestMySQLTaskStoreUpdatePersistsPlan(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta("UPDATE travel_tasks")).
-		WithArgs(task.RequestHash, task.Status, sqlmock.AnyArg(), nil, task.UpdatedAt.UTC(), task.ID).
+		WithArgs(task.RequestID, task.RequestHash, task.Status, sqlmock.AnyArg(), nil, task.UpdatedAt.UTC(), task.ID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
 	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO travel_plans")).
 		WithArgs(task.ID, sqlmock.AnyArg(), task.Plan.Budget.Total, len(task.Plan.Days), len(task.Plan.Warnings), task.UpdatedAt.UTC()).
@@ -85,9 +85,9 @@ func TestMySQLTaskStoreUpdatePersistsPlan(t *testing.T) {
 		t.Fatalf("Update returned error: %v", err)
 	}
 
-	rows := sqlmock.NewRows([]string{"id", "request_hash", "status", "request_json", "error_text", "created_at", "updated_at", "plan_json"}).
-		AddRow(task.ID, task.RequestHash, string(task.Status), mustJSONValue(t, task.Request), "", task.CreatedAt.UTC(), task.UpdatedAt.UTC(), mustJSONValue(t, task.Plan))
-	mock.ExpectQuery(regexp.QuoteMeta("SELECT t.id, t.request_hash, t.status")).
+	rows := sqlmock.NewRows([]string{"id", "request_id", "request_hash", "status", "request_json", "error_text", "created_at", "updated_at", "plan_json"}).
+		AddRow(task.ID, task.RequestID, task.RequestHash, string(task.Status), mustJSONValue(t, task.Request), "", task.CreatedAt.UTC(), task.UpdatedAt.UTC(), mustJSONValue(t, task.Plan))
+	mock.ExpectQuery(regexp.QuoteMeta("SELECT t.id, COALESCE(t.request_id, ''), t.request_hash, t.status")).
 		WithArgs(task.RequestHash).
 		WillReturnRows(rows)
 
@@ -115,7 +115,7 @@ func TestMySQLTaskStoreUpdateMissingTask(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta("UPDATE travel_tasks")).
-		WithArgs(task.RequestHash, task.Status, sqlmock.AnyArg(), nil, task.UpdatedAt.UTC(), task.ID).
+		WithArgs(task.RequestID, task.RequestHash, task.Status, sqlmock.AnyArg(), nil, task.UpdatedAt.UTC(), task.ID).
 		WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectRollback()
 
@@ -131,6 +131,7 @@ func mysqlTestTask() Task {
 	now := time.Date(2026, 6, 24, 10, 0, 0, 0, time.UTC)
 	return Task{
 		ID:          "task_mysql",
+		RequestID:   "req_mysql",
 		RequestHash: "hash_mysql",
 		Status:      TaskPending,
 		Request: domain.TravelRequest{

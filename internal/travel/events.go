@@ -13,13 +13,18 @@ const (
 	EventWarning  EventType = "warning"
 	EventError    EventType = "error"
 	EventDone     EventType = "done"
+	EventNode     EventType = "node"
 )
 
 type TaskEvent struct {
-	Type      EventType          `json:"type"`
-	TaskID    string             `json:"task_id"`
-	Status    TaskStatus         `json:"status,omitempty"`
-	Message   string             `json:"message,omitempty"`
-	Plan      *domain.TravelPlan `json:"plan,omitempty"`
-	CreatedAt time.Time          `json:"created_at"`
+	Type       EventType          `json:"type"`
+	RequestID  string             `json:"request_id,omitempty"`
+	TaskID     string             `json:"task_id"`
+	Status     TaskStatus         `json:"status,omitempty"`
+	Message    string             `json:"message,omitempty"`
+	Plan       *domain.TravelPlan `json:"plan,omitempty"`
+	NodeName   string             `json:"node_name,omitempty"`
+	NodeStatus string             `json:"node_status,omitempty"`
+	DurationMs int64              `json:"duration_ms,omitempty"`
+	CreatedAt  time.Time          `json:"created_at"`
 }

@@ -43,7 +43,7 @@ The frontend does not depend on Eino, Redis, or planner internals. It only consu
 * `internal/server`：router、request id、logging、recovery、CORS。
 * `internal/travel`：HTTP DTO、handler、service、任务 store、request_hash 缓存、限流、EventBus。
 * `internal/redis`：Redis client 初始化和可用性检查。
-* `internal/agent`：`TravelPlanner` 接口和 MockPlanner。
+* `internal/agent`：`TravelPlanner` 接口、MockPlanner、通用 planner metadata / event reporter。
 * `internal/agent/eino`：Eino Graph、LLM、mock/real tools。
 * `internal/domain`：稳定业务模型，不依赖 HTTP、Redis、Eino 或外部 API 原始响应。
 
@@ -71,3 +71,18 @@ POST /travel/plans
 ```
 
 SSE handler 只依赖 `TravelPlanService` 和 `EventBus`，不直接依赖 Eino 内部实现。
+
+## Observability
+
+Request id 来源于 `X-Request-ID`，未提供时由 middleware 生成，并写回响应头。`travel.Handler` 将 request id 放入 context，`TravelPlanService` 保存到 task 并在后台 planner run 中继续传递。
+
+节点级事件通过 `internal/agent.PlannerEventReporter` 从 context 传入 planner。Eino 只上报通用 `PlannerTraceEvent`，`internal/travel` 将其转换为 SSE `node` 事件和结构化日志，因此 `internal/travel` 不依赖 Eino 包。
+
+结构化日志字段保持稳定：
+
+* `request_id`
+* `task_id`
+* `node`
+* `duration_ms`
+* `status`
+* `error`

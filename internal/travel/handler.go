@@ -22,7 +22,9 @@ func (h *Handler) CreatePlan(c *gin.Context) {
 		respondError(c, http.StatusBadRequest, "invalid_request", err.Error())
 		return
 	}
-	resp, err := h.service.CreateTask(c.Request.Context(), req, c.ClientIP())
+	requestID := c.Writer.Header().Get("X-Request-ID")
+	ctx := WithRequestID(c.Request.Context(), requestID)
+	resp, err := h.service.CreateTask(ctx, req, c.ClientIP())
 	if errors.Is(err, ErrRateLimited) {
 		respondError(c, http.StatusTooManyRequests, "rate_limited", "rate limit exceeded")
 		return
@@ -77,6 +79,7 @@ func (h *Handler) StreamPlan(c *gin.Context) {
 	if current.Status == TaskSucceeded {
 		c.SSEvent(string(EventDone), TaskEvent{
 			Type:      EventDone,
+			RequestID: c.Writer.Header().Get("X-Request-ID"),
 			TaskID:    current.TaskID,
 			Status:    current.Status,
 			Message:   "task already finished",
@@ -89,6 +92,7 @@ func (h *Handler) StreamPlan(c *gin.Context) {
 	if current.Status == TaskFailed {
 		c.SSEvent(string(EventError), TaskEvent{
 			Type:      EventError,
+			RequestID: c.Writer.Header().Get("X-Request-ID"),
 			TaskID:    current.TaskID,
 			Status:    current.Status,
 			Message:   current.Error,
@@ -105,6 +109,7 @@ func (h *Handler) StreamPlan(c *gin.Context) {
 
 	c.SSEvent(string(EventProgress), TaskEvent{
 		Type:      EventProgress,
+		RequestID: c.Writer.Header().Get("X-Request-ID"),
 		TaskID:    current.TaskID,
 		Status:    current.Status,
 		Message:   "stream connected",

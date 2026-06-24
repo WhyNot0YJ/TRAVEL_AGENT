@@ -1,6 +1,9 @@
 package agent
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type PlannerMetadata struct {
 	PlannerType   string              `json:"planner_type,omitempty"`
@@ -28,4 +31,25 @@ type TokenUsage struct {
 
 type TraceablePlanner interface {
 	Metadata() PlannerMetadata
+}
+
+type PlannerEventReporter interface {
+	ReportPlannerEvent(ctx context.Context, event PlannerTraceEvent)
+}
+
+type plannerEventReporterKey struct{}
+
+func WithPlannerEventReporter(ctx context.Context, reporter PlannerEventReporter) context.Context {
+	if reporter == nil {
+		return ctx
+	}
+	return context.WithValue(ctx, plannerEventReporterKey{}, reporter)
+}
+
+func ReportPlannerEvent(ctx context.Context, event PlannerTraceEvent) {
+	reporter, ok := ctx.Value(plannerEventReporterKey{}).(PlannerEventReporter)
+	if !ok || reporter == nil {
+		return
+	}
+	reporter.ReportPlannerEvent(ctx, event)
 }

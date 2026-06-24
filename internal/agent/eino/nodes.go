@@ -46,7 +46,7 @@ func parseTravelRequestNode(ctx context.Context, req domain.TravelRequest) (Trav
 		Warnings:              []string{},
 		Trace:                 []TraceEvent{},
 	}
-	return appendTrace(state, "ParseTravelRequestNode", "request normalized", started, true), nil
+	return appendTrace(ctx, state, "ParseTravelRequestNode", "request normalized", started, true), nil
 }
 
 func searchPOIsToolNode(tool POITool) func(context.Context, TravelPlanningState) (TravelPlanningState, error) {
@@ -60,13 +60,13 @@ func searchPOIsToolNode(tool POITool) func(context.Context, TravelPlanningState)
 			if isFallbackError(err) && len(pois) > 0 {
 				state.Warnings = append(state.Warnings, err.Error())
 				state.POIs = pois
-				return appendTrace(state, "SearchPOIsToolNode", fmt.Sprintf("loaded %d fallback pois", len(pois)), started, true), nil
+				return appendTrace(ctx, state, "SearchPOIsToolNode", fmt.Sprintf("loaded %d fallback pois", len(pois)), started, true), nil
 			}
-			state = appendTrace(state, "SearchPOIsToolNode", err.Error(), started, false)
+			state = appendTrace(ctx, state, "SearchPOIsToolNode", err.Error(), started, false)
 			return state, err
 		}
 		state.POIs = pois
-		return appendTrace(state, "SearchPOIsToolNode", fmt.Sprintf("loaded %d pois", len(pois)), started, true), nil
+		return appendTrace(ctx, state, "SearchPOIsToolNode", fmt.Sprintf("loaded %d pois", len(pois)), started, true), nil
 	}
 }
 
@@ -81,9 +81,9 @@ func getWeatherToolNode(tool WeatherTool) func(context.Context, TravelPlanningSt
 			if isFallbackError(err) && len(weather) > 0 {
 				state.Warnings = append(state.Warnings, err.Error())
 				state.Weather = weather
-				return appendTrace(state, "GetWeatherToolNode", fmt.Sprintf("loaded %d fallback weather records", len(weather)), started, true), nil
+				return appendTrace(ctx, state, "GetWeatherToolNode", fmt.Sprintf("loaded %d fallback weather records", len(weather)), started, true), nil
 			}
-			state = appendTrace(state, "GetWeatherToolNode", err.Error(), started, false)
+			state = appendTrace(ctx, state, "GetWeatherToolNode", err.Error(), started, false)
 			return state, err
 		}
 		state.Weather = weather
@@ -92,7 +92,7 @@ func getWeatherToolNode(tool WeatherTool) func(context.Context, TravelPlanningSt
 				state.Warnings = append(state.Warnings, fmt.Sprintf("day %d weather is rainy; keep indoor backup options", item.Day))
 			}
 		}
-		return appendTrace(state, "GetWeatherToolNode", fmt.Sprintf("loaded %d weather records", len(weather)), started, true), nil
+		return appendTrace(ctx, state, "GetWeatherToolNode", fmt.Sprintf("loaded %d weather records", len(weather)), started, true), nil
 	}
 }
 
@@ -107,13 +107,13 @@ func computeRouteToolNode(tool RouteTool) func(context.Context, TravelPlanningSt
 			if isFallbackError(err) && len(routes) > 0 {
 				state.Warnings = append(state.Warnings, err.Error())
 				state.Routes = routes
-				return appendTrace(state, "ComputeRouteToolNode", fmt.Sprintf("computed %d fallback route segments", len(routes)), started, true), nil
+				return appendTrace(ctx, state, "ComputeRouteToolNode", fmt.Sprintf("computed %d fallback route segments", len(routes)), started, true), nil
 			}
-			state = appendTrace(state, "ComputeRouteToolNode", err.Error(), started, false)
+			state = appendTrace(ctx, state, "ComputeRouteToolNode", err.Error(), started, false)
 			return state, err
 		}
 		state.Routes = routes
-		return appendTrace(state, "ComputeRouteToolNode", fmt.Sprintf("computed %d route segments", len(routes)), started, true), nil
+		return appendTrace(ctx, state, "ComputeRouteToolNode", fmt.Sprintf("computed %d route segments", len(routes)), started, true), nil
 	}
 }
 
@@ -127,7 +127,7 @@ func estimateBudgetToolNode(tool BudgetTool) func(context.Context, TravelPlannin
 			Routes:  state.Routes,
 		})
 		if err != nil {
-			state = appendTrace(state, "EstimateBudgetToolNode", err.Error(), started, false)
+			state = appendTrace(ctx, state, "EstimateBudgetToolNode", err.Error(), started, false)
 			return state, err
 		}
 		state.Budget = domain.TravelBudget{
@@ -137,7 +137,7 @@ func estimateBudgetToolNode(tool BudgetTool) func(context.Context, TravelPlannin
 			Ticket:    budget.Ticket,
 			Total:     budget.Total,
 		}
-		return appendTrace(state, "EstimateBudgetToolNode", "budget estimated", started, true), nil
+		return appendTrace(ctx, state, "EstimateBudgetToolNode", "budget estimated", started, true), nil
 	}
 }
 
@@ -181,7 +181,7 @@ func optimizeItineraryNode(ctx context.Context, state TravelPlanningState) (Trav
 		})
 	}
 	state.Itinerary = days
-	return appendTrace(state, "OptimizeItineraryNode", fmt.Sprintf("built %d itinerary days", len(days)), started, true), nil
+	return appendTrace(ctx, state, "OptimizeItineraryNode", fmt.Sprintf("built %d itinerary days", len(days)), started, true), nil
 }
 
 func validateRouteFeasibilityNode(ctx context.Context, state TravelPlanningState) (TravelPlanningState, error) {
@@ -192,7 +192,7 @@ func validateRouteFeasibilityNode(ctx context.Context, state TravelPlanningState
 	result := validateRouteFeasibility(state)
 	state.RouteValidation = result
 	state.Warnings = append(state.Warnings, result.Warnings...)
-	return appendTrace(state, "ValidateRouteFeasibilityNode", fmt.Sprintf("route feasibility score=%d checks=%d", result.Score, len(result.Checks)), started, true), nil
+	return appendTrace(ctx, state, "ValidateRouteFeasibilityNode", fmt.Sprintf("route feasibility score=%d checks=%d", result.Score, len(result.Checks)), started, true), nil
 }
 
 func validateRouteFeasibility(state TravelPlanningState) RouteValidationResult {
@@ -288,7 +288,7 @@ func generateTravelPlanNode(generator TravelPlanGenerator) func(context.Context,
 			return nil, err
 		}
 		plan.Warnings = mergeWarnings(state.Warnings, plan.Warnings)
-		_ = appendTrace(state, "GenerateTravelPlanNode", "travel plan generated", started, true)
+		_ = appendTrace(ctx, state, "GenerateTravelPlanNode", "travel plan generated", started, true)
 		return plan, nil
 	}
 }
@@ -389,7 +389,7 @@ func dayHasIndoorOption(days []domain.TravelDay, dayNumber int) bool {
 		}
 		for _, item := range day.Items {
 			text := strings.ToLower(item.Type + " " + item.Name + " " + item.Reason)
-			for _, token := range []string{"museum", "文化", "博物馆", "寺", "美食", "food", "indoor", "室内"} {
+			for _, token := range []string{"museum", "culture", "temple", "文化", "博物馆", "寺", "美食", "food", "indoor", "室内"} {
 				if strings.Contains(text, strings.ToLower(token)) {
 					return true
 				}

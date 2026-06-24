@@ -138,6 +138,7 @@ Connection: keep-alive
 Event types:
 
 * `progress`
+* `node`
 * `warning`
 * `error`
 * `done`
@@ -154,6 +155,24 @@ Event payload:
   "created_at": "2026-06-23T10:00:00Z"
 }
 ```
+
+Node event payload:
+
+```json
+{
+  "type": "node",
+  "request_id": "20260624115200.000000000",
+  "task_id": "task_xxx",
+  "status": "running",
+  "message": "loaded 5 pois",
+  "node_name": "SearchPOIsToolNode",
+  "node_status": "success",
+  "duration_ms": 12,
+  "created_at": "2026-06-24T11:52:00Z"
+}
+```
+
+新增 `node` 事件保持向后兼容；已有前端可继续只处理 `progress`、`warning`、`error` 和 `done`。
 
 如果任务已完成，新连接会立即返回 `done` 或 `error`。
 

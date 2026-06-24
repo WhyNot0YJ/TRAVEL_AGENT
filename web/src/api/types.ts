@@ -1,5 +1,5 @@
 export type TaskStatus = "pending" | "running" | "succeeded" | "failed";
-export type StreamEventType = "progress" | "warning" | "error" | "done" | "heartbeat";
+export type StreamEventType = "progress" | "node" | "warning" | "error" | "done" | "heartbeat";
 
 export interface TravelPlanRequest {
   departure_city: string;
@@ -36,10 +36,14 @@ export interface ErrorResponse {
 
 export interface TaskEvent {
   type: StreamEventType;
+  request_id?: string;
   task_id?: string;
   status?: TaskStatus;
   message?: string;
   plan?: TravelPlan;
+  node_name?: string;
+  node_status?: string;
+  duration_ms?: number;
   created_at?: string;
   time?: string;
 }
