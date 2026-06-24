@@ -103,3 +103,20 @@ npm run lint
 2. 做了哪些设计决策
 3. 跑了哪些测试
 4. 还有哪些风险或未完成事项
+
+## Frontend Skills
+
+This repository uses existing GitHub skills installed under `.agents/skills`.
+
+Available frontend skills:
+
+- `$frontend-design`: use before building or redesigning frontend UI. It helps avoid generic AI-looking interfaces and improves typography, layout, spacing, color, and visual identity.
+- `$playwright-skill`: use after frontend changes to test local pages with Playwright, take screenshots, check interactions, inspect console output, validate links, and test responsive behavior.
+
+Recommended workflow:
+
+1. Before UI implementation, invoke `$frontend-design`.
+2. After UI implementation, invoke `$playwright-skill`.
+3. Do not introduce a new UI library unless explicitly approved.
+4. Prefer existing project components and design tokens.
+5. For browser testing, prefer local dev server URLs.

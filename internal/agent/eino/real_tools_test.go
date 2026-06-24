@@ -3,10 +3,13 @@ package eino
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 )
 
 func TestRealToolsUseFakeAMapServer(t *testing.T) {
@@ -91,13 +94,178 @@ func TestRealToolFallbackWarningIsAddedToPlan(t *testing.T) {
 	}
 	found := false
 	for _, warning := range plan.Warnings {
-		if strings.Contains(warning, "fallback used") {
+		if strings.Contains(warning, "tool fallback:") &&
+			strings.Contains(warning, "tool=poi") &&
+			strings.Contains(warning, "category=configuration") &&
+			strings.Contains(warning, "mock_fallback=true") {
 			found = true
 			break
 		}
 	}
 	if !found {
 		t.Fatalf("expected fallback warning, got %#v", plan.Warnings)
+	}
+}
+
+func TestRealToolFallbackWarningsAreClassified(t *testing.T) {
+	tests := []struct {
+		name             string
+		handler          http.HandlerFunc
+		run              func(*amapClient) error
+		expectedCategory string
+	}{
+		{
+			name: "http status",
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, `{"status":"0","info":"upstream unavailable"}`, http.StatusBadGateway)
+			},
+			run: func(client *amapClient) error {
+				_, err := (fallbackPOITool{primary: RealPOITool{client: client}, fallback: MockPOITool{}, toolName: "poi"}).Run(context.Background(), POIToolInput{City: "杭州"})
+				return err
+			},
+			expectedCategory: "provider_error",
+		},
+		{
+			name: "provider status",
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				writeJSON(t, w, amapPOIResponse{Status: "0", Info: "INVALID_USER_KEY"})
+			},
+			run: func(client *amapClient) error {
+				_, err := (fallbackPOITool{primary: RealPOITool{client: client}, fallback: MockPOITool{}, toolName: "poi"}).Run(context.Background(), POIToolInput{City: "杭州"})
+				return err
+			},
+			expectedCategory: "provider_error",
+		},
+		{
+			name: "invalid json",
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(`{"status":`))
+			},
+			run: func(client *amapClient) error {
+				_, err := (fallbackPOITool{primary: RealPOITool{client: client}, fallback: MockPOITool{}, toolName: "poi"}).Run(context.Background(), POIToolInput{City: "杭州"})
+				return err
+			},
+			expectedCategory: "invalid_json",
+		},
+		{
+			name: "missing poi fields",
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				writeJSON(t, w, amapPOIResponse{Status: "1", Info: "OK", POIs: []amapPOIItem{{Address: "missing name"}}})
+			},
+			run: func(client *amapClient) error {
+				_, err := (fallbackPOITool{primary: RealPOITool{client: client}, fallback: MockPOITool{}, toolName: "poi"}).Run(context.Background(), POIToolInput{City: "杭州"})
+				return err
+			},
+			expectedCategory: "missing_field",
+		},
+		{
+			name: "missing route coordinates",
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				t.Fatalf("route API should not be called when coordinates are missing")
+			},
+			run: func(client *amapClient) error {
+				_, err := (fallbackRouteTool{primary: RealRouteTool{client: client}, fallback: MockRouteTool{}, toolName: "route"}).Run(context.Background(), RouteToolInput{
+					POIs: []MockPOI{
+						{Name: "A"},
+						{Name: "B", Location: "120.1,30.2"},
+					},
+				})
+				return err
+			},
+			expectedCategory: "missing_field",
+		},
+		{
+			name: "weather city coding",
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				writeJSON(t, w, amapGeocodeResponse{Status: "1", Info: "OK", Geocodes: []amapGeocodeItem{{}}})
+			},
+			run: func(client *amapClient) error {
+				_, err := (fallbackWeatherTool{primary: RealWeatherTool{client: client, geocoder: client}, fallback: MockWeatherTool{}, toolName: "weather"}).Run(context.Background(), WeatherToolInput{City: "杭州", Days: 2})
+				return err
+			},
+			expectedCategory: "missing_field",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(tt.handler)
+			defer server.Close()
+
+			err := tt.run(newAMapClient(server.URL, "test-key", defaultExternalAPITimeout))
+			var fallbackErr *ToolFallbackError
+			if !errors.As(err, &fallbackErr) {
+				t.Fatalf("expected ToolFallbackError, got %T %v", err, err)
+			}
+			if fallbackErr.Category != tt.expectedCategory {
+				t.Fatalf("category mismatch: got %q want %q from %q", fallbackErr.Category, tt.expectedCategory, fallbackErr.Error())
+			}
+			if !strings.Contains(fallbackErr.Error(), "provider=amap") || !strings.Contains(fallbackErr.Error(), "mock_fallback=true") {
+				t.Fatalf("fallback warning is not structured enough: %q", fallbackErr.Error())
+			}
+		})
+	}
+}
+
+func TestRealToolTimeoutFallbackIsClassified(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(50 * time.Millisecond)
+		writeJSON(t, w, amapPOIResponse{Status: "1", Info: "OK"})
+	}))
+	defer server.Close()
+
+	client := newAMapClient(server.URL, "test-key", time.Millisecond)
+	_, err := (fallbackPOITool{primary: RealPOITool{client: client}, fallback: MockPOITool{}, toolName: "poi"}).Run(context.Background(), POIToolInput{City: "杭州"})
+	var fallbackErr *ToolFallbackError
+	if !errors.As(err, &fallbackErr) {
+		t.Fatalf("expected timeout ToolFallbackError, got %T %v", err, err)
+	}
+	if fallbackErr.Category != "timeout" {
+		t.Fatalf("expected timeout category, got %q from %q", fallbackErr.Category, fallbackErr.Error())
+	}
+}
+
+func TestMockToolModeDoesNotCallExternalServer(t *testing.T) {
+	var hits int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&hits, 1)
+		http.Error(w, "should not be called", http.StatusInternalServerError)
+	}))
+	defer server.Close()
+
+	t.Setenv("TRAVEL_AGENT_TOOL_MODE", "mock")
+	t.Setenv("TRAVEL_AGENT_AMAP_API_KEY", "test-key")
+	t.Setenv("TRAVEL_AGENT_AMAP_BASE_URL", server.URL)
+
+	tools := defaultToolSet()
+	pois, err := tools.POI.Run(context.Background(), POIToolInput{City: "杭州"})
+	if err != nil {
+		t.Fatalf("mock poi returned error: %v", err)
+	}
+	if _, err := tools.Weather.Run(context.Background(), WeatherToolInput{City: "杭州", Days: 2}); err != nil {
+		t.Fatalf("mock weather returned error: %v", err)
+	}
+	if _, err := tools.Route.Run(context.Background(), RouteToolInput{POIs: pois}); err != nil {
+		t.Fatalf("mock route returned error: %v", err)
+	}
+	if got := atomic.LoadInt32(&hits); got != 0 {
+		t.Fatalf("mock mode called external server %d times", got)
+	}
+}
+
+func TestRealModeMissingAPIKeyFallsBackWithConfigurationCategory(t *testing.T) {
+	t.Setenv("TRAVEL_AGENT_TOOL_MODE", "real")
+	t.Setenv("TRAVEL_AGENT_AMAP_API_KEY", "")
+
+	tools := defaultToolSet()
+	_, err := tools.POI.Run(context.Background(), POIToolInput{City: "杭州"})
+	var fallbackErr *ToolFallbackError
+	if !errors.As(err, &fallbackErr) {
+		t.Fatalf("expected configuration ToolFallbackError, got %T %v", err, err)
+	}
+	if fallbackErr.Stage != "configuration" || fallbackErr.Category != "configuration" {
+		t.Fatalf("unexpected fallback classification: %#v", fallbackErr)
 	}
 }
 

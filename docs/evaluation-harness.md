@@ -52,6 +52,14 @@ go run ./cmd/harness -planner eino
 
 如果未配置 key 或外部 API 调用失败，real tools 会 fallback 到 mock tools，并在 `TravelPlan.warnings` 中记录原因。
 
+real tool fallback warning 使用稳定格式，后续可用于统计：
+
+```text
+tool fallback: tool=poi provider=amap stage=request category=provider_error mock_fallback=true reason=...
+```
+
+当前 Harness 仍只做基础规则评分，不要求真实外部 API 可用。使用 real mode 跑评估时，缺 key、timeout、非 2xx、provider 失败、无效 JSON、缺字段、坐标缺失等路径应表现为 warning 和 mock fallback，而不是让默认评估崩溃。
+
 ## 4. 核心接口
 
 ```go
@@ -151,6 +159,44 @@ make harness
 make harness-mock
 make harness-eino
 ```
+
+可选 real tool 评估：
+
+```bash
+set TRAVEL_AGENT_TOOL_MODE=real
+set TRAVEL_AGENT_AMAP_API_KEY=your-key
+set TRAVEL_AGENT_EXTERNAL_API_TIMEOUT=10s
+go run ./cmd/harness -planner eino
+```
+
+不要把真实 API Key 写入报告、测试数据或文档。无 Key 时，real mode 会稳定 fallback 到 mock tools。
+
+## 8.1 Frontend UI Harness
+
+前端 UI Harness 与 Go Agent Harness 分开运行，避免让 `internal/harness` 依赖浏览器、HTTP server 或 Playwright。
+
+```bash
+cd web
+npm run harness:ui
+```
+
+UI Harness 使用 Playwright：
+
+1. 在浏览器中打开 React H5。
+2. Mock `POST /api/v1/travel/plans`、SSE stream 和任务查询接口。
+3. 模拟用户在聊天窗口输入旅行需求。
+4. 校验 `生成行程` 按钮从禁用到可用。
+5. 校验规划进度卡出现。
+6. 校验最终路线详情在聊天窗口中展开。
+7. 分别覆盖 desktop 和 mobile Chromium viewport。
+
+报告输出：
+
+```text
+reports/ui_eval_report.json
+```
+
+UI Harness 关注交互、状态展示、SSE/done 渲染和移动端可用性；Go Harness 继续关注 `TravelPlanner` 输出质量。两者报告彼此独立，后续可由 CI 或聚合脚本统一运行。
 
 ## 9. 如何新增测试用例
 

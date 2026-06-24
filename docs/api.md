@@ -158,7 +158,7 @@ curl -N http://localhost:8080/api/v1/travel/plans/{task_id}/stream
 
 ## Frontend Integration Notes
 
-The React H5 client uses the existing contract without additional endpoints:
+The React H5 client uses the existing contract without additional endpoints. The UI is conversational, but the frontend converts the collected brief into the same structured travel task payload:
 
 * `POST /api/v1/travel/plans` creates a task.
 * `GET /api/v1/travel/plans/:task_id/stream` streams progress and the final `done` event.

@@ -1,6 +1,6 @@
 # Travel Agent
 
-本项目是一个基于 React + Go Gin + CloudWeGo Eino 的高并发智能旅游路线规划应用。当前仓库先搭建后端 Travel Agent Evaluation Harness，用于后续持续评估路线规划 Agent 的稳定性、正确性、耗时和结构化输出质量。
+本项目是一个基于 React + Go Gin + CloudWeGo Eino 的高并发智能旅游路线规划应用。当前仓库已经包含后端 Evaluation Harness、Gin 异步任务 API、Eino Travel Planner、Redis/内存任务存储，以及 React H5 对话式前端，用于持续评估和演示路线规划 Agent 的稳定性、正确性、耗时和结构化输出质量。
 
 ## Travel Agent Evaluation Harness
 
@@ -101,6 +101,24 @@ curl -N http://localhost:8080/api/v1/travel/plans/{task_id}/stream
 
 The H5 client lives in `web` and is built with Vite, React, and TypeScript. It talks to the Gin API through the same async task contract:
 
+Quick start on Windows:
+
+```powershell
+.\quick-start.ps1
+```
+
+Stop the dev services started by the script:
+
+```powershell
+.\quick-start.ps1 -Stop
+```
+
+Optional ports and planner:
+
+```powershell
+.\quick-start.ps1 -BackendPort 18085 -FrontendPort 5175 -Planner eino
+```
+
 ```bash
 cd web
 npm install
@@ -123,7 +141,16 @@ npm run lint
 npm run build
 ```
 
-The first screen is the route planner itself. The form creates a task with `POST /api/v1/travel/plans`, subscribes to `GET /api/v1/travel/plans/{task_id}/stream`, falls back to `GET /api/v1/travel/plans/{task_id}` polling if SSE disconnects, and renders the final `TravelPlan`.
+Frontend UI harness:
+
+```bash
+cd web
+npm run harness:ui
+```
+
+The UI harness uses Playwright, mocks the travel API/SSE contract in the browser test, runs desktop and mobile Chromium projects, and writes `reports/ui_eval_report.json`.
+
+The first screen is a conversational travel agent. The chat collects a live travel brief, creates a task with `POST /api/v1/travel/plans` once the required details are present, subscribes to `GET /api/v1/travel/plans/{task_id}/stream`, falls back to `GET /api/v1/travel/plans/{task_id}` polling if SSE disconnects, and renders the final `TravelPlan`.
 
 说明：
 
@@ -175,6 +202,14 @@ go run ./cmd/harness -planner eino
 * `TRAVEL_AGENT_EXTERNAL_API_TIMEOUT`
 
 real tool 初始化失败、请求失败或响应缺字段时，会自动 fallback 到 mock tool，并在 `warnings` 中说明原因。
+
+fallback warning 使用稳定格式，便于后续报告统计：
+
+```text
+tool fallback: tool=poi provider=amap stage=request category=provider_error mock_fallback=true reason=...
+```
+
+当前分类包括 `configuration`、`timeout`、`provider_error`、`invalid_json`、`missing_field`、`request_error` 和 `unknown`。默认 `TRAVEL_AGENT_TOOL_MODE=mock` 不会调用任何外部 API；`real` mode 配置不完整或 provider 异常时会降级到 mock，避免本地 Harness 因外部依赖不可用而失败。
 
 ## 如何添加新的测试用例
 

@@ -3,6 +3,7 @@ package eino
 import (
 	"context"
 	"fmt"
+	"strings"
 )
 
 type toolSet struct {
@@ -13,12 +14,29 @@ type toolSet struct {
 }
 
 type ToolFallbackError struct {
-	Tool   string
-	Reason string
+	Tool         string
+	Provider     string
+	Stage        string
+	Category     string
+	Reason       string
+	MockFallback bool
 }
 
 func (e *ToolFallbackError) Error() string {
-	return fmt.Sprintf("%s fallback used: %s", e.Tool, e.Reason)
+	if e == nil {
+		return "tool fallback: <nil>"
+	}
+	provider := fallbackValue(e.Provider, "amap")
+	stage := fallbackValue(e.Stage, "request")
+	category := fallbackValue(e.Category, classifyToolFailure(e.Reason))
+	return fmt.Sprintf("tool fallback: tool=%s provider=%s stage=%s category=%s mock_fallback=%t reason=%s",
+		fallbackValue(e.Tool, "unknown"),
+		provider,
+		stage,
+		category,
+		e.MockFallback,
+		fallbackValue(e.Reason, "unknown"),
+	)
 }
 
 func defaultToolSet() toolSet {
@@ -29,9 +47,9 @@ func defaultToolSet() toolSet {
 	}
 	if cfg.AMapAPIKey == "" {
 		return toolSet{
-			POI:     fallbackPOITool{primary: nil, fallback: mock.POI, toolName: "poi", reason: "TRAVEL_AGENT_AMAP_API_KEY is not configured"},
-			Weather: fallbackWeatherTool{primary: nil, fallback: mock.Weather, toolName: "weather", reason: "TRAVEL_AGENT_AMAP_API_KEY is not configured"},
-			Route:   fallbackRouteTool{primary: nil, fallback: mock.Route, toolName: "route", reason: "TRAVEL_AGENT_AMAP_API_KEY is not configured"},
+			POI:     fallbackPOITool{primary: nil, fallback: mock.POI, toolName: "poi", stage: "configuration", reason: "TRAVEL_AGENT_AMAP_API_KEY is not configured"},
+			Weather: fallbackWeatherTool{primary: nil, fallback: mock.Weather, toolName: "weather", stage: "configuration", reason: "TRAVEL_AGENT_AMAP_API_KEY is not configured"},
+			Route:   fallbackRouteTool{primary: nil, fallback: mock.Route, toolName: "route", stage: "configuration", reason: "TRAVEL_AGENT_AMAP_API_KEY is not configured"},
 			Budget:  mock.Budget,
 		}
 	}
@@ -62,6 +80,7 @@ type fallbackPOITool struct {
 	primary  POITool
 	fallback POITool
 	toolName string
+	stage    string
 	reason   string
 }
 
@@ -77,13 +96,14 @@ func (t fallbackPOITool) Run(ctx context.Context, input POIToolInput) ([]MockPOI
 	if err != nil {
 		return nil, err
 	}
-	return out, &ToolFallbackError{Tool: t.toolName, Reason: t.reason}
+	return out, newToolFallbackError(t.toolName, t.stage, t.reason)
 }
 
 type fallbackWeatherTool struct {
 	primary  WeatherTool
 	fallback WeatherTool
 	toolName string
+	stage    string
 	reason   string
 }
 
@@ -99,13 +119,14 @@ func (t fallbackWeatherTool) Run(ctx context.Context, input WeatherToolInput) ([
 	if err != nil {
 		return nil, err
 	}
-	return out, &ToolFallbackError{Tool: t.toolName, Reason: t.reason}
+	return out, newToolFallbackError(t.toolName, t.stage, t.reason)
 }
 
 type fallbackRouteTool struct {
 	primary  RouteTool
 	fallback RouteTool
 	toolName string
+	stage    string
 	reason   string
 }
 
@@ -121,5 +142,46 @@ func (t fallbackRouteTool) Run(ctx context.Context, input RouteToolInput) ([]Moc
 	if err != nil {
 		return nil, err
 	}
-	return out, &ToolFallbackError{Tool: t.toolName, Reason: t.reason}
+	return out, newToolFallbackError(t.toolName, t.stage, t.reason)
+}
+
+func newToolFallbackError(tool, stage, reason string) *ToolFallbackError {
+	if stage == "" {
+		stage = "request"
+	}
+	return &ToolFallbackError{
+		Tool:         tool,
+		Provider:     "amap",
+		Stage:        stage,
+		Category:     classifyToolFailure(reason),
+		Reason:       reason,
+		MockFallback: true,
+	}
+}
+
+func classifyToolFailure(reason string) string {
+	lower := strings.ToLower(strings.TrimSpace(reason))
+	switch {
+	case lower == "":
+		return "unknown"
+	case strings.Contains(lower, "not configured"), strings.Contains(lower, "api key is empty"), strings.Contains(lower, "base url is empty"):
+		return "configuration"
+	case strings.Contains(lower, "timeout"), strings.Contains(lower, "deadline exceeded"):
+		return "timeout"
+	case strings.Contains(lower, "status "), strings.Contains(lower, "api error"):
+		return "provider_error"
+	case strings.Contains(lower, "decode"), strings.Contains(lower, "invalid character"), strings.Contains(lower, "json"):
+		return "invalid_json"
+	case strings.Contains(lower, "empty"), strings.Contains(lower, "missing"), strings.Contains(lower, "required"), strings.Contains(lower, "no usable"):
+		return "missing_field"
+	default:
+		return "request_error"
+	}
+}
+
+func fallbackValue(value, fallback string) string {
+	if strings.TrimSpace(value) == "" {
+		return fallback
+	}
+	return value
 }

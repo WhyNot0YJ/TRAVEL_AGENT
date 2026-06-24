@@ -17,7 +17,7 @@ HTTP Client
 
 ## Frontend H5 Flow
 
-Stage 8 adds a React + TypeScript H5 client under `web`.
+当前仓库已在 `web` 下接入 React + TypeScript H5 client。前端采用 conversation-first 体验：通过聊天收集旅行意图，维护实时 brief panel，并在必要字段齐全后提交结构化任务。
 
 ```text
 React H5

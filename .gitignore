@@ -5,4 +5,12 @@ node_modules/
 web/node_modules/
 web/dist/
 web/.vite/
+web/test-results/
+web/playwright-report/
+.agents/**/node_modules/
+.agents/**/.cache/
+playwright-report/
+test-results/
 *.log
+.tmp/
+.codegraph/

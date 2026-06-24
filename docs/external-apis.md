@@ -84,10 +84,28 @@ submit_travel_plan
 * real mode 下未配置 API Key
 * HTTP 请求失败或超时
 * 高德返回非成功状态
+* 返回非 JSON 或 JSON 结构无效
 * 响应缺少必要字段
 * 路线计算缺少 POI 坐标
 
+fallback warning 使用稳定的 key-value 文本格式，便于后续 Harness 统计：
+
+```text
+tool fallback: tool=poi provider=amap stage=request category=provider_error mock_fallback=true reason=...
+```
+
+字段语义：
+
+* `tool`：`poi`、`weather` 或 `route`
+* `provider`：当前为 `amap`
+* `stage`：`configuration` 或 `request`
+* `category`：`configuration`、`timeout`、`provider_error`、`invalid_json`、`missing_field`、`request_error` 或 `unknown`
+* `mock_fallback`：是否已使用 mock tool 兜底
+* `reason`：脱敏后的错误摘要，不包含 API Key 或原始敏感响应
+
 外部 API 原始响应不会进入 `internal/domain`；只会转换为 Eino 内部状态使用的 POI、Weather、Route 数据。
+
+当前稳定性边界：real tools 已通过 fake HTTP server 覆盖缺 key、timeout、非 2xx、provider 失败、无效 JSON、必填字段缺失、路线坐标缺失和天气城市编码失败。默认 `mock` mode 不会发起外部请求。真实生产数据的 POI 质量、限流策略和地图级排程准确性仍需要结合实际 Key 和 provider SLA 单独验证。
 
 ## 6. 尚未接入
 

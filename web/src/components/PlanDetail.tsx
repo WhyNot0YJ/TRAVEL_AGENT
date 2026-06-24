@@ -2,24 +2,30 @@ import type { TravelPlan } from "../api/types";
 
 interface PlanDetailProps {
   plan?: TravelPlan;
+  status?: string;
 }
 
 function money(value: number): string {
   return `¥${Math.round(value).toLocaleString("zh-CN")}`;
 }
 
-export default function PlanDetail({ plan }: PlanDetailProps) {
+export default function PlanDetail({ plan, status = "empty" }: PlanDetailProps) {
   if (!plan) {
+    const message =
+      status === "running" || status === "pending"
+        ? "路线正在生成，完成后会在这里展开每天安排、预算和提醒。"
+        : "生成完成后会展示每天安排、预算和提醒。";
     return (
-      <section className="empty-detail">
+      <section className="empty-detail" data-testid="plan-empty">
         <h2>路线详情</h2>
-        <p className="muted">完成后会展示每天安排、预算和提醒。</p>
+        <p className="muted">{message}</p>
       </section>
     );
   }
 
   return (
-    <section className="plan-detail">
+    <section className="plan-detail has-plan" data-testid="plan-detail">
+      <p className="answer-kicker">已生成路线</p>
       <div className="plan-header">
         <div>
           <h2>{plan.title}</h2>
@@ -44,12 +50,12 @@ export default function PlanDetail({ plan }: PlanDetailProps) {
       ) : null}
 
       <div className="days">
-        {plan.days.map((day) => (
-          <article className="day-card" key={day.day}>
-            <header>
+        {plan.days.map((day, index) => (
+          <details className="day-card" key={day.day} open={index === 0}>
+            <summary>
               <span>Day {day.day}</span>
               <h3>{day.theme}</h3>
-            </header>
+            </summary>
             <div className="timeline">
               {day.items.map((item) => (
                 <div className="timeline-item" key={`${day.day}-${item.time}-${item.name}`}>
@@ -67,7 +73,7 @@ export default function PlanDetail({ plan }: PlanDetailProps) {
                 </div>
               ))}
             </div>
-          </article>
+          </details>
         ))}
       </div>
     </section>

@@ -15,7 +15,8 @@
 * 已实现 Mock Budget Tool
 * 已支持 real/mock Tool mode
 * 已接入高德 POI、天气、路线 API adapter，默认不启用
-* 未接入 Gin
+* 已通过 `TravelPlanner` 接口接入 Gin 异步任务 API
+* 已由 React H5 前端通过任务创建、SSE 和查询接口消费规划结果
 
 ## 2. 流程图
 
@@ -57,7 +58,7 @@ TravelRequest
 * 调用 POI Tool 接口
 * mock mode 使用 `MockPOITool`
 * real mode 使用 `RealPOITool` 调用高德 POI 搜索
-* real tool 失败时 fallback 到 mock，并追加 warning
+* real tool 失败时 fallback 到 mock，并追加结构化 warning，包含 tool、provider、stage、category 和 fallback 状态
 
 ### GetWeatherToolNode
 
@@ -70,7 +71,7 @@ TravelRequest
 * 调用 Weather Tool 接口
 * mock mode 使用 `MockWeatherTool`
 * real mode 使用 `RealWeatherTool` 查询高德天气
-* real tool 失败时 fallback 到 mock，并追加 warning
+* real tool 失败时 fallback 到 mock，并追加结构化 warning，天气城市编码失败会归类为 `missing_field`
 
 ### ComputeRouteToolNode
 
@@ -83,7 +84,7 @@ TravelRequest
 * 调用 Route Tool 接口
 * mock mode 使用 `MockRouteTool`
 * real mode 使用 `RealRouteTool` 调用高德路径规划
-* real tool 失败时 fallback 到 mock，并追加 warning
+* real tool 失败时 fallback 到 mock，并追加结构化 warning，POI 坐标缺失会触发路线 mock fallback
 
 ### EstimateBudgetToolNode
 
@@ -200,15 +201,22 @@ Mock Tools 均为稳定、可复现的本地实现：
 
 Mock Tools 不会调用真实外部 API，也不会读取 API Key。real tools 的原始响应只在 `internal/agent/eino` 内解析，不污染 `internal/domain`。
 
+real tool fallback warning 格式：
+
+```text
+tool fallback: tool=route provider=amap stage=request category=missing_field mock_fallback=true reason=...
+```
+
+当前分类包括 `configuration`、`timeout`、`provider_error`、`invalid_json`、`missing_field`、`request_error` 和 `unknown`。这些 warning 仍作为普通字符串进入 `TravelPlan.warnings`，后续 Harness 可基于稳定前缀和字段聚合统计。
+
 ## 6. 后续计划
 
-1. 接入高德 POI API
-2. 接入高德路线规划 API
-3. 接入天气 API
-4. 增加 Eino Callback Trace
-5. 增加 Tool 调用轨迹评估
-6. 增加更细粒度 Eino callback trace
-7. 接入前端 H5
+1. 增加 Eino Callback Trace 和更细粒度节点耗时统计
+2. 将 tool fallback 分类汇总到 Harness 指标
+3. 增加 Tool 调用轨迹评估
+4. 增加真实路线可达性、营业时间和天气影响校验
+5. 增加 Token 消耗、外部 API 成功率和失败快照统计
+6. 将节点级事件通过 event reporter 推送到 `TravelPlanService`，再由 SSE 输出给前端
 
 ## 7. 事件上报
 
