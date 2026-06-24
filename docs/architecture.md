@@ -35,6 +35,8 @@ The frontend keeps API types in `web/src/api/types.ts` and request helpers in `w
 
 The frontend does not depend on Eino, Redis, or planner internals. It only consumes task creation, task lookup, and SSE events.
 
+The stage 15 H5 experience treats the final plan as an operational planning surface rather than a landing page. `PlanDetail` renders a compact station timeline, warning/fallback explanations, proportional budget bars, and refinement actions that send follow-up requests back through the conversation. `PlanProgress` consumes generic `node` SSE events and displays planner node status and duration while keeping the older progress/warning/done events compatible.
+
 ## Backend Layers
 
 * `cmd/harness`：本地评估入口。

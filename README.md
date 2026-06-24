@@ -174,6 +174,8 @@ The UI harness uses Playwright, mocks the travel API/SSE contract in the browser
 
 The first screen is a conversational travel agent. The chat collects a live travel brief, creates a task with `POST /api/v1/travel/plans` once the required details are present, subscribes to `GET /api/v1/travel/plans/{task_id}/stream`, falls back to `GET /api/v1/travel/plans/{task_id}` polling if SSE disconnects, and renders the final `TravelPlan`.
 
+The route detail view is productized for mobile scanning: each day renders as a station-style timeline, warnings and fallback messages are grouped with human-readable labels, budget categories are shown as proportional bars, and local refinement actions can feed follow-up requests back into the chat. The progress panel also consumes `node` SSE events so users can see planner node activity before the final plan arrives.
+
 说明：
 
 * `mock`：不依赖 Eino，不经过 Graph，只用于基础 Harness 测试。

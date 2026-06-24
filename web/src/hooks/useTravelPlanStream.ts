@@ -105,6 +105,7 @@ export function useTravelPlanStream(taskId: string | null) {
     };
 
     eventSource.addEventListener("progress", (raw) => appendEvent(parseEvent(raw as MessageEvent<string>, "progress")));
+    eventSource.addEventListener("node", (raw) => appendEvent(parseEvent(raw as MessageEvent<string>, "node")));
     eventSource.addEventListener("warning", (raw) => appendEvent(parseEvent(raw as MessageEvent<string>, "warning")));
     eventSource.addEventListener("done", (raw) => {
       appendEvent(parseEvent(raw as MessageEvent<string>, "done"));

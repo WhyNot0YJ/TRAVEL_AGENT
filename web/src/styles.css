@@ -1,8 +1,8 @@
 :root {
   font-family:
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
-  color: #1d1d1f;
-  background: #f5f5f7;
+  color: #202225;
+  background: #f7f4ed;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -14,9 +14,7 @@
 
 html {
   min-width: 320px;
-  background:
-    radial-gradient(circle at 20% 8%, rgb(255 255 255 / 94%), transparent 28%),
-    linear-gradient(135deg, #f5f5f7 0%, #e8edf4 48%, #f7f4ef 100%);
+  background: linear-gradient(180deg, #f7f4ed 0%, #ebe7dc 100%);
 }
 
 body {
@@ -75,8 +73,8 @@ textarea:focus-visible {
   min-height: 640px;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 72%);
-  border-radius: 34px;
-  background: rgb(255 255 255 / 66%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 72%);
   box-shadow:
     0 34px 80px rgb(29 29 31 / 18%),
     inset 0 1px 0 rgb(255 255 255 / 85%);
@@ -154,7 +152,7 @@ textarea:focus-visible {
 .message {
   display: grid;
   gap: 6px;
-  border-radius: 22px;
+  border-radius: 8px;
   padding: 11px 15px;
   line-height: 1.5;
 }
@@ -169,7 +167,7 @@ textarea:focus-visible {
 
 .message.user {
   align-self: flex-end;
-  background: #007aff;
+  background: #2563a6;
   color: #ffffff;
   box-shadow: 0 12px 26px rgb(0 122 255 / 20%);
 }
@@ -216,7 +214,7 @@ textarea:focus-visible {
 .assistant-result-message {
   min-width: 0;
   border-color: rgb(15 111 106 / 20%);
-  border-left: 4px solid #007aff;
+  border-left: 4px solid #2563a6;
   box-shadow:
     0 20px 44px rgb(15 111 106 / 12%),
     0 10px 26px rgb(29 29 31 / 8%);
@@ -245,7 +243,7 @@ textarea:focus-visible {
   flex: 0 0 auto;
   min-height: 36px;
   border: 1px solid rgb(29 29 31 / 10%);
-  border-radius: 999px;
+  border-radius: 8px;
   background: rgb(255 255 255 / 78%);
   color: #1d1d1f;
   padding: 7px 12px;
@@ -265,7 +263,7 @@ textarea:focus-visible {
   max-height: 160px;
   resize: vertical;
   border: 1px solid rgb(29 29 31 / 10%);
-  border-radius: 22px;
+  border-radius: 8px;
   background: #ffffff;
   color: #1d1d1f;
   padding: 13px 15px;
@@ -283,14 +281,14 @@ textarea:focus-visible {
 .composer-actions button {
   min-height: 44px;
   border: 0;
-  border-radius: 999px;
+  border-radius: 8px;
   background: #e9e9ed;
   color: #1d1d1f;
   font-weight: 760;
 }
 
 .composer-actions .generate-action {
-  background: #007aff;
+  background: #2563a6;
   color: #ffffff;
   box-shadow: 0 12px 26px rgb(0 122 255 / 22%);
 }
@@ -365,9 +363,9 @@ textarea:focus-visible {
   align-items: center;
   gap: 8px;
   margin: 0 0 9px;
-  border-radius: 999px;
-  background: #e8f7ee;
-  color: #248a3d;
+  border-radius: 8px;
+  background: #e8f3ee;
+  color: #3b8c6e;
   padding: 6px 10px;
   font-size: 13px;
   font-weight: 780;
@@ -378,7 +376,7 @@ textarea:focus-visible {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #30d158;
+  background: #3b8c6e;
 }
 
 .state-panel {
@@ -405,7 +403,7 @@ textarea:focus-visible {
   min-height: 30px;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
+  border-radius: 8px;
   background: #f2f2f7;
   color: #6e6e73;
   font-size: 13px;
@@ -460,14 +458,14 @@ textarea:focus-visible {
   align-content: start;
   min-height: 54px;
   border: 1px solid rgb(29 29 31 / 8%);
-  border-radius: 14px;
+  border-radius: 8px;
   background: #f5f5f7;
   padding: 8px;
   color: #86868b;
 }
 
 .planning-steps div.active {
-  border-color: rgb(0 122 255 / 22%);
+  border-color: rgb(37 99 166 / 28%);
   background: linear-gradient(180deg, #f3f8ff, #ffffff);
   color: #0066cc;
 }
@@ -485,7 +483,7 @@ textarea:focus-visible {
 }
 
 .planning-steps div.active span {
-  background: #007aff;
+  background: #2563a6;
   color: #ffffff;
 }
 
@@ -503,7 +501,7 @@ textarea:focus-visible {
 
 .event-item {
   display: grid;
-  grid-template-columns: 76px minmax(0, 1fr);
+  grid-template-columns: minmax(96px, 150px) minmax(0, 1fr);
   gap: 8px;
   align-items: start;
   border-top: 1px solid rgb(29 29 31 / 8%);
@@ -511,7 +509,7 @@ textarea:focus-visible {
 }
 
 .event-item span {
-  color: #007aff;
+  color: #2563a6;
   font-size: 13px;
   font-weight: 780;
 }
@@ -529,6 +527,24 @@ textarea:focus-visible {
   gap: 12px;
   border-bottom: 1px solid rgb(29 29 31 / 8%);
   padding-bottom: 10px;
+}
+
+.refine-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.refine-bar button,
+.day-actions button {
+  min-height: 34px;
+  border: 1px solid rgb(37 99 166 / 22%);
+  border-radius: 8px;
+  background: #eef5fb;
+  color: #2563a6;
+  font-size: 13px;
+  font-weight: 760;
 }
 
 .has-plan {
@@ -552,26 +568,57 @@ textarea:focus-visible {
 
 .plan-header strong {
   white-space: nowrap;
-  color: #007aff;
+  color: #2563a6;
   font-size: 20px;
 }
 
-.budget-grid {
+.budget-panel {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  gap: 7px;
   margin: 10px 0;
+  border: 1px solid rgb(32 34 37 / 8%);
+  border-radius: 8px;
+  padding: 10px;
+  background: #faf8f1;
 }
 
-.budget-grid span {
-  min-height: 34px;
-  border-radius: 12px;
-  background: #f5f5f7;
-  padding: 8px;
-  color: #424245;
+.section-label {
+  margin: 0 0 2px;
+  color: #62615d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.budget-row {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 76px;
+  gap: 8px;
+  align-items: center;
   font-size: 13px;
+}
+
+.budget-row span {
+  color: #62615d;
   font-weight: 720;
-  overflow-wrap: anywhere;
+}
+
+.budget-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e4dfd3;
+}
+
+.budget-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #3b8c6e;
+}
+
+.budget-row strong {
+  text-align: right;
+  color: #202225;
 }
 
 .warnings {
@@ -580,13 +627,27 @@ textarea:focus-visible {
   margin-bottom: 10px;
 }
 
+.warnings article {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr);
+  gap: 8px;
+  border: 1px solid rgb(183 121 31 / 22%);
+  border-radius: 8px;
+  background: #fff8eb;
+  padding: 8px 10px;
+}
+
+.warnings span {
+  color: #b7791f;
+  font-size: 12px;
+  font-weight: 780;
+}
+
 .warnings p {
   margin: 0;
-  border-radius: 12px;
-  background: #fff4e5;
-  padding: 8px 10px;
-  color: #8a4b00;
+  color: #6f4b14;
   font-size: 14px;
+  overflow-wrap: anywhere;
 }
 
 .days {
@@ -596,7 +657,7 @@ textarea:focus-visible {
 
 .day-card {
   border: 1px solid rgb(29 29 31 / 8%);
-  border-radius: 14px;
+  border-radius: 8px;
   background: rgb(255 255 255 / 72%);
   overflow: hidden;
 }
@@ -617,7 +678,7 @@ textarea:focus-visible {
 }
 
 .day-card summary span {
-  color: #007aff;
+  color: #2563a6;
   font-size: 13px;
   font-weight: 780;
 }
@@ -634,19 +695,53 @@ textarea:focus-visible {
 
 .timeline {
   display: grid;
-  gap: 9px;
+  gap: 0;
   padding: 10px 11px 12px;
 }
 
 .timeline-item {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 12px;
+  position: relative;
+  padding: 0 0 14px;
 }
 
-.timeline-item time {
-  color: #86868b;
+.timeline-item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 35px;
+  top: 23px;
+  bottom: -1px;
+  width: 2px;
+  background: #d7d3c8;
+}
+
+.time-mark {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 5px;
+}
+
+.time-mark time {
+  color: #62615d;
   font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.time-mark span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 2px solid #2563a6;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #2563a6;
+  font-size: 12px;
+  font-weight: 800;
+  z-index: 1;
 }
 
 .item-title {
@@ -657,9 +752,9 @@ textarea:focus-visible {
 }
 
 .item-title span {
-  border-radius: 999px;
+  border-radius: 8px;
   background: #eef5ff;
-  color: #0066cc;
+  color: #2563a6;
   padding: 3px 8px;
   font-size: 12px;
   white-space: nowrap;
@@ -673,6 +768,11 @@ textarea:focus-visible {
 .timeline-item small {
   color: #86868b;
   overflow-wrap: anywhere;
+}
+
+.day-actions {
+  border-top: 1px solid rgb(32 34 37 / 8%);
+  padding: 8px 11px 11px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -720,9 +820,19 @@ textarea:focus-visible {
     max-width: 96%;
   }
 
+  .quick-replies {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+
+  .quick-replies button {
+    flex: 1 1 150px;
+    white-space: normal;
+  }
+
   .brief-grid,
   .composer-actions,
-  .budget-grid,
+  .refine-bar,
   .planning-steps {
     grid-template-columns: 1fr;
   }
@@ -739,8 +849,18 @@ textarea:focus-visible {
   }
 
   .event-item,
-  .timeline-item {
+  .timeline-item,
+  .warnings article {
     grid-template-columns: 1fr;
+  }
+
+  .timeline-item:not(:last-child)::before {
+    left: 11px;
+  }
+
+  .time-mark {
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-items: start;
   }
 
   .chat-composer {

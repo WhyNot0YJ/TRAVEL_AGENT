@@ -12,6 +12,21 @@ interface PlanProgressProps {
 
 const stepLabels = ["创建任务", "连接进度", "生成路线", "完成"];
 
+function eventTitle(event: TaskEvent): string {
+  if (event.type === "node") {
+    return event.node_name || "planner node";
+  }
+  return event.type;
+}
+
+function eventMessage(event: TaskEvent): string {
+  if (event.type === "node") {
+    const duration = typeof event.duration_ms === "number" ? ` · ${event.duration_ms}ms` : "";
+    return `${event.node_status || "running"}${duration}`;
+  }
+  return event.message || event.status || "收到事件";
+}
+
 export default function PlanProgress({ taskId, status, events, connected, polling, error, creating }: PlanProgressProps) {
   if (!taskId && !creating) {
     return (
@@ -46,8 +61,8 @@ export default function PlanProgress({ taskId, status, events, connected, pollin
         ) : (
           events.map((event, index) => (
             <div className="event-item" key={`${event.type}-${event.created_at ?? index}`}>
-              <span>{event.type}</span>
-              <p>{event.message || event.status || "收到事件"}</p>
+              <span>{eventTitle(event)}</span>
+              <p>{eventMessage(event)}</p>
             </div>
           ))
         )}

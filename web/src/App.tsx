@@ -232,7 +232,7 @@ export default function App() {
               creating={isSubmitting}
             />
           }
-          planPanel={<PlanDetail plan={stream.plan} status={stream.status} />}
+          planPanel={<PlanDetail plan={stream.plan} status={stream.status} onRefine={acceptText} />}
         />
       </div>
     </main>

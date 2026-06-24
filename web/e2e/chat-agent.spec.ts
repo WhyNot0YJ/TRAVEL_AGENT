@@ -99,6 +99,9 @@ test.beforeEach(async ({ page }) => {
         `event: progress`,
         `data: ${JSON.stringify({ type: "progress", task_id: "task_ui_mock", status: "running", message: "planner started", created_at: new Date().toISOString() })}`,
         "",
+        `event: node`,
+        `data: ${JSON.stringify({ type: "node", task_id: "task_ui_mock", status: "running", node_name: "SearchPOIsToolNode", node_status: "success", duration_ms: 8, created_at: new Date().toISOString() })}`,
+        "",
         `event: done`,
         `data: ${JSON.stringify({ type: "done", task_id: "task_ui_mock", status: "succeeded", message: "task finished", plan: mockPlan, created_at: new Date().toISOString() })}`,
         "",
@@ -140,4 +143,23 @@ test("chat UI generates and displays a travel plan", async ({ page }) => {
   await expect(page.getByText("行程已经生成")).toBeVisible();
   await expect(page.getByTestId("plan-detail")).toContainText("杭州 3 日旅行规划");
   await expect(page.getByTestId("plan-detail")).toContainText("西湖断桥");
+  await expect(page.getByTestId("plan-detail")).toContainText("调整预算");
+  await expect(page.getByTestId("plan-detail")).toContainText("预算拆分");
+});
+
+test("chat UI recovers with polling when SSE disconnects", async ({ page }) => {
+  let streamAttempts = 0;
+
+  await page.route("**/api/v1/travel/plans/task_ui_mock/stream", async (route) => {
+    streamAttempts += 1;
+    await route.fulfill({ status: 503, body: "stream unavailable" });
+  });
+
+  await page.goto("/");
+  await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，预算 3000，喜欢美食和自然风光，高铁优先");
+  await page.getByTestId("send-message").click();
+  await page.getByTestId("generate-plan").click();
+
+  await expect(page.getByTestId("plan-detail")).toContainText("杭州 3 日旅行规划");
+  expect(streamAttempts).toBeGreaterThan(0);
 });
