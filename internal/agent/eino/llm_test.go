@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
+	"net/http/httptest"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"travel-agent/internal/domain"
@@ -112,6 +115,9 @@ func TestLLMGeneratorDisabledFallback(t *testing.T) {
 	if !containsWarning(plan.Warnings, "deterministic mock tools") {
 		t.Fatalf("expected deterministic fallback warning, got %#v", plan.Warnings)
 	}
+	if !containsWarning(plan.Warnings, "LLM fallback:") || !containsWarning(plan.Warnings, "category=disabled") {
+		t.Fatalf("expected disabled LLM fallback warning, got %#v", plan.Warnings)
+	}
 }
 
 func TestLLMGeneratorNoToolCallFallback(t *testing.T) {
@@ -124,7 +130,7 @@ func TestLLMGeneratorNoToolCallFallback(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Generate returned error: %v", err)
 	}
-	if !containsWarning(plan.Warnings, "LLM fallback used") {
+	if !containsWarning(plan.Warnings, "LLM fallback:") || !containsWarning(plan.Warnings, "category=provider_error") {
 		t.Fatalf("expected LLM fallback warning, got %#v", plan.Warnings)
 	}
 }
@@ -176,8 +182,147 @@ func TestParseTravelPlanArgumentsRejectsInvalidShapes(t *testing.T) {
 
 func TestExtractTravelPlanPayloadRequiresDeepSeekToolCall(t *testing.T) {
 	data := []byte(`{"choices":[{"message":{"content":"plain text"}}]}`)
-	if _, err := extractTravelPlanPayload(LLMConfig{Provider: "deepseek"}, data); err == nil {
+	if _, _, err := extractTravelPlanPayload(LLMConfig{Provider: "deepseek"}, data); err == nil {
 		t.Fatal("expected missing tool call error")
+	}
+}
+
+func TestOpenAICompatibleClientFakeServerSuccessRecordsUsage(t *testing.T) {
+	req := llmTestRequest()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/chat/completions" {
+			t.Fatalf("unexpected path: %s", r.URL.Path)
+		}
+		if got := r.Header.Get("Authorization"); got != "Bearer test-key" {
+			t.Fatalf("authorization header not set correctly: %q", got)
+		}
+		writeLLMResponse(t, w, mustMarshal(t, llmValidPlan(req)), tokenUsage{PromptTokens: 11, CompletionTokens: 22, TotalTokens: 33})
+	}))
+	defer server.Close()
+
+	client := newOpenAICompatibleClient(LLMConfig{
+		Provider: "deepseek",
+		APIKey:   "test-key",
+		BaseURL:  server.URL,
+		Model:    "test-model",
+	})
+	result, err := client.GenerateTravelPlan(context.Background(), llmTestState())
+	if err != nil {
+		t.Fatalf("GenerateTravelPlan returned error: %v", err)
+	}
+	if result.Plan == nil || len(result.Plan.Days) != req.Days {
+		t.Fatalf("unexpected result: %#v", result)
+	}
+	if result.PromptVersion != travelPlanPromptVersion {
+		t.Fatalf("prompt version mismatch: %q", result.PromptVersion)
+	}
+	if !result.TokenUsage.Known || result.TokenUsage.TotalTokens != 33 {
+		t.Fatalf("token usage not recorded: %#v", result.TokenUsage)
+	}
+}
+
+func TestLLMGeneratorRetriesThenSucceedsWithFakeServer(t *testing.T) {
+	var calls int32
+	req := llmTestRequest()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		call := atomic.AddInt32(&calls, 1)
+		if call == 1 {
+			writeRawJSON(t, w, `{"choices":[{"message":{"content":"plain text"}}]}`)
+			return
+		}
+		writeLLMResponse(t, w, mustMarshal(t, llmValidPlan(req)), tokenUsage{})
+	}))
+	defer server.Close()
+
+	generator := llmPlanGenerator{
+		client: newOpenAICompatibleClient(LLMConfig{
+			Provider: "deepseek",
+			APIKey:   "test-key",
+			BaseURL:  server.URL,
+			Model:    "test-model",
+		}),
+		fallback:   deterministicPlanGenerator{},
+		maxRetries: 1,
+	}
+	plan, err := generator.Generate(context.Background(), llmTestState())
+	if err != nil {
+		t.Fatalf("Generate returned error: %v", err)
+	}
+	if got := atomic.LoadInt32(&calls); got != 2 {
+		t.Fatalf("expected two calls, got %d", got)
+	}
+	if containsWarning(plan.Warnings, "LLM fallback:") {
+		t.Fatalf("did not expect fallback warning after retry success: %#v", plan.Warnings)
+	}
+	if !containsWarning(plan.Warnings, "LLM trace:") || !containsWarning(plan.Warnings, "prompt_tokens=unknown") {
+		t.Fatalf("expected LLM trace warning with unknown usage, got %#v", plan.Warnings)
+	}
+}
+
+func TestLLMGeneratorFakeServerFallbackCategories(t *testing.T) {
+	req := llmTestRequest()
+	tests := []struct {
+		name             string
+		response         func(t *testing.T, w http.ResponseWriter)
+		maxRetries       int
+		expectedCategory string
+	}{
+		{
+			name: "no tool call",
+			response: func(t *testing.T, w http.ResponseWriter) {
+				writeRawJSON(t, w, `{"choices":[{"message":{"content":"plain text"}}]}`)
+			},
+			expectedCategory: "provider_error",
+		},
+		{
+			name: "bad plan json",
+			response: func(t *testing.T, w http.ResponseWriter) {
+				writeLLMResponse(t, w, `{`, tokenUsage{})
+			},
+			expectedCategory: "invalid_json",
+		},
+		{
+			name: "business validation failed",
+			response: func(t *testing.T, w http.ResponseWriter) {
+				writeLLMResponse(t, w, mustMarshal(t, planWithBudget(req, 999999)), tokenUsage{})
+			},
+			expectedCategory: "business_validation_failed",
+		},
+		{
+			name: "retry exhausted",
+			response: func(t *testing.T, w http.ResponseWriter) {
+				writeRawJSON(t, w, `{"choices":[{"message":{"content":"plain text"}}]}`)
+			},
+			maxRetries:       1,
+			expectedCategory: "retry_exhausted",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				tt.response(t, w)
+			}))
+			defer server.Close()
+
+			generator := llmPlanGenerator{
+				client: newOpenAICompatibleClient(LLMConfig{
+					Provider: "deepseek",
+					APIKey:   "test-key",
+					BaseURL:  server.URL,
+					Model:    "test-model",
+				}),
+				fallback:   deterministicPlanGenerator{},
+				maxRetries: tt.maxRetries,
+			}
+			plan, err := generator.Generate(context.Background(), llmTestState())
+			if err != nil {
+				t.Fatalf("Generate returned error: %v", err)
+			}
+			if !containsWarning(plan.Warnings, "LLM fallback:") || !containsWarning(plan.Warnings, "category="+tt.expectedCategory) {
+				t.Fatalf("expected %s fallback warning, got %#v", tt.expectedCategory, plan.Warnings)
+			}
+		})
 	}
 }
 
@@ -186,8 +331,11 @@ type fakeLLMClient struct {
 	err  error
 }
 
-func (c fakeLLMClient) GenerateTravelPlan(context.Context, TravelPlanningState) (*domain.TravelPlan, error) {
-	return c.plan, c.err
+func (c fakeLLMClient) GenerateTravelPlan(context.Context, TravelPlanningState) (*llmPlanResult, error) {
+	if c.err != nil {
+		return nil, c.err
+	}
+	return &llmPlanResult{Plan: c.plan, PromptVersion: travelPlanPromptVersion}, nil
 }
 
 func llmTestState() TravelPlanningState {
@@ -297,4 +445,37 @@ func containsWarning(warnings []string, needle string) bool {
 		}
 	}
 	return false
+}
+
+func writeLLMResponse(t *testing.T, w http.ResponseWriter, arguments string, usage tokenUsage) {
+	t.Helper()
+	payload := map[string]any{
+		"choices": []map[string]any{
+			{
+				"message": map[string]any{
+					"tool_calls": []map[string]any{
+						{
+							"type": "function",
+							"function": map[string]any{
+								"name":      submitTravelPlanToolName,
+								"arguments": arguments,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	if usage.PromptTokens > 0 || usage.CompletionTokens > 0 || usage.TotalTokens > 0 {
+		payload["usage"] = usage
+	}
+	writeRawJSON(t, w, mustMarshal(t, payload))
+}
+
+func writeRawJSON(t *testing.T, w http.ResponseWriter, data string) {
+	t.Helper()
+	w.Header().Set("Content-Type", "application/json")
+	if _, err := w.Write([]byte(data)); err != nil {
+		t.Fatalf("write raw json failed: %v", err)
+	}
 }

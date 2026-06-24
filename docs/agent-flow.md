@@ -122,13 +122,14 @@ TravelRequest
 * 生成最终结构化 TravelPlan
 * 默认使用 deterministic generator
 * 启用 LLM 后调用 provider-native schema output
+* LLM prompt 带显式版本：`travel-plan-v1`
 * DeepSeek 使用 `submit_travel_plan` strict tool call，tool parameters 是 `TravelPlan` JSON Schema
 * OpenAI-compatible provider 如果支持 Structured Outputs，可使用 `response_format.type=json_schema`
 * Title 包含目的地城市
 * Summary 包含目的地城市和天数
 * Days 数量匹配请求
 * Budget 使用 MockBudgetTool 的估算结果
-* Warnings 记录天气、Mock Tool 限制和 LLM fallback 原因
+* Warnings 记录天气、Mock Tool 限制、LLM trace 和 LLM fallback 原因
 
 ### ValidatePlanNode
 
@@ -174,6 +175,20 @@ Chat Completions
 该 JSON Schema 对所有 object 设置 `additionalProperties=false`，并把 object 字段全部列入 `required`。本地解析时仍使用 unknown-field 拒绝和业务校验，避免 provider 兼容性差异污染 domain 模型。
 
 如果 LLM 未启用、配置缺失、provider 不支持 schema 输出、tool call 缺失、JSON 无效、业务校验失败或重试耗尽，系统会 fallback 到 deterministic generator，并在 `warnings` 中记录 fallback 原因。
+
+LLM 成功 trace 格式：
+
+```text
+LLM trace: prompt_version=travel-plan-v1 duration_ms=123 prompt_tokens=10 completion_tokens=20 total_tokens=30
+```
+
+provider 未返回 token usage 时，token 字段为 `unknown`。fallback 格式：
+
+```text
+LLM fallback: prompt_version=travel-plan-v1 category=retry_exhausted attempts=2 duration_ms=456 reason=...
+```
+
+fallback category 包括 `disabled`、`missing_api_key`、`provider_error`、`timeout`、`invalid_json`、`business_validation_failed` 和 `retry_exhausted`。
 
 ## 5. Mock Tools
 

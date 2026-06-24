@@ -230,6 +230,15 @@ UI Harness 关注交互、状态展示、SSE/done 渲染和移动端可用性；
 
 当前 Eino 模式默认使用 Mock Tools；启用 `TRAVEL_AGENT_TOOL_MODE=real` 后可调用高德 POI、路线和天气 API。LLM 默认不启用；启用后，GenerateTravelPlanNode 会优先使用 provider-native JSON Schema 结构化输出，失败时 fallback 到 deterministic generator。
 
+LLM 相关 warning 当前仍作为 case warnings 输出，后续 Harness 可基于稳定字段聚合：
+
+```text
+LLM trace: prompt_version=travel-plan-v1 duration_ms=123 prompt_tokens=unknown completion_tokens=unknown total_tokens=unknown
+LLM fallback: prompt_version=travel-plan-v1 category=business_validation_failed attempts=1 duration_ms=123 reason=...
+```
+
+fallback category 包括 `disabled`、`missing_api_key`、`provider_error`、`timeout`、`invalid_json`、`business_validation_failed` 和 `retry_exhausted`。如果 provider 返回 token usage，trace 中记录 prompt/completion/total token；如果未返回，则写 `unknown`。
+
 DeepSeek 模式使用 strict tool calling beta：
 
 ```text

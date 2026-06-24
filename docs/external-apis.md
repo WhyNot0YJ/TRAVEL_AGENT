@@ -6,6 +6,8 @@
 
 默认不开启 LLM。未启用、配置缺失、provider 调用失败或输出校验失败时，系统会 fallback 到 deterministic generator。
 
+LLM 链路会记录 prompt version、调用耗时、fallback 分类和 provider 返回的 token usage。如果 provider 不返回 usage，系统记录为 `unknown`，不会伪造 token 数。
+
 ## 2. 环境变量
 
 | 变量 | 说明 | 默认值 |
@@ -20,6 +22,40 @@
 | `TRAVEL_AGENT_LLM_MAX_RETRIES` | LLM 输出解析或校验失败后的重试次数 | `1` |
 
 不要把真实 API Key 写入代码、测试、文档或报告。
+
+当前 prompt version：
+
+```text
+travel-plan-v1
+```
+
+LLM 成功路径会在计划 warning 中追加可解析 trace：
+
+```text
+LLM trace: prompt_version=travel-plan-v1 duration_ms=123 prompt_tokens=10 completion_tokens=20 total_tokens=30
+```
+
+如果 provider 未返回 usage：
+
+```text
+LLM trace: prompt_version=travel-plan-v1 duration_ms=123 prompt_tokens=unknown completion_tokens=unknown total_tokens=unknown
+```
+
+LLM fallback 使用稳定格式：
+
+```text
+LLM fallback: prompt_version=travel-plan-v1 category=invalid_json attempts=1 duration_ms=123 reason=...
+```
+
+fallback category 包括：
+
+* `disabled`
+* `missing_api_key`
+* `provider_error`
+* `timeout`
+* `invalid_json`
+* `business_validation_failed`
+* `retry_exhausted`
 
 ## 3. DeepSeek 结构化输出
 

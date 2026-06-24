@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+const travelPlanPromptVersion = "travel-plan-v1"
+
 func buildTravelPlanMessages(state TravelPlanningState) ([]chatMessage, error) {
 	contextPayload := struct {
 		Request   any `json:"request"`
@@ -29,6 +31,7 @@ func buildTravelPlanMessages(state TravelPlanningState) ([]chatMessage, error) {
 
 	system := strings.Join([]string{
 		"You are a travel planning component.",
+		"Prompt version: " + travelPlanPromptVersion + ".",
 		"Use the provided planning context to produce a practical itinerary.",
 		"Return the final plan only through the configured structured-output channel.",
 		"Do not include secrets, API keys, hidden reasoning, or external claims not supported by the context.",

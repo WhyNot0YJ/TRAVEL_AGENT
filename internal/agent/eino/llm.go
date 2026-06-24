@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"travel-agent/internal/domain"
 )
@@ -24,24 +25,35 @@ func (g deterministicPlanGenerator) Generate(ctx context.Context, state TravelPl
 }
 
 type travelPlanLLMClient interface {
-	GenerateTravelPlan(ctx context.Context, state TravelPlanningState) (*domain.TravelPlan, error)
+	GenerateTravelPlan(ctx context.Context, state TravelPlanningState) (*llmPlanResult, error)
 }
 
 type llmPlanGenerator struct {
-	client     travelPlanLLMClient
-	fallback   TravelPlanGenerator
-	maxRetries int
+	client         travelPlanLLMClient
+	fallback       TravelPlanGenerator
+	maxRetries     int
+	disabledReason string
 }
 
 func newDefaultPlanGenerator() TravelPlanGenerator {
 	cfg := loadLLMConfigFromEnv()
 	fallback := deterministicPlanGenerator{}
 	if !cfg.Enabled {
-		return fallback
-	}
-	if cfg.APIKey == "" || cfg.BaseURL == "" || cfg.Model == "" {
 		return llmPlanGenerator{
-			fallback: fallback,
+			fallback:       fallback,
+			disabledReason: "disabled",
+		}
+	}
+	if cfg.APIKey == "" {
+		return llmPlanGenerator{
+			fallback:       fallback,
+			disabledReason: "missing_api_key",
+		}
+	}
+	if cfg.BaseURL == "" || cfg.Model == "" {
+		return llmPlanGenerator{
+			fallback:       fallback,
+			disabledReason: "provider_error",
 		}
 	}
 	return llmPlanGenerator{
@@ -57,17 +69,27 @@ func (g llmPlanGenerator) Generate(ctx context.Context, state TravelPlanningStat
 	}
 
 	var lastErr error
-	if g.client == nil {
-		lastErr = fmt.Errorf("LLM is enabled but not configured")
+	attemptsMade := 0
+	started := time.Now()
+	if g.disabledReason != "" {
+		lastErr = fmt.Errorf(g.disabledReason)
+	} else if g.client == nil {
+		lastErr = fmt.Errorf("missing_api_key")
 	} else {
 		attempts := g.maxRetries + 1
 		if attempts <= 0 {
 			attempts = 1
 		}
 		for attempt := 0; attempt < attempts; attempt++ {
-			plan, err := g.client.GenerateTravelPlan(ctx, state)
+			attemptsMade++
+			result, err := g.client.GenerateTravelPlan(ctx, state)
 			if err == nil {
-				return plan, nil
+				if result == nil || result.Plan == nil {
+					lastErr = fmt.Errorf("LLM returned empty plan")
+					break
+				}
+				appendLLMTraceWarning(result.Plan, result)
+				return result.Plan, nil
 			}
 			lastErr = err
 		}
@@ -77,8 +99,22 @@ func (g llmPlanGenerator) Generate(ctx context.Context, state TravelPlanningStat
 	if err != nil {
 		return nil, err
 	}
-	plan.Warnings = append(plan.Warnings, fmt.Sprintf("LLM fallback used: %v", lastErr))
+	plan.Warnings = append(plan.Warnings, llmFallbackWarning(lastErr, attemptsMade, time.Since(started)))
 	return plan, nil
+}
+
+type llmPlanResult struct {
+	Plan          *domain.TravelPlan
+	PromptVersion string
+	Duration      time.Duration
+	TokenUsage    LLMTokenUsage
+}
+
+type LLMTokenUsage struct {
+	PromptTokens     int
+	CompletionTokens int
+	TotalTokens      int
+	Known            bool
 }
 
 type openAICompatibleClient struct {
@@ -95,7 +131,8 @@ func newOpenAICompatibleClient(cfg LLMConfig) *openAICompatibleClient {
 	}
 }
 
-func (c *openAICompatibleClient) GenerateTravelPlan(ctx context.Context, state TravelPlanningState) (*domain.TravelPlan, error) {
+func (c *openAICompatibleClient) GenerateTravelPlan(ctx context.Context, state TravelPlanningState) (*llmPlanResult, error) {
+	started := time.Now()
 	messages, err := buildTravelPlanMessages(state)
 	if err != nil {
 		return nil, err
@@ -127,11 +164,20 @@ func (c *openAICompatibleClient) GenerateTravelPlan(ctx context.Context, state T
 		return nil, fmt.Errorf("LLM provider returned status %d: %s", resp.StatusCode, strings.TrimSpace(string(respBody)))
 	}
 
-	rawPlan, err := extractTravelPlanPayload(c.config, respBody)
+	rawPlan, usage, err := extractTravelPlanPayload(c.config, respBody)
 	if err != nil {
 		return nil, err
 	}
-	return parseTravelPlanArguments(rawPlan, state.Request)
+	plan, err := parseTravelPlanArguments(rawPlan, state.Request)
+	if err != nil {
+		return nil, err
+	}
+	return &llmPlanResult{
+		Plan:          plan,
+		PromptVersion: travelPlanPromptVersion,
+		Duration:      time.Since(started),
+		TokenUsage:    usage,
+	}, nil
 }
 
 type chatCompletionRequest struct {
@@ -202,6 +248,13 @@ func buildChatCompletionRequest(cfg LLMConfig, messages []chatMessage, schema ma
 
 type chatCompletionResponse struct {
 	Choices []chatChoice `json:"choices"`
+	Usage   tokenUsage   `json:"usage"`
+}
+
+type tokenUsage struct {
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+	TotalTokens      int `json:"total_tokens"`
 }
 
 type chatChoice struct {
@@ -223,13 +276,13 @@ type chatToolCallFunctionBody struct {
 	Arguments string `json:"arguments"`
 }
 
-func extractTravelPlanPayload(cfg LLMConfig, data []byte) (string, error) {
+func extractTravelPlanPayload(cfg LLMConfig, data []byte) (string, LLMTokenUsage, error) {
 	var resp chatCompletionResponse
 	if err := json.Unmarshal(data, &resp); err != nil {
-		return "", fmt.Errorf("decode LLM response: %w", err)
+		return "", LLMTokenUsage{}, fmt.Errorf("decode LLM response: %w", err)
 	}
 	if len(resp.Choices) == 0 {
-		return "", fmt.Errorf("LLM response has no choices")
+		return "", llmTokenUsage(resp.Usage), fmt.Errorf("LLM response has no choices")
 	}
 
 	message := resp.Choices[0].Message
@@ -237,17 +290,17 @@ func extractTravelPlanPayload(cfg LLMConfig, data []byte) (string, error) {
 		for _, toolCall := range message.ToolCalls {
 			if toolCall.Type == "function" && toolCall.Function.Name == submitTravelPlanToolName {
 				if strings.TrimSpace(toolCall.Function.Arguments) == "" {
-					return "", fmt.Errorf("submit_travel_plan tool call has empty arguments")
+					return "", llmTokenUsage(resp.Usage), fmt.Errorf("submit_travel_plan tool call has empty arguments")
 				}
-				return toolCall.Function.Arguments, nil
+				return toolCall.Function.Arguments, llmTokenUsage(resp.Usage), nil
 			}
 		}
-		return "", fmt.Errorf("LLM response did not call %s", submitTravelPlanToolName)
+		return "", llmTokenUsage(resp.Usage), fmt.Errorf("LLM response did not call %s", submitTravelPlanToolName)
 	}
 	if strings.TrimSpace(message.Content) == "" {
-		return "", fmt.Errorf("LLM response content is empty")
+		return "", llmTokenUsage(resp.Usage), fmt.Errorf("LLM response content is empty")
 	}
-	return message.Content, nil
+	return message.Content, llmTokenUsage(resp.Usage), nil
 }
 
 func chatCompletionsEndpoint(baseURL string) string {
@@ -256,4 +309,86 @@ func chatCompletionsEndpoint(baseURL string) string {
 		return baseURL
 	}
 	return baseURL + "/chat/completions"
+}
+
+func llmTokenUsage(usage tokenUsage) LLMTokenUsage {
+	known := usage.PromptTokens > 0 || usage.CompletionTokens > 0 || usage.TotalTokens > 0
+	return LLMTokenUsage{
+		PromptTokens:     usage.PromptTokens,
+		CompletionTokens: usage.CompletionTokens,
+		TotalTokens:      usage.TotalTokens,
+		Known:            known,
+	}
+}
+
+func appendLLMTraceWarning(plan *domain.TravelPlan, result *llmPlanResult) {
+	if plan == nil || result == nil {
+		return
+	}
+	promptVersion := result.PromptVersion
+	if promptVersion == "" {
+		promptVersion = travelPlanPromptVersion
+	}
+	usage := "prompt_tokens=unknown completion_tokens=unknown total_tokens=unknown"
+	if result.TokenUsage.Known {
+		usage = fmt.Sprintf("prompt_tokens=%d completion_tokens=%d total_tokens=%d",
+			result.TokenUsage.PromptTokens,
+			result.TokenUsage.CompletionTokens,
+			result.TokenUsage.TotalTokens,
+		)
+	}
+	plan.Warnings = append(plan.Warnings, fmt.Sprintf("LLM trace: prompt_version=%s duration_ms=%d %s",
+		promptVersion,
+		result.Duration.Milliseconds(),
+		usage,
+	))
+}
+
+func llmFallbackWarning(err error, attempts int, duration time.Duration) string {
+	reason := "unknown"
+	if err != nil {
+		reason = err.Error()
+	}
+	category := classifyLLMFallback(reason, attempts)
+	return fmt.Sprintf("LLM fallback: prompt_version=%s category=%s attempts=%d duration_ms=%d reason=%s",
+		travelPlanPromptVersion,
+		category,
+		attempts,
+		duration.Milliseconds(),
+		reason,
+	)
+}
+
+func classifyLLMFallback(reason string, attempts int) string {
+	lower := strings.ToLower(strings.TrimSpace(reason))
+	switch {
+	case lower == "disabled":
+		return "disabled"
+	case strings.Contains(lower, "missing_api_key"), strings.Contains(lower, "api key"):
+		return "missing_api_key"
+	case strings.Contains(lower, "timeout"), strings.Contains(lower, "deadline exceeded"):
+		if attempts > 1 {
+			return "retry_exhausted"
+		}
+		return "timeout"
+	case strings.Contains(lower, "did not call"), strings.Contains(lower, "no choices"), strings.Contains(lower, "content is empty"):
+		if attempts > 1 {
+			return "retry_exhausted"
+		}
+		return "provider_error"
+	case strings.Contains(lower, "decode llm response"), strings.Contains(lower, "decode travel plan"), strings.Contains(lower, "invalid character"):
+		if attempts > 1 {
+			return "retry_exhausted"
+		}
+		return "invalid_json"
+	case strings.Contains(lower, "validation"), strings.Contains(lower, "expected"), strings.Contains(lower, "exceeds"), strings.Contains(lower, "negative"), strings.Contains(lower, "empty"):
+		if attempts > 1 {
+			return "retry_exhausted"
+		}
+		return "business_validation_failed"
+	case attempts > 1:
+		return "retry_exhausted"
+	default:
+		return "provider_error"
+	}
 }

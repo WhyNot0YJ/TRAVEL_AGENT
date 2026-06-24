@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-24T03:30:28.7930843Z",
+  "generated_at": "2026-06-24T03:35:07.6925834Z",
   "planner_type": "eino",
   "summary": {
     "total_cases": 24,
@@ -114,7 +114,8 @@
           "total": 2760
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -195,7 +196,8 @@
           "total": 1380
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -325,7 +327,8 @@
         },
         "warnings": [
           "day 4 weather is rainy; keep indoor backup options",
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -430,7 +433,8 @@
           "total": 2300
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -511,7 +515,8 @@
           "total": 1656
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -616,7 +621,8 @@
           "total": 2024
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -673,7 +679,8 @@
           "total": 736
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -755,7 +762,8 @@
         },
         "warnings": [
           "day 2 weather is rainy; keep indoor backup options",
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -836,7 +844,8 @@
           "total": 552
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -990,7 +999,8 @@
         },
         "warnings": [
           "day 4 weather is rainy; keep indoor backup options",
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -1089,7 +1099,8 @@
           "total": 1472
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -1146,7 +1157,8 @@
           "total": 460
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -1324,7 +1336,8 @@
         },
         "warnings": [
           "day 4 weather is rainy; keep indoor backup options",
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -1390,7 +1403,8 @@
           "total": 828
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -1471,7 +1485,8 @@
           "total": 828
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -1552,7 +1567,8 @@
           "total": 1104
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -1657,7 +1673,8 @@
           "total": 3312
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -1823,7 +1840,8 @@
         },
         "warnings": [
           "day 4 weather is rainy; keep indoor backup options",
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -1928,7 +1946,8 @@
           "total": 3220
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -1985,7 +2004,8 @@
           "total": 276
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -2139,7 +2159,8 @@
         },
         "warnings": [
           "day 2 weather is rainy; keep indoor backup options",
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -2293,7 +2314,8 @@
         },
         "warnings": [
           "day 4 weather is rainy; keep indoor backup options",
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -2398,7 +2420,8 @@
           "total": 2208
         },
         "warnings": [
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     },
@@ -2528,7 +2551,8 @@
         },
         "warnings": [
           "day 4 weather is rainy; keep indoor backup options",
-          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called."
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
         ]
       }
     }

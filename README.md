@@ -178,6 +178,15 @@ go run ./cmd/harness -planner eino
 
 如果 LLM 未启用、配置缺失、provider 不支持 schema 输出、tool call 缺失、返回结构无效或业务校验失败，Eino planner 会自动 fallback 到 deterministic generator，并在 `warnings` 中记录原因。
 
+LLM prompt 当前版本为 `travel-plan-v1`。成功调用会记录耗时和 token usage；provider 未返回 usage 时显示 `unknown`。fallback warning 使用稳定分类：
+
+```text
+LLM trace: prompt_version=travel-plan-v1 duration_ms=123 prompt_tokens=unknown completion_tokens=unknown total_tokens=unknown
+LLM fallback: prompt_version=travel-plan-v1 category=invalid_json attempts=1 duration_ms=123 reason=...
+```
+
+fallback category 包括 `disabled`、`missing_api_key`、`provider_error`、`timeout`、`invalid_json`、`business_validation_failed` 和 `retry_exhausted`。
+
 ## 外部 Tool 模式
 
 Eino Tools 默认使用本地 mock：
