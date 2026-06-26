@@ -1,5 +1,14 @@
 export type TaskStatus = "pending" | "running" | "succeeded" | "failed";
-export type StreamEventType = "progress" | "node" | "warning" | "error" | "done" | "heartbeat";
+export type StreamEventType =
+  | "progress"
+  | "node"
+  | "warning"
+  | "error"
+  | "done"
+  | "heartbeat"
+  | "assistant_delta"
+  | "assistant_done";
+export type AgentMode = "quick" | "expert";
 
 export interface TravelPlanRequest {
   departure_city: string;
@@ -9,6 +18,8 @@ export interface TravelPlanRequest {
   interests: string[];
   transport_mode: string;
   pace: string;
+  test_mode?: boolean;
+  agent_mode?: AgentMode;
 }
 
 export interface CreateTaskResponse {
@@ -78,4 +89,31 @@ export interface TravelBudget {
   hotel: number;
   ticket: number;
   total: number;
+}
+
+export interface ChatRequest {
+  message: string;
+  departure_city?: string;
+  destination_city?: string;
+  days?: number;
+  budget?: number;
+  interests?: string[];
+  transport_mode?: string;
+  pace?: string;
+  test_mode?: boolean;
+  agent_mode?: AgentMode;
+}
+
+export interface ChatResponse {
+  departure_city: string;
+  destination_city: string;
+  days: number;
+  budget: number;
+  interests: string[];
+  transport_mode: string;
+  pace: string;
+  reply: string;
+  missing: string[];
+  is_complete: boolean;
+  agent_mode: AgentMode;
 }

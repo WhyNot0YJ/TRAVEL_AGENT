@@ -9,6 +9,7 @@ interface StreamState {
   error: string;
   plan?: TravelPlan;
   status: string;
+  assistantText: string;
 }
 
 const initialState: StreamState = {
@@ -17,6 +18,7 @@ const initialState: StreamState = {
   polling: false,
   error: "",
   status: "empty",
+  assistantText: "",
 };
 
 function parseEvent(raw: MessageEvent<string>, fallbackType: TaskEvent["type"]): TaskEvent {
@@ -43,12 +45,20 @@ export function useTravelPlanStream(taskId: string | null) {
     let pollTimer: number | undefined;
 
     const appendEvent = (event: TaskEvent) => {
+      const shouldKeepEvent =
+        event.type !== "heartbeat" && event.type !== "assistant_delta" && event.type !== "assistant_done";
       setState((current) => ({
         ...current,
-        events: event.type === "heartbeat" ? current.events : [...current.events, event].slice(-20),
+        events: shouldKeepEvent ? [...current.events, event].slice(-20) : current.events,
         plan: event.plan ?? current.plan,
         status: event.status ?? current.status,
         error: event.type === "error" ? event.message || "任务失败" : current.error,
+        assistantText:
+          event.type === "assistant_delta"
+            ? current.assistantText + (event.message || "")
+            : event.type === "assistant_done"
+              ? event.message || current.assistantText
+              : current.assistantText,
       }));
     };
 
@@ -107,6 +117,12 @@ export function useTravelPlanStream(taskId: string | null) {
     eventSource.addEventListener("progress", (raw) => appendEvent(parseEvent(raw as MessageEvent<string>, "progress")));
     eventSource.addEventListener("node", (raw) => appendEvent(parseEvent(raw as MessageEvent<string>, "node")));
     eventSource.addEventListener("warning", (raw) => appendEvent(parseEvent(raw as MessageEvent<string>, "warning")));
+    eventSource.addEventListener("assistant_delta", (raw) =>
+      appendEvent(parseEvent(raw as MessageEvent<string>, "assistant_delta")),
+    );
+    eventSource.addEventListener("assistant_done", (raw) =>
+      appendEvent(parseEvent(raw as MessageEvent<string>, "assistant_done")),
+    );
     eventSource.addEventListener("done", (raw) => {
       appendEvent(parseEvent(raw as MessageEvent<string>, "done"));
       stopStream();

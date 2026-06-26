@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -77,6 +78,60 @@ func TestRealToolsUseFakeAMapServer(t *testing.T) {
 	}
 	if len(routes) != 1 || routes[0].DistanceMeters != 1500 || routes[0].DurationMinutes != 15 {
 		t.Fatalf("unexpected routes: %#v", routes)
+	}
+}
+
+func TestAMapClientLimitsExternalConcurrency(t *testing.T) {
+	var current int32
+	var maxConcurrent int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		inFlight := atomic.AddInt32(&current, 1)
+		for {
+			observed := atomic.LoadInt32(&maxConcurrent)
+			if inFlight <= observed || atomic.CompareAndSwapInt32(&maxConcurrent, observed, inFlight) {
+				break
+			}
+		}
+		time.Sleep(40 * time.Millisecond)
+		atomic.AddInt32(&current, -1)
+		writeJSON(t, w, map[string]string{"status": "1", "info": "OK"})
+	}))
+	defer server.Close()
+
+	client := newAMapClient(server.URL, "test-key", time.Second, newExternalAPILimiter(2, 1000))
+	var wg sync.WaitGroup
+	errs := make(chan error, 6)
+	for i := 0; i < 6; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			var out map[string]string
+			errs <- client.get(context.Background(), "/limited", nil, &out)
+		}()
+	}
+	wg.Wait()
+	close(errs)
+
+	for err := range errs {
+		if err != nil {
+			t.Fatalf("client.get returned error: %v", err)
+		}
+	}
+	if got := atomic.LoadInt32(&maxConcurrent); got > 2 {
+		t.Fatalf("expected at most 2 concurrent external calls, got %d", got)
+	}
+}
+
+func TestLoadToolConfigExternalAPILimits(t *testing.T) {
+	t.Setenv("TRAVEL_AGENT_EXTERNAL_API_CONCURRENCY", "3")
+	t.Setenv("TRAVEL_AGENT_EXTERNAL_API_QPS", "4")
+
+	cfg := loadToolConfigFromEnv()
+	if cfg.ExternalAPIConcurrency != 3 {
+		t.Fatalf("expected external API concurrency 3, got %d", cfg.ExternalAPIConcurrency)
+	}
+	if cfg.ExternalAPIQPS != 4 {
+		t.Fatalf("expected external API QPS 4, got %d", cfg.ExternalAPIQPS)
 	}
 }
 

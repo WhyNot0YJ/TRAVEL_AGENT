@@ -10,3 +10,23 @@ import (
 type TravelPlanner interface {
 	Plan(ctx context.Context, req domain.TravelRequest) (*domain.TravelPlan, error)
 }
+
+// TravelInfoExtractor extracts structured travel information from a user's free-text message,
+// optionally merging with already-known fields.
+type TravelInfoExtractor interface {
+	Extract(ctx context.Context, message string, current domain.TravelRequest) (*TravelInfoResult, error)
+}
+
+// TravelInfoResult carries extracted fields and assistant reply after processing one message.
+type TravelInfoResult struct {
+	DepartureCity   string
+	DestinationCity string
+	Days            int
+	Budget          float64
+	Interests       []string
+	TransportMode   string
+	Pace            string
+	Reply           string
+	Missing         []string
+	IsComplete      bool
+}

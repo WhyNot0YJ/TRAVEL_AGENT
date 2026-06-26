@@ -27,6 +27,7 @@ type Config struct {
 }
 
 func Load() Config {
+	loadDotEnv()
 	return Config{
 		HTTPAddr:           envOrDefault("TRAVEL_AGENT_HTTP_ADDR", ":8080"),
 		Planner:            strings.ToLower(envOrDefault("TRAVEL_AGENT_PLANNER", "mock")),

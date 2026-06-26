@@ -36,11 +36,66 @@ function warningLabel(warning: string): string {
 }
 
 function warningText(warning: string): string {
-  return warning
-    .replace("route feasibility:", "路线校验：")
-    .replace("LLM fallback:", "生成降级：")
-    .replace("LLM trace:", "生成记录：")
-    .replace("tool fallback:", "外部数据降级：");
+  if (warning.startsWith("tool fallback:")) {
+    return formatToolFallbackWarning(warning);
+  }
+  if (warning.startsWith("LLM fallback:")) {
+    return formatLLMFallbackWarning(warning);
+  }
+  return warning.replace("route feasibility:", "路线校验：").replace("LLM trace:", "生成记录：");
+}
+
+function warningFields(warning: string): Record<string, string> {
+  return Object.fromEntries(
+    Array.from(warning.matchAll(/(\w+)=([^=]+?)(?=\s+\w+=|$)/g), ([, key, value]) => [key, value.trim()]),
+  );
+}
+
+function formatToolFallbackWarning(warning: string): string {
+  const fields = warningFields(warning);
+  const tool = toolName(fields.tool);
+  const category = fields.category || "unknown";
+  if (category === "rate_limit") {
+    return `${tool}服务触发调用频率限制，已改用本地模拟数据。稍后重试或提升服务配额后可恢复真实数据。`;
+  }
+  if (category === "configuration") {
+    return `${tool}服务未完成配置，已改用本地模拟数据。`;
+  }
+  if (category === "timeout") {
+    return `${tool}服务响应超时，已改用本地模拟数据。`;
+  }
+  return `${tool}服务暂时不可用，已改用本地模拟数据。`;
+}
+
+function formatLLMFallbackWarning(warning: string): string {
+  const fields = warningFields(warning);
+  const category = fields.category || "unknown";
+  if (category === "test_mode") {
+    return "当前开启测试模式，已使用本地规则生成路线。";
+  }
+  if (category === "missing_api_key") {
+    return "LLM API Key 未配置，已使用本地规则生成路线。";
+  }
+  if (warning.includes("Thinking mode does not support this tool_choice")) {
+    return "模型返回结构化工具调用兼容性错误，已使用本地规则生成路线。请关闭 DeepSeek thinking mode 后重试。";
+  }
+  if (category === "retry_exhausted") {
+    return "LLM 生成多次失败，已使用本地规则生成路线。";
+  }
+  return "LLM 生成不可用，已使用本地规则生成路线。";
+}
+
+function toolName(tool?: string): string {
+  switch (tool) {
+    case "poi":
+      return "POI";
+    case "weather":
+      return "天气";
+    case "route":
+      return "路线";
+    default:
+      return "外部数据";
+  }
 }
 
 export default function PlanDetail({ plan, status = "empty", onRefine }: PlanDetailProps) {

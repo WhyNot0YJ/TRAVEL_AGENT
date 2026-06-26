@@ -10,11 +10,14 @@ interface PlanProgressProps {
   creating: boolean;
 }
 
-const stepLabels = ["创建任务", "连接进度", "生成路线", "完成"];
+const stepLabels = ["提交需求", "连接进度", "生成路线", "完成"];
 
 function eventTitle(event: TaskEvent): string {
   if (event.type === "node") {
     return event.node_name || "planner node";
+  }
+  if (event.type === "assistant_delta" || event.type === "assistant_done") {
+    return "助手输出";
   }
   return event.type;
 }
@@ -31,7 +34,7 @@ export default function PlanProgress({ taskId, status, events, connected, pollin
   if (!taskId && !creating) {
     return (
       <section className="state-panel" data-testid="progress-panel">
-        <p className="muted">和助手确认需求后，路线生成进度会在这里实时更新。</p>
+        <p className="muted">确认需求后，行程生成进度会在这里实时更新。</p>
       </section>
     );
   }
@@ -57,7 +60,7 @@ export default function PlanProgress({ taskId, status, events, connected, pollin
       </div>
       <div className="event-list">
         {events.length === 0 ? (
-          <p className="muted">{creating ? "正在把需求交给旅行规划服务。" : "任务已创建，等待第一条实时事件。"}</p>
+          <p className="muted">{creating ? "正在把需求交给规划服务。" : "任务已创建，等待第一条实时事件。"}</p>
         ) : (
           events.map((event, index) => (
             <div className="event-item" key={`${event.type}-${event.created_at ?? index}`}>

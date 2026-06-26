@@ -17,7 +17,7 @@ func TestDeepSeekStrictToolSchemaPayload(t *testing.T) {
 	req := buildChatCompletionRequest(LLMConfig{
 		Provider: "deepseek",
 		Model:    "deepseek-v4-flash",
-	}, []chatMessage{{Role: "user", Content: "plan"}}, travelPlanJSONSchema())
+	}, []chatMessage{{Role: "user", Content: "plan"}}, travelPlanJSONSchema(), submitTravelPlanToolName, "Submit the final structured travel plan.", "quick")
 
 	if req.Model != "deepseek-v4-flash" {
 		t.Fatalf("unexpected model: %s", req.Model)
@@ -34,6 +34,9 @@ func TestDeepSeekStrictToolSchemaPayload(t *testing.T) {
 	}
 	if !tool.Function.Strict {
 		t.Fatal("expected strict tool schema")
+	}
+	if req.Thinking == nil || req.Thinking.Type != "disabled" {
+		t.Fatalf("expected DeepSeek tool call request to disable thinking mode, got %#v", req.Thinking)
 	}
 	if additional, ok := tool.Function.Parameters["additionalProperties"].(bool); !ok || additional {
 		t.Fatalf("expected root additionalProperties=false, got %#v", tool.Function.Parameters["additionalProperties"])
@@ -59,7 +62,7 @@ func TestStructuredResponseFormatPayloadForCompatibleProvider(t *testing.T) {
 	req := buildChatCompletionRequest(LLMConfig{
 		Provider: "compatible",
 		Model:    "model",
-	}, []chatMessage{{Role: "user", Content: "plan"}}, travelPlanJSONSchema())
+	}, []chatMessage{{Role: "user", Content: "plan"}}, travelPlanJSONSchema(), "", "", "quick")
 
 	if len(req.Tools) != 0 {
 		t.Fatalf("compatible provider should not use tools by default")
@@ -79,6 +82,9 @@ func TestLLMConfigDefaultsDoNotContainAPIKey(t *testing.T) {
 	t.Setenv("TRAVEL_AGENT_LLM_API_KEY", "")
 	t.Setenv("TRAVEL_AGENT_LLM_BASE_URL", "")
 	t.Setenv("TRAVEL_AGENT_LLM_MODEL", "")
+	t.Setenv("TRAVEL_AGENT_LLM_MODEL_QUICK", "")
+	t.Setenv("TRAVEL_AGENT_LLM_MODEL_EXPERT", "")
+	t.Setenv("TRAVEL_AGENT_LLM_STREAM_ENABLED", "")
 	t.Setenv("DEEPSEEK_API_KEY", "")
 
 	cfg := loadLLMConfigFromEnv()
@@ -94,8 +100,60 @@ func TestLLMConfigDefaultsDoNotContainAPIKey(t *testing.T) {
 	if cfg.Model != defaultLLMModel {
 		t.Fatalf("expected default model %q, got %q", defaultLLMModel, cfg.Model)
 	}
+	if cfg.QuickModel != defaultLLMQuickModel {
+		t.Fatalf("expected default quick model %q, got %q", defaultLLMQuickModel, cfg.QuickModel)
+	}
+	if cfg.ExpertModel != defaultLLMExpertModel {
+		t.Fatalf("expected default expert model %q, got %q", defaultLLMExpertModel, cfg.ExpertModel)
+	}
+	if !cfg.StreamEnabled {
+		t.Fatal("StreamEnabled should default to true")
+	}
 	if cfg.APIKey != "" {
 		t.Fatal("default config must not contain an API key")
+	}
+}
+
+func TestModelForModeSelectsByAgentMode(t *testing.T) {
+	cfg := LLMConfig{
+		Model:       "fallback",
+		QuickModel:  "deepseek-v4-flash",
+		ExpertModel: "deepseek-v4-pro",
+	}
+	if got := modelForMode(cfg, "quick"); got != "deepseek-v4-flash" {
+		t.Fatalf("quick mode: got %q", got)
+	}
+	if got := modelForMode(cfg, "expert"); got != "deepseek-v4-pro" {
+		t.Fatalf("expert mode: got %q", got)
+	}
+	if got := modelForMode(cfg, ""); got != "deepseek-v4-flash" {
+		t.Fatalf("empty mode should fall back to quick: got %q", got)
+	}
+	// When per-mode models are unset, fall back to legacy Model field.
+	bare := LLMConfig{Model: "legacy"}
+	if got := modelForMode(bare, "expert"); got != "legacy" {
+		t.Fatalf("expected legacy fallback, got %q", got)
+	}
+}
+
+func TestStreamEnabledRespectsExplicitFalse(t *testing.T) {
+	t.Setenv("TRAVEL_AGENT_LLM_STREAM_ENABLED", "false")
+	cfg := loadLLMConfigFromEnv()
+	if cfg.StreamEnabled {
+		t.Fatal("StreamEnabled should be false when env set to false")
+	}
+}
+
+func TestLegacyModelOverrideAppliesToQuickAndExpert(t *testing.T) {
+	t.Setenv("TRAVEL_AGENT_LLM_MODEL", "custom-model")
+	t.Setenv("TRAVEL_AGENT_LLM_MODEL_QUICK", "")
+	t.Setenv("TRAVEL_AGENT_LLM_MODEL_EXPERT", "")
+	cfg := loadLLMConfigFromEnv()
+	if cfg.QuickModel != "custom-model" {
+		t.Fatalf("legacy MODEL should propagate to QuickModel: got %q", cfg.QuickModel)
+	}
+	if cfg.ExpertModel != "custom-model" {
+		t.Fatalf("legacy MODEL should propagate to ExpertModel: got %q", cfg.ExpertModel)
 	}
 }
 
@@ -196,15 +254,17 @@ func TestOpenAICompatibleClientFakeServerSuccessRecordsUsage(t *testing.T) {
 		if got := r.Header.Get("Authorization"); got != "Bearer test-key" {
 			t.Fatalf("authorization header not set correctly: %q", got)
 		}
-		writeLLMResponse(t, w, mustMarshal(t, llmValidPlan(req)), tokenUsage{PromptTokens: 11, CompletionTokens: 22, TotalTokens: 33})
+		assertStreamRequest(t, r)
+		writeLLMStreamResponse(t, w, submitTravelPlanToolName, mustMarshal(t, llmValidPlan(req)), tokenUsage{PromptTokens: 11, CompletionTokens: 22, TotalTokens: 33})
 	}))
 	defer server.Close()
 
 	client := newOpenAICompatibleClient(LLMConfig{
-		Provider: "deepseek",
-		APIKey:   "test-key",
-		BaseURL:  server.URL,
-		Model:    "test-model",
+		Provider:      "deepseek",
+		APIKey:        "test-key",
+		BaseURL:       server.URL,
+		Model:         "test-model",
+		StreamEnabled: true,
 	})
 	result, err := client.GenerateTravelPlan(context.Background(), llmTestState())
 	if err != nil {
@@ -226,20 +286,22 @@ func TestLLMGeneratorRetriesThenSucceedsWithFakeServer(t *testing.T) {
 	req := llmTestRequest()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		call := atomic.AddInt32(&calls, 1)
+		assertStreamRequest(t, r)
 		if call == 1 {
-			writeRawJSON(t, w, `{"choices":[{"message":{"content":"plain text"}}]}`)
+			writeLLMStreamContent(t, w, "plain text")
 			return
 		}
-		writeLLMResponse(t, w, mustMarshal(t, llmValidPlan(req)), tokenUsage{})
+		writeLLMStreamResponse(t, w, submitTravelPlanToolName, mustMarshal(t, llmValidPlan(req)), tokenUsage{})
 	}))
 	defer server.Close()
 
 	generator := llmPlanGenerator{
 		client: newOpenAICompatibleClient(LLMConfig{
-			Provider: "deepseek",
-			APIKey:   "test-key",
-			BaseURL:  server.URL,
-			Model:    "test-model",
+			Provider:      "deepseek",
+			APIKey:        "test-key",
+			BaseURL:       server.URL,
+			Model:         "test-model",
+			StreamEnabled: true,
 		}),
 		fallback:   deterministicPlanGenerator{},
 		maxRetries: 1,
@@ -270,28 +332,28 @@ func TestLLMGeneratorFakeServerFallbackCategories(t *testing.T) {
 		{
 			name: "no tool call",
 			response: func(t *testing.T, w http.ResponseWriter) {
-				writeRawJSON(t, w, `{"choices":[{"message":{"content":"plain text"}}]}`)
+				writeLLMStreamContent(t, w, "plain text")
 			},
 			expectedCategory: "provider_error",
 		},
 		{
 			name: "bad plan json",
 			response: func(t *testing.T, w http.ResponseWriter) {
-				writeLLMResponse(t, w, `{`, tokenUsage{})
+				writeLLMStreamResponse(t, w, submitTravelPlanToolName, `{`, tokenUsage{})
 			},
 			expectedCategory: "invalid_json",
 		},
 		{
 			name: "business validation failed",
 			response: func(t *testing.T, w http.ResponseWriter) {
-				writeLLMResponse(t, w, mustMarshal(t, planWithBudget(req, 999999)), tokenUsage{})
+				writeLLMStreamResponse(t, w, submitTravelPlanToolName, mustMarshal(t, planWithBudget(req, 999999)), tokenUsage{})
 			},
 			expectedCategory: "business_validation_failed",
 		},
 		{
 			name: "retry exhausted",
 			response: func(t *testing.T, w http.ResponseWriter) {
-				writeRawJSON(t, w, `{"choices":[{"message":{"content":"plain text"}}]}`)
+				writeLLMStreamContent(t, w, "plain text")
 			},
 			maxRetries:       1,
 			expectedCategory: "retry_exhausted",
@@ -301,16 +363,18 @@ func TestLLMGeneratorFakeServerFallbackCategories(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				assertStreamRequest(t, r)
 				tt.response(t, w)
 			}))
 			defer server.Close()
 
 			generator := llmPlanGenerator{
 				client: newOpenAICompatibleClient(LLMConfig{
-					Provider: "deepseek",
-					APIKey:   "test-key",
-					BaseURL:  server.URL,
-					Model:    "test-model",
+					Provider:      "deepseek",
+					APIKey:        "test-key",
+					BaseURL:       server.URL,
+					Model:         "test-model",
+					StreamEnabled: true,
 				}),
 				fallback:   deterministicPlanGenerator{},
 				maxRetries: tt.maxRetries,
@@ -472,10 +536,78 @@ func writeLLMResponse(t *testing.T, w http.ResponseWriter, arguments string, usa
 	writeRawJSON(t, w, mustMarshal(t, payload))
 }
 
+func writeLLMStreamResponse(t *testing.T, w http.ResponseWriter, toolName, arguments string, usage tokenUsage) {
+	t.Helper()
+	payload := map[string]any{
+		"choices": []map[string]any{
+			{
+				"index": 0,
+				"delta": map[string]any{
+					"tool_calls": []map[string]any{
+						{
+							"index": 0,
+							"type":  "function",
+							"function": map[string]any{
+								"name":      toolName,
+								"arguments": arguments,
+							},
+						},
+					},
+				},
+				"finish_reason": "tool_calls",
+			},
+		},
+	}
+	if usage.PromptTokens > 0 || usage.CompletionTokens > 0 || usage.TotalTokens > 0 {
+		payload["usage"] = usage
+	}
+	writeRawSSE(t, w, mustMarshal(t, payload))
+}
+
+func writeLLMStreamContent(t *testing.T, w http.ResponseWriter, content string) {
+	t.Helper()
+	payload := map[string]any{
+		"choices": []map[string]any{
+			{
+				"index": 0,
+				"delta": map[string]any{
+					"content": content,
+				},
+				"finish_reason": "stop",
+			},
+		},
+	}
+	writeRawSSE(t, w, mustMarshal(t, payload))
+}
+
+func writeRawSSE(t *testing.T, w http.ResponseWriter, data string) {
+	t.Helper()
+	w.Header().Set("Content-Type", "text/event-stream")
+	if _, err := w.Write([]byte("data: " + data + "\n\n")); err != nil {
+		t.Fatalf("write sse data failed: %v", err)
+	}
+	if _, err := w.Write([]byte("data: [DONE]\n\n")); err != nil {
+		t.Fatalf("write sse done failed: %v", err)
+	}
+}
+
 func writeRawJSON(t *testing.T, w http.ResponseWriter, data string) {
 	t.Helper()
 	w.Header().Set("Content-Type", "application/json")
 	if _, err := w.Write([]byte(data)); err != nil {
 		t.Fatalf("write raw json failed: %v", err)
+	}
+}
+
+func assertStreamRequest(t *testing.T, r *http.Request) {
+	t.Helper()
+	var payload struct {
+		Stream bool `json:"stream"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		t.Fatalf("decode request body: %v", err)
+	}
+	if !payload.Stream {
+		t.Fatal("expected DeepSeek request stream=true")
 	}
 }

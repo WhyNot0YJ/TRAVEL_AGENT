@@ -8,7 +8,7 @@ import (
 
 const travelPlanPromptVersion = "travel-plan-v1"
 
-func buildTravelPlanMessages(state TravelPlanningState) ([]chatMessage, error) {
+func buildTravelPlanMessages(state TravelPlanningState, agentMode string) ([]chatMessage, error) {
 	contextPayload := struct {
 		Request   any `json:"request"`
 		POIs      any `json:"pois"`
@@ -33,6 +33,7 @@ func buildTravelPlanMessages(state TravelPlanningState) ([]chatMessage, error) {
 		"You are a travel planning component.",
 		"Prompt version: " + travelPlanPromptVersion + ".",
 		"Use the provided planning context to produce a practical itinerary.",
+		plannerModeInstruction(agentMode),
 		"Return the final plan only through the configured structured-output channel.",
 		"Do not include secrets, API keys, hidden reasoning, or external claims not supported by the context.",
 	}, " ")
@@ -41,4 +42,11 @@ func buildTravelPlanMessages(state TravelPlanningState) ([]chatMessage, error) {
 		{Role: "system", Content: system},
 		{Role: "user", Content: user},
 	}, nil
+}
+
+func plannerModeInstruction(agentMode string) string {
+	if strings.EqualFold(agentMode, "expert") {
+		return "Expert mode: optimize for stronger route logic, budget consistency, daily pacing, and fewer backtracking legs."
+	}
+	return "Quick mode: produce a concise, practical itinerary with low latency."
 }

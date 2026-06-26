@@ -14,7 +14,7 @@ import (
 
 func TestHandlerCreateAndGetTask(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60))
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60), nil)
 	router := gin.New()
 	handler := NewHandler(service)
 	router.POST("/plans", handler.CreatePlan)
@@ -57,7 +57,7 @@ func TestHandlerCreateAndGetTask(t *testing.T) {
 
 func TestHandlerValidationAndNotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60))
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60), nil)
 	router := gin.New()
 	handler := NewHandler(service)
 	router.POST("/plans", handler.CreatePlan)
@@ -80,7 +80,7 @@ func TestHandlerValidationAndNotFound(t *testing.T) {
 
 func TestHandlerStreamCompletedTask(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60))
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60), nil)
 	router := gin.New()
 	handler := NewHandler(service)
 	router.GET("/plans/:task_id/stream", handler.StreamPlan)
@@ -99,5 +99,25 @@ func TestHandlerStreamCompletedTask(t *testing.T) {
 	body := rec.Body.String()
 	if !strings.Contains(body, "event:done") || !strings.Contains(body, created.TaskID) {
 		t.Fatalf("expected done SSE event, got %s", body)
+	}
+}
+
+func TestHandlerChatStream(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60), simpleExtractor{})
+	router := gin.New()
+	handler := NewHandler(service)
+	router.POST("/chat/stream", handler.ChatStream)
+
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/chat/stream", strings.NewReader(`{"message":"上海出发，杭州 2 天","test_mode":true,"agent_mode":"quick"}`))
+	req.Header.Set("Content-Type", "application/json")
+	router.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", rec.Code, rec.Body.String())
+	}
+	body := rec.Body.String()
+	if !strings.Contains(body, "event:assistant_delta") || !strings.Contains(body, "event:done") {
+		t.Fatalf("expected chat stream SSE events, got %s", body)
 	}
 }

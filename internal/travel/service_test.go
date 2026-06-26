@@ -11,7 +11,7 @@ import (
 )
 
 func TestTravelPlanServiceCreateTaskAndGet(t *testing.T) {
-	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60))
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60), nil)
 	resp, err := service.CreateTask(context.Background(), validCreateRequest(), "127.0.0.1")
 	if err != nil {
 		t.Fatalf("CreateTask returned error: %v", err)
@@ -27,7 +27,7 @@ func TestTravelPlanServiceCreateTaskAndGet(t *testing.T) {
 }
 
 func TestTravelPlanServiceReusesRequestHash(t *testing.T) {
-	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60))
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60), nil)
 	first, err := service.CreateTask(context.Background(), validCreateRequest(), "127.0.0.1")
 	if err != nil {
 		t.Fatalf("first CreateTask returned error: %v", err)
@@ -42,7 +42,7 @@ func TestTravelPlanServiceReusesRequestHash(t *testing.T) {
 }
 
 func TestTravelPlanServiceRateLimit(t *testing.T) {
-	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(1))
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(1), nil)
 	if _, err := service.CreateTask(context.Background(), validCreateRequest(), "127.0.0.1"); err != nil {
 		t.Fatalf("first CreateTask returned error: %v", err)
 	}
@@ -56,7 +56,7 @@ func TestTravelPlanServiceRateLimit(t *testing.T) {
 
 func TestTravelPlanServicePublishesRequestIDAndNodeEvents(t *testing.T) {
 	planner := &eventPlanner{entered: make(chan struct{}), release: make(chan struct{})}
-	service := NewTravelPlanService(planner, NewMemoryTaskStore(), NewMemoryRateLimiter(60))
+	service := NewTravelPlanService(planner, NewMemoryTaskStore(), NewMemoryRateLimiter(60), nil)
 	ctx := WithRequestID(context.Background(), "req-test")
 	resp, err := service.CreateTask(ctx, validCreateRequest(), "127.0.0.1")
 	if err != nil {
@@ -107,6 +107,63 @@ func TestRequestHashStable(t *testing.T) {
 	}
 	if first != second {
 		t.Fatalf("request hash should ignore generated ids")
+	}
+}
+
+func TestRequestHashIncludesTestMode(t *testing.T) {
+	req := validCreateRequest().ToDomain("task")
+	testModeHash, err := RequestHashWithOptions(req, true)
+	if err != nil {
+		t.Fatalf("RequestHashWithOptions returned error: %v", err)
+	}
+	realModeHash, err := RequestHashWithOptions(req, false)
+	if err != nil {
+		t.Fatalf("RequestHashWithOptions returned error: %v", err)
+	}
+	if testModeHash == realModeHash {
+		t.Fatal("test mode and real mode should use different request hashes")
+	}
+}
+
+func TestRequestHashIncludesAgentMode(t *testing.T) {
+	req := validCreateRequest().ToDomain("task")
+	quickHash, err := RequestHashWithOptions(req, false, AgentModeQuick)
+	if err != nil {
+		t.Fatalf("RequestHashWithOptions returned error: %v", err)
+	}
+	expertHash, err := RequestHashWithOptions(req, false, AgentModeExpert)
+	if err != nil {
+		t.Fatalf("RequestHashWithOptions returned error: %v", err)
+	}
+	if quickHash == expertHash {
+		t.Fatal("quick mode and expert mode should use different request hashes")
+	}
+}
+
+func TestTravelPlanServiceChatStreamEmitsDeltas(t *testing.T) {
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60), simpleExtractor{})
+	var events []TaskEvent
+	resp, err := service.ChatStream(context.Background(), ChatRequest{Message: "上海出发，杭州 2 天，预算 1000", TestMode: true}, func(event TaskEvent) bool {
+		events = append(events, event)
+		return true
+	})
+	if err != nil {
+		t.Fatalf("ChatStream returned error: %v", err)
+	}
+	if resp.Reply == "" {
+		t.Fatal("expected chat response reply")
+	}
+	var sawDelta, sawDone bool
+	for _, event := range events {
+		if event.Type == EventAssistantDelta {
+			sawDelta = true
+		}
+		if event.Type == EventAssistantDone {
+			sawDone = true
+		}
+	}
+	if !sawDelta || !sawDone {
+		t.Fatalf("expected assistant delta and done events, got %#v", events)
 	}
 }
 
@@ -165,6 +222,20 @@ func (stubPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*domain.
 type eventPlanner struct {
 	entered chan struct{}
 	release chan struct{}
+}
+
+type simpleExtractor struct{}
+
+func (simpleExtractor) Extract(ctx context.Context, message string, current domain.TravelRequest) (*agent.TravelInfoResult, error) {
+	return &agent.TravelInfoResult{
+		DepartureCity:   "上海",
+		DestinationCity: "杭州",
+		Days:            2,
+		Budget:          1000,
+		Interests:       []string{"美食"},
+		Reply:           "信息已经整理好，可以生成行程。",
+		IsComplete:      true,
+	}, nil
 }
 
 func (p *eventPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*domain.TravelPlan, error) {

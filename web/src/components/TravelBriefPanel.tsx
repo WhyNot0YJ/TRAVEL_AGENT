@@ -6,14 +6,15 @@ interface TravelBriefPanelProps {
 }
 
 const transportLabels: Record<string, string> = {
-  train_taxi: "高铁+打车",
-  train_walk: "高铁+步行",
-  subway_walk: "地铁+步行",
-  flight_taxi: "飞机+打车",
+  train_taxi: "高铁 + 打车",
+  train_walk: "高铁 + 步行",
+  subway_walk: "地铁 + 步行",
+  flight_taxi: "飞机 + 打车",
+  walk_taxi: "步行 + 打车",
 };
 
 const paceLabels: Record<string, string> = {
-  relaxed: "舒缓",
+  relaxed: "轻松",
   balanced: "均衡",
   intensive: "紧凑",
 };
@@ -32,7 +33,7 @@ export default function TravelBriefPanel({ brief, missing }: TravelBriefPanelPro
   return (
     <aside className="brief-panel" aria-label="旅行需求摘要" data-testid="brief-panel">
       <div className="brief-head">
-        <span>Live brief</span>
+        <span>已整理</span>
         <strong>{missing.length === 0 ? "完整" : `${missing.length} 项待确认`}</strong>
       </div>
 

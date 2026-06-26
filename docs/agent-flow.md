@@ -1,24 +1,40 @@
-# Agent Flow 设计文档
+# Agent Flow
 
-## 1. 当前阶段
+## Current Stage
 
-当前阶段是第二版 Agent Flow：
+The project uses a Go `TravelPlanner` interface with an Eino implementation in `internal/agent/eino`.
+The frontend is a React H5 chat interface. The backend exposes asynchronous travel-plan tasks, SSE progress, a chat-based requirement collection API, deterministic test mode, and optional real LLM / real external tools.
 
-* 已接入 CloudWeGo Eino
-* 已实现 EinoTravelPlanner
-* 已实现 Eino Graph / Workflow
-* 已支持可选 LLM TravelPlan 生成节点
-* LLM 输出通过 provider-native JSON Schema 约束，不依赖 prompt-only JSON 约束
-* 已实现 Mock POI Tool
-* 已实现 Mock Weather Tool
-* 已实现 Mock Route Tool
-* 已实现 Mock Budget Tool
-* 已支持 real/mock Tool mode
-* 已接入高德 POI、天气、路线 API adapter，默认不启用
-* 已通过 `TravelPlanner` 接口接入 Gin 异步任务 API
-* 已由 React H5 前端通过任务创建、SSE 和查询接口消费规划结果
+## Chat-First Flow
 
-## 2. 流程图
+```text
+User message
+  -> POST /api/v1/travel/chat/stream
+  -> TravelInfoExtractor
+     -> test_mode: local rule extractor
+     -> real mode: LLM extractor with rule fallback
+  -> ChatResponse(is_complete, missing, collected fields)
+  -> Assistant confirmation card in chat
+  -> POST /api/v1/travel/plans
+  -> Eino TravelPlanning Graph
+  -> GET /api/v1/travel/plans/:task_id/stream
+  -> TravelPlan
+```
+
+The frontend no longer renders a fixed outer "Generate itinerary" form button. When `is_complete=true`, the assistant message renders a requirement summary and a `生成行程` action. Clicking it creates a plan task from the collected structured brief.
+
+## Runtime Options
+
+Runtime behavior is carried by `agent.PlannerOptions`:
+
+* `TestMode=true`: collection, tools, and final generation use local deterministic rules, mock tools, and deterministic fallback generation.
+* `TestMode=false`: collection and final generation prefer the configured LLM; tools use `TRAVEL_AGENT_TOOL_MODE`.
+* `AgentMode=quick`: routed to the model in `TRAVEL_AGENT_LLM_MODEL_QUICK` (default `deepseek-v4-flash`)—lower latency, lower cost.
+* `AgentMode=expert`: routed to the model in `TRAVEL_AGENT_LLM_MODEL_EXPERT` (default `deepseek-v4-pro`)—stronger reasoning, higher cost. The agent_mode is part of `request_hash`, so quick/expert results never collide in the cache.
+
+DeepSeek strict tool calling still sends `thinking.type=disabled` because DeepSeek thinking mode does not support forced `tool_choice`. When the configured model name contains `reasoner`, the client automatically falls back to `response_format=json_schema` and accepts JSON via `message.content`, since reasoner-class models do not emit tool calls.
+
+## Eino Planning Graph
 
 ```text
 TravelRequest
@@ -29,255 +45,82 @@ TravelRequest
   -> EstimateBudgetToolNode
   -> OptimizeItineraryNode
   -> ValidateRouteFeasibilityNode
-  -> GenerateTravelPlanNode (LLM schema output or deterministic fallback)
+  -> GenerateTravelPlanNode
   -> ValidatePlanNode
   -> TravelPlan
 ```
 
-## 3. 节点说明
+## LLM Generation
 
-### ParseTravelRequestNode
+`GenerateTravelPlanNode` uses `travel-plan-v1`.
 
-输入：`domain.TravelRequest`
+When LLM is enabled and configured, the OpenAI-compatible client requests provider-native structured output:
 
-输出：`TravelPlanningState`
+* DeepSeek: strict function tool `submit_travel_plan`.
+* Other compatible providers: JSON schema response format when supported.
+* Reasoner-class DeepSeek models: automatically downgraded to `response_format=json_schema` (no tool calls).
 
-职责：
+If test mode is enabled, the LLM is disabled, the API key is missing, the provider returns invalid output, retries are exhausted, or business validation fails, the node falls back to deterministic generation and records an `LLM fallback` warning.
 
-* 校验目的地、天数和预算
-* 标准化目的地城市、天数、预算和兴趣标签
-* 给 `pace` 和 `transport_mode` 设置默认值
+### Streaming LLM output
 
-### SearchPOIsToolNode
+When `TRAVEL_AGENT_LLM_STREAM_ENABLED=true` (default), DeepSeek chat completions are called with `stream=true` for requirement extraction, final plan generation, and assistant replies. Structured calls still use strict tool schemas; the server accumulates streamed tool arguments and parses the final JSON after `[DONE]`.
 
-输入：`TravelPlanningState`
+For plan generation, the same streamed `submit_travel_plan` tool arguments are scanned incrementally for the top-level `summary` field. If an `LLMDeltaReporter` is attached, newly observed summary text is forwarded as `assistant_delta`; after the stream completes, the accumulated arguments are parsed into the final `TravelPlan`. If no reporter is attached (for example in `cmd/harness`), the provider call still uses `stream=true`, but the deltas are only accumulated internally.
 
-输出：`TravelPlanningState`
+`LLMDeltaReporter` is defined in `internal/agent/metadata.go` and follows the same context-key pattern as `PlannerEventReporter`. The `internal/travel` package supplies the implementation that translates deltas into `EventAssistantDelta` events on the `EventBus`. `internal/agent/eino` depends only on the abstraction—it never imports `internal/travel`.
 
-职责：
+## Requirement Collection
 
-* 调用 POI Tool 接口
-* mock mode 使用 `MockPOITool`
-* real mode 使用 `RealPOITool` 调用高德 POI 搜索
-* real tool 失败时 fallback 到 mock，并追加结构化 warning，包含 tool、provider、stage、category 和 fallback 状态
+`TravelInfoExtractor` uses `chat-info-v1`.
 
-### GetWeatherToolNode
+* `POST /api/v1/travel/chat` returns a single JSON response.
+* `POST /api/v1/travel/chat/stream` returns SSE `assistant_delta` chunks followed by final `done` with the same structured `ChatResponse`.
 
-输入：`TravelPlanningState`
+Required fields are:
 
-输出：`TravelPlanningState`
+* `departure_city`
+* `destination_city`
+* `days`
+* `budget`
+* `interests`
 
-职责：
+Test mode always uses the local rule extractor. Real mode tries streamed LLM extraction first and falls back to rules if unavailable.
 
-* 调用 Weather Tool 接口
-* mock mode 使用 `MockWeatherTool`
-* real mode 使用 `RealWeatherTool` 查询高德天气
-* real tool 失败时 fallback 到 mock，并追加结构化 warning，天气城市编码失败会归类为 `missing_field`
+## Tools
 
-### ComputeRouteToolNode
-
-输入：`TravelPlanningState`
-
-输出：`TravelPlanningState`
-
-职责：
-
-* 调用 Route Tool 接口
-* mock mode 使用 `MockRouteTool`
-* real mode 使用 `RealRouteTool` 调用高德路径规划
-* real tool 失败时 fallback 到 mock，并追加结构化 warning，POI 坐标缺失会触发路线 mock fallback
-
-### EstimateBudgetToolNode
-
-输入：`TravelPlanningState`
-
-输出：`TravelPlanningState`
-
-职责：
-
-* 调用 `MockBudgetTool`
-* 估算交通、餐饮、酒店和门票预算
-* 控制总预算不明显超过用户预算
-
-### OptimizeItineraryNode
-
-输入：`TravelPlanningState`
-
-输出：`TravelPlanningState`
-
-职责：
-
-* 将 POI 按天分配
-* 每天至少生成 2 个 TravelItem
-* 根据兴趣和城市生成每日主题
-* `relaxed` 节奏保持轻量安排，`intensive` 节奏可安排更多 item
-
-### ValidateRouteFeasibilityNode
-
-输入：`TravelPlanningState`
-
-输出：`TravelPlanningState`
-
-职责：
-
-* 对路线真实性做内部校验，不修改 `internal/domain`
-* 检查每日 POI 数量是否匹配 pace
-* 检查相邻 POI route duration 是否过长
-* 检查 POI 坐标是否缺失
-* 检查雨天是否有室内友好备选
-* 检查预算拆分是否与 total 大致一致
-* 检查同一天是否重复明显相同 POI
-* 在 `TravelPlanningState.RouteValidation` 中记录 score/checks，并把 warning 合并到最终 `TravelPlan.warnings`
-
-warning 格式示例：
-
-```text
-route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback
-```
-
-当前真实性校验是轻量规则校验，不做地图级精准排程，也不会在真实 API 不可用时让默认 mock Harness 失败。
-
-### GenerateTravelPlanNode
-
-输入：`TravelPlanningState`
-
-输出：`domain.TravelPlan`
-
-职责：
-
-* 生成最终结构化 TravelPlan
-* 默认使用 deterministic generator
-* 启用 LLM 后调用 provider-native schema output
-* LLM prompt 带显式版本：`travel-plan-v1`
-* DeepSeek 使用 `submit_travel_plan` strict tool call，tool parameters 是 `TravelPlan` JSON Schema
-* OpenAI-compatible provider 如果支持 Structured Outputs，可使用 `response_format.type=json_schema`
-* Title 包含目的地城市
-* Summary 包含目的地城市和天数
-* Days 数量匹配请求
-* Budget 使用 MockBudgetTool 的估算结果
-* Warnings 记录天气、Mock Tool 限制、LLM trace 和 LLM fallback 原因
-
-### ValidatePlanNode
-
-输入：`domain.TravelPlan`
-
-输出：`domain.TravelPlan`
-
-职责：
-
-* 校验 title、summary、days、items 和 budget
-* 校验天数匹配、预算阈值、负数、空字段和目的地关键词
-* 发现严重错误时返回 error
-* 保证输出能被 Evaluation Harness 继续评估
-
-## 4. LLM 结构化输出
-
-LLM 模式默认不启用。启用后，配置来自环境变量：
-
-* `TRAVEL_AGENT_LLM_ENABLED`
-* `TRAVEL_AGENT_LLM_PROVIDER`
-* `TRAVEL_AGENT_LLM_API_KEY`
-* `TRAVEL_AGENT_LLM_BASE_URL`
-* `TRAVEL_AGENT_LLM_MODEL`
-* `TRAVEL_AGENT_LLM_TIMEOUT`
-* `TRAVEL_AGENT_LLM_MAX_RETRIES`
-
-DeepSeek 默认配置：
-
-* provider：`deepseek`
-* base URL：`https://api.deepseek.com/beta`
-* model：`deepseek-v4-flash`
-
-DeepSeek 主路径使用 strict tool calling：
-
-```text
-Chat Completions
-  -> tools[0].function.name = submit_travel_plan
-  -> tools[0].function.strict = true
-  -> tools[0].function.parameters = TravelPlan JSON Schema
-  -> tool_choice 强制 submit_travel_plan
-```
-
-该 JSON Schema 对所有 object 设置 `additionalProperties=false`，并把 object 字段全部列入 `required`。本地解析时仍使用 unknown-field 拒绝和业务校验，避免 provider 兼容性差异污染 domain 模型。
-
-如果 LLM 未启用、配置缺失、provider 不支持 schema 输出、tool call 缺失、JSON 无效、业务校验失败或重试耗尽，系统会 fallback 到 deterministic generator，并在 `warnings` 中记录 fallback 原因。
-
-LLM 成功 trace 格式：
-
-```text
-LLM trace: prompt_version=travel-plan-v1 duration_ms=123 prompt_tokens=10 completion_tokens=20 total_tokens=30
-```
-
-provider 未返回 token usage 时，token 字段为 `unknown`。fallback 格式：
-
-```text
-LLM fallback: prompt_version=travel-plan-v1 category=retry_exhausted attempts=2 duration_ms=456 reason=...
-```
-
-fallback category 包括 `disabled`、`missing_api_key`、`provider_error`、`timeout`、`invalid_json`、`business_validation_failed` 和 `retry_exhausted`。
-
-## 5. Mock Tools
-
-当前 Tools 支持 `mock` 和 `real` 两种模式：
+Tools support `mock` and `real` modes:
 
 ```text
 TRAVEL_AGENT_TOOL_MODE=mock
 TRAVEL_AGENT_TOOL_MODE=real
 ```
 
-默认是 `mock`。real mode 需要配置：
+Real AMap/weather/route requests share a backend limiter. Defaults:
 
-* `TRAVEL_AGENT_AMAP_API_KEY`
-* `TRAVEL_AGENT_AMAP_BASE_URL`
-* `TRAVEL_AGENT_WEATHER_API_KEY`
-* `TRAVEL_AGENT_WEATHER_BASE_URL`
-* `TRAVEL_AGENT_EXTERNAL_API_TIMEOUT`
+* `TRAVEL_AGENT_EXTERNAL_API_CONCURRENCY=2`
+* `TRAVEL_AGENT_EXTERNAL_API_QPS=2`
 
-Mock Tools 均为稳定、可复现的本地实现：
+When `test_mode=true`, tools are forced to mock even if the server is configured for real tools.
 
-* `MockPOITool`：返回常见城市 POI 和未知城市兜底 POI
-* `MockWeatherTool`：根据城市和天数生成固定天气
-* `MockRouteTool`：根据 POI 顺序生成模拟路线耗时和距离
-* `MockBudgetTool`：生成预算拆分，并控制总额不明显超过用户预算
+## SSE Events
 
-Mock Tools 不会调用真实外部 API，也不会读取 API Key。real tools 的原始响应只在 `internal/agent/eino` 内解析，不污染 `internal/domain`。
+Planning task stream events:
 
-real tool fallback warning 格式：
+* `progress`
+* `node`
+* `warning`
+* `assistant_delta`
+* `assistant_done`
+* `done`
+* `error`
+* `heartbeat`
 
-```text
-tool fallback: tool=route provider=amap stage=request category=missing_field mock_fallback=true reason=...
-```
+`done.plan` is the final source of truth for structured itinerary data. `assistant_delta` is user-facing generation text only.
 
-当前分类包括 `configuration`、`timeout`、`provider_error`、`invalid_json`、`missing_field`、`request_error` 和 `unknown`。这些 warning 仍作为普通字符串进入 `TravelPlan.warnings`，后续 Harness 可基于稳定前缀和字段聚合统计。
+## Boundaries
 
-## 6. 后续计划
-
-1. 增加 Eino Callback Trace 和更细粒度节点耗时统计
-2. 将 tool fallback 分类汇总到 Harness 指标
-3. 增加 Tool 调用轨迹评估
-4. 扩展营业时间和更细粒度天气影响校验
-5. 增加 Token 消耗、外部 API 成功率和失败快照统计
-6. 将节点级事件通过 event reporter 推送到 `TravelPlanService`，再由 SSE 输出给前端
-
-## 7. 事件上报
-
-HTTP SSE 逻辑不进入 `internal/agent/eino`。当前由 `TravelPlanService` 在任务生命周期中发布基础事件：
-
-* `progress`：任务创建、planner 开始
-* `warning`：计划生成后的 warnings
-* `error`：任务失败
-* `done`：任务成功完成
-
-后续如果需要节点级事件，可以通过 Eino callback / event reporter 抽象把节点进度传回 service，再由 EventBus 推送给 SSE handler。
-
-当前已接入通用 event reporter：`TravelPlanService` 在 planner context 中注入 `agent.PlannerEventReporter`，Eino 的 `appendTrace` 会把每个节点的名称、状态、耗时和消息上报为通用 `PlannerTraceEvent`。Service 将其转换为 SSE `node` 事件：
-
-```text
-Eino appendTrace
-  -> agent.ReportPlannerEvent(ctx, PlannerTraceEvent)
-  -> TravelPlanService plannerEventReporter
-  -> EventBus
-  -> SSE event: node
-```
-
-该链路只依赖 `internal/agent` 中的通用类型，不让 `internal/travel` import `internal/agent/eino`。
+* `internal/harness` depends only on `TravelPlanner`, never on the Eino implementation.
+* Eino code stays under `internal/agent/eino`.
+* HTTP/SSE stays under `internal/travel` and `internal/server`.
+* API keys are read from environment variables or `.env`, never hardcoded.

@@ -7,22 +7,31 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
+	"sync/atomic"
 	"time"
 
 	"travel-agent/internal/agent"
+	"travel-agent/internal/domain"
 )
 
 var ErrRateLimited = errors.New("rate limit exceeded")
 
+const (
+	AgentModeQuick  = "quick"
+	AgentModeExpert = "expert"
+)
+
 type TravelPlanService struct {
 	planner     agent.TravelPlanner
+	extractor   agent.TravelInfoExtractor
 	store       TaskStore
 	rateLimiter RateLimiter
 	events      *EventBus
 	now         func() time.Time
 }
 
-func NewTravelPlanService(planner agent.TravelPlanner, store TaskStore, limiter RateLimiter, buses ...*EventBus) *TravelPlanService {
+func NewTravelPlanService(planner agent.TravelPlanner, store TaskStore, limiter RateLimiter, extractor agent.TravelInfoExtractor, buses ...*EventBus) *TravelPlanService {
 	if limiter == nil {
 		limiter = NewMemoryRateLimiter(60)
 	}
@@ -35,6 +44,7 @@ func NewTravelPlanService(planner agent.TravelPlanner, store TaskStore, limiter 
 	}
 	return &TravelPlanService{
 		planner:     planner,
+		extractor:   extractor,
 		store:       store,
 		rateLimiter: limiter,
 		events:      bus,
@@ -55,7 +65,8 @@ func (s *TravelPlanService) CreateTask(ctx context.Context, req CreatePlanReques
 
 	taskID := newTaskID()
 	domainReq := req.ToDomain(taskID)
-	requestHash, err := RequestHash(domainReq)
+	agentMode := normalizeAgentMode(req.AgentMode)
+	requestHash, err := RequestHashWithOptions(domainReq, req.TestMode, agentMode)
 	if err != nil {
 		return CreateTaskResponse{}, err
 	}
@@ -77,6 +88,8 @@ func (s *TravelPlanService) CreateTask(ctx context.Context, req CreatePlanReques
 		RequestHash: requestHash,
 		Status:      TaskPending,
 		Request:     domainReq,
+		TestMode:    req.TestMode,
+		AgentMode:   agentMode,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
@@ -102,13 +115,76 @@ func (s *TravelPlanService) GetTask(ctx context.Context, id string) (GetTaskResp
 	return taskResponse(task), nil
 }
 
+func (s *TravelPlanService) Chat(ctx context.Context, req ChatRequest) (ChatResponse, error) {
+	if s == nil || s.extractor == nil {
+		return ChatResponse{}, fmt.Errorf("chat extractor is not configured")
+	}
+	agentMode := normalizeAgentMode(req.AgentMode)
+	ctx = agent.WithPlannerOptions(ctx, agent.PlannerOptions{TestMode: req.TestMode, AgentMode: agentMode})
+	current := domain.TravelRequest{
+		DepartureCity:   req.DepartureCity,
+		DestinationCity: req.DestinationCity,
+		Days:            req.Days,
+		Budget:          req.Budget,
+		Interests:       req.Interests,
+		TransportMode:   req.TransportMode,
+		Pace:            req.Pace,
+	}
+	result, err := s.extractor.Extract(ctx, req.Message, current)
+	if err != nil {
+		return ChatResponse{}, err
+	}
+	return ChatResponse{
+		DepartureCity:   result.DepartureCity,
+		DestinationCity: result.DestinationCity,
+		Days:            result.Days,
+		Budget:          result.Budget,
+		Interests:       result.Interests,
+		TransportMode:   result.TransportMode,
+		Pace:            result.Pace,
+		Reply:           result.Reply,
+		Missing:         result.Missing,
+		IsComplete:      result.IsComplete,
+		AgentMode:       agentMode,
+	}, nil
+}
+
+func (s *TravelPlanService) ChatStream(ctx context.Context, req ChatRequest, emit func(TaskEvent) bool) (ChatResponse, error) {
+	if emit == nil {
+		resp, err := s.Chat(ctx, req)
+		return resp, err
+	}
+	reporter := newChatDeltaReporter(s, RequestIDFromContext(ctx), emit)
+	ctx = agent.WithLLMDeltaReporter(ctx, reporter)
+	resp, err := s.Chat(ctx, req)
+	if err != nil {
+		return ChatResponse{}, err
+	}
+	now := s.now().UTC()
+	if !reporter.SawAnyDelta() {
+		// No streaming happened — emit the assembled reply via the legacy
+		// chunkText fallback so the user still sees a typewriter effect.
+		// Deprecated: kept for the LLM-disabled / stream-disabled path.
+		for _, chunk := range chunkText(resp.Reply, 18) {
+			if !emit(TaskEvent{Type: EventAssistantDelta, Message: chunk, CreatedAt: now}) {
+				return resp, ctx.Err()
+			}
+		}
+	}
+	emit(TaskEvent{Type: EventAssistantDone, Message: resp.Reply, CreatedAt: s.now().UTC()})
+	return resp, nil
+}
+
 func (s *TravelPlanService) Subscribe(taskID string) (<-chan TaskEvent, func()) {
 	return s.events.Subscribe(taskID)
 }
 
 func (s *TravelPlanService) runTask(task Task) {
 	ctx := WithRequestID(context.Background(), task.RequestID)
+	ctx = agent.WithPlannerOptions(ctx, agent.PlannerOptions{TestMode: task.TestMode, AgentMode: normalizeAgentMode(task.AgentMode)})
 	ctx = agent.WithPlannerEventReporter(ctx, plannerEventReporter{service: s, taskID: task.ID, requestID: task.RequestID})
+	plannerDelta := newPlannerDeltaReporter(s, task.RequestID, task.ID)
+	ctx = agent.WithLLMDeltaReporter(ctx, plannerDelta)
 	defer func() {
 		if recovered := recover(); recovered != nil {
 			task.Status = TaskFailed
@@ -144,6 +220,7 @@ func (s *TravelPlanService) runTask(task Task) {
 			s.publish(TaskEvent{Type: EventWarning, RequestID: task.RequestID, TaskID: task.ID, Status: task.Status, Message: warning, CreatedAt: task.UpdatedAt})
 		}
 		log.Printf("request_id=%s task_id=%s status=succeeded warning_count=%d", task.RequestID, task.ID, len(plan.Warnings))
+		s.publishPlanSummary(task, plan, plannerDelta)
 		s.publish(TaskEvent{Type: EventDone, RequestID: task.RequestID, TaskID: task.ID, Status: task.Status, Message: "planner finished", Plan: plan, CreatedAt: task.UpdatedAt})
 	}
 	if err := s.store.Update(ctx, task); err != nil {
@@ -151,10 +228,136 @@ func (s *TravelPlanService) runTask(task Task) {
 	}
 }
 
+func (s *TravelPlanService) publishPlanSummary(task Task, plan *domain.TravelPlan, reporter *plannerDeltaReporter) {
+	if plan == nil {
+		return
+	}
+	text := strings.TrimSpace(plan.Summary)
+	if text == "" {
+		text = strings.TrimSpace(plan.Title)
+	}
+	if text == "" {
+		return
+	}
+	// If link B narration already streamed text via the LLMDeltaReporter, skip
+	// the legacy 24-char chunkText slicing so we don't double-emit. The narration
+	// already produced organic-looking deltas; here we only finalize.
+	if reporter == nil || !reporter.SawAnyDelta() {
+		// Deprecated: 仅用于 LLM 流式不可用时的兜底。
+		for _, chunk := range chunkText(text, 24) {
+			s.publish(TaskEvent{
+				Type:      EventAssistantDelta,
+				RequestID: task.RequestID,
+				TaskID:    task.ID,
+				Status:    TaskRunning,
+				Message:   chunk,
+				CreatedAt: s.now().UTC(),
+			})
+		}
+	}
+	s.publish(TaskEvent{
+		Type:      EventAssistantDone,
+		RequestID: task.RequestID,
+		TaskID:    task.ID,
+		Status:    TaskSucceeded,
+		Message:   text,
+		CreatedAt: s.now().UTC(),
+	})
+}
+
 type plannerEventReporter struct {
 	service   *TravelPlanService
 	taskID    string
 	requestID string
+}
+
+// chatDeltaReporter forwards LLM token deltas from the chat info link onto the
+// SSE writer. It scopes to a single in-flight ChatStream call, so it carries an
+// emit closure rather than going through the EventBus.
+type chatDeltaReporter struct {
+	service   *TravelPlanService
+	requestID string
+	emit      func(TaskEvent) bool
+	saw       atomic.Bool
+}
+
+func newChatDeltaReporter(s *TravelPlanService, requestID string, emit func(TaskEvent) bool) *chatDeltaReporter {
+	return &chatDeltaReporter{service: s, requestID: requestID, emit: emit}
+}
+
+func (r *chatDeltaReporter) ReportLLMDelta(_ context.Context, delta string) {
+	if r == nil || delta == "" {
+		return
+	}
+	r.saw.Store(true)
+	if r.emit == nil {
+		return
+	}
+	r.emit(TaskEvent{
+		Type:      EventAssistantDelta,
+		RequestID: r.requestID,
+		Message:   delta,
+		CreatedAt: r.now(),
+	})
+}
+
+func (r *chatDeltaReporter) ReportLLMDone(_ context.Context, _ string) {
+	// Done is emitted by ChatStream after the structured fields are returned;
+	// nothing extra to do here.
+}
+
+func (r *chatDeltaReporter) SawAnyDelta() bool {
+	if r == nil {
+		return false
+	}
+	return r.saw.Load()
+}
+
+func (r *chatDeltaReporter) now() time.Time {
+	if r == nil || r.service == nil || r.service.now == nil {
+		return time.Now().UTC()
+	}
+	return r.service.now().UTC()
+}
+
+// plannerDeltaReporter forwards narration deltas from the plan-generation link
+// onto the EventBus so all subscribers of a task see the same SSE feed.
+type plannerDeltaReporter struct {
+	service   *TravelPlanService
+	requestID string
+	taskID    string
+	saw       atomic.Bool
+}
+
+func newPlannerDeltaReporter(s *TravelPlanService, requestID, taskID string) *plannerDeltaReporter {
+	return &plannerDeltaReporter{service: s, requestID: requestID, taskID: taskID}
+}
+
+func (r *plannerDeltaReporter) ReportLLMDelta(_ context.Context, delta string) {
+	if r == nil || r.service == nil || delta == "" {
+		return
+	}
+	r.saw.Store(true)
+	r.service.publish(TaskEvent{
+		Type:      EventAssistantDelta,
+		RequestID: r.requestID,
+		TaskID:    r.taskID,
+		Status:    TaskRunning,
+		Message:   delta,
+		CreatedAt: time.Now().UTC(),
+	})
+}
+
+func (r *plannerDeltaReporter) ReportLLMDone(_ context.Context, _ string) {
+	// Plan-link "done" is signaled by the EventDone event after structured plan
+	// is persisted; nothing extra to do here.
+}
+
+func (r *plannerDeltaReporter) SawAnyDelta() bool {
+	if r == nil {
+		return false
+	}
+	return r.saw.Load()
 }
 
 func (r plannerEventReporter) ReportPlannerEvent(ctx context.Context, event agent.PlannerTraceEvent) {
@@ -207,4 +410,33 @@ func newTaskID() string {
 		return "task_" + hex.EncodeToString(b[:])
 	}
 	return fmt.Sprintf("task_%d", time.Now().UnixNano())
+}
+
+func normalizeAgentMode(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case AgentModeExpert:
+		return AgentModeExpert
+	default:
+		return AgentModeQuick
+	}
+}
+
+func chunkText(text string, size int) []string {
+	text = strings.TrimSpace(text)
+	if text == "" {
+		return nil
+	}
+	if size <= 0 {
+		size = 16
+	}
+	runes := []rune(text)
+	chunks := make([]string, 0, len(runes)/size+1)
+	for start := 0; start < len(runes); start += size {
+		end := start + size
+		if end > len(runes) {
+			end = len(runes)
+		}
+		chunks = append(chunks, string(runes[start:end]))
+	}
+	return chunks
 }

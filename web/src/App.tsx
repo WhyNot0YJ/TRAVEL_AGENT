@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import { createTravelPlanTask } from "./api/client";
-import type { TravelPlanRequest } from "./api/types";
+import { useMemo, useState } from "react";
+import { createTravelPlanTask, streamChatTravelInfo } from "./api/client";
+import type { AgentMode, ChatRequest, TravelPlanRequest } from "./api/types";
 import AgentConversation, { type ChatMessage, type TravelBrief } from "./components/AgentConversation";
 import PlanDetail from "./components/PlanDetail";
 import PlanProgress from "./components/PlanProgress";
@@ -22,96 +22,12 @@ const initialMessages: ChatMessage[] = [
   {
     id: "welcome",
     role: "assistant",
-    text: "告诉我出发地、目的地、天数、预算和偏好。我会边聊边整理需求，确认完整后生成路线。",
+    text: "你好，我会先把出发地、目的地、天数、预算和偏好收集完整。信息齐了以后，我会在这里给你一个生成行程按钮。",
   },
 ];
 
-const cityCandidates = ["北京", "上海", "广州", "深圳", "杭州", "苏州", "南京", "成都", "重庆", "西安", "厦门", "青岛", "长沙", "武汉"];
-const interestCandidates = ["自然风光", "美食", "亲子", "历史文化", "博物馆", "夜景", "徒步", "购物", "摄影", "温泉"];
-
 function nextId(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function unique(values: string[]): string[] {
-  return Array.from(new Set(values.filter(Boolean)));
-}
-
-function mergeBrief(brief: TravelBrief, text: string): TravelBrief {
-  const next = { ...brief, interests: [...brief.interests] };
-  const compact = text.replace(/\s+/g, "");
-
-  const fromMatch = compact.match(/(.{2,8})(?:出发|起程|启程)/);
-  if (fromMatch) {
-    next.departureCity = cleanupCity(fromMatch[1]);
-  }
-
-  const toMatch = compact.match(/(?:去|到|目的地|玩在)(.{2,8})(?:\d|[一二三四五六七八九十两]|，|,|。|预算|玩|天|$)/);
-  if (toMatch) {
-    next.destinationCity = cleanupCity(toMatch[1]);
-  }
-
-  const mentionedCities = cityCandidates.filter((city) => compact.includes(city));
-  if (!next.departureCity && mentionedCities.length > 1) {
-    next.departureCity = mentionedCities[0];
-  }
-  if (!next.destinationCity && mentionedCities.length > 0) {
-    next.destinationCity = mentionedCities[mentionedCities.length - 1];
-  }
-
-  const daysMatch = compact.match(/(\d+|[一二三四五六七八九十两])天/);
-  if (daysMatch) {
-    next.days = chineseNumber(daysMatch[1]);
-  }
-
-  const budgetMatch = compact.match(/(?:预算|人均|总共|大概)?(\d{3,6})(?:元|块|预算)?/);
-  if (budgetMatch) {
-    next.budget = Number(budgetMatch[1]);
-  }
-
-  const foundInterests = interestCandidates.filter((interest) => compact.includes(interest.replace(/\s+/g, "")));
-  if (foundInterests.length > 0) {
-    next.interests = unique([...next.interests, ...foundInterests]);
-  }
-
-  if (compact.includes("高铁") || compact.includes("火车")) {
-    next.transportMode = compact.includes("步行") ? "train_walk" : "train_taxi";
-  } else if (compact.includes("地铁")) {
-    next.transportMode = "subway_walk";
-  } else if (compact.includes("飞机") || compact.includes("航班")) {
-    next.transportMode = "flight_taxi";
-  }
-
-  if (compact.includes("轻松") || compact.includes("舒缓") || compact.includes("慢")) {
-    next.pace = "relaxed";
-  } else if (compact.includes("紧凑") || compact.includes("多安排") || compact.includes("充实")) {
-    next.pace = "intensive";
-  } else if (compact.includes("均衡")) {
-    next.pace = "balanced";
-  }
-
-  return next;
-}
-
-function cleanupCity(value: string): string {
-  return value.replace(/[，,。.!！?？想要计划安排去到]/g, "").slice(-4);
-}
-
-function chineseNumber(value: string): number {
-  const map: Record<string, number> = {
-    一: 1,
-    二: 2,
-    两: 2,
-    三: 3,
-    四: 4,
-    五: 5,
-    六: 6,
-    七: 7,
-    八: 8,
-    九: 9,
-    十: 10,
-  };
-  return Number(value) || map[value] || 3;
 }
 
 function missingFields(brief: TravelBrief): string[] {
@@ -134,11 +50,39 @@ function missingFields(brief: TravelBrief): string[] {
   return missing;
 }
 
-function assistantReply(missing: string[]): string {
-  if (missing.length === 0) {
-    return "信息够了。我已经整理好 brief，可以生成路线。";
-  }
-  return `我还需要确认：${missing.join("、")}。你可以直接补一句，比如“预算 3000，喜欢美食和夜景”。`;
+function chatPayloadFromBrief(message: string, brief: TravelBrief, testMode: boolean, agentMode: AgentMode): ChatRequest {
+  return {
+    message,
+    departure_city: brief.departureCity || undefined,
+    destination_city: brief.destinationCity || undefined,
+    days: Number(brief.days) || undefined,
+    budget: Number(brief.budget) || undefined,
+    interests: brief.interests.length > 0 ? brief.interests : undefined,
+    transport_mode: brief.transportMode || undefined,
+    pace: brief.pace || undefined,
+    test_mode: testMode,
+    agent_mode: agentMode,
+  };
+}
+
+function applyBriefResponse(response: {
+  departure_city?: string;
+  destination_city?: string;
+  days?: number;
+  budget?: number;
+  interests?: string[];
+  transport_mode?: string;
+  pace?: string;
+}): TravelBrief {
+  return {
+    departureCity: response.departure_city || "",
+    destinationCity: response.destination_city || "",
+    days: response.days || "",
+    budget: response.budget || "",
+    interests: response.interests || [],
+    transportMode: response.transport_mode || "train_taxi",
+    pace: response.pace || "balanced",
+  };
 }
 
 export default function App() {
@@ -148,54 +92,67 @@ export default function App() {
   const [taskId, setTaskId] = useState<string | null>(null);
   const [createError, setCreateError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [announcedTaskId, setAnnouncedTaskId] = useState("");
+  const [isChatting, setIsChatting] = useState(false);
+  const [testMode, setTestMode] = useState(true);
+  const [agentMode, setAgentMode] = useState<AgentMode>("quick");
   const stream = useTravelPlanStream(taskId);
 
   const missing = useMemo(() => missingFields(brief), [brief]);
   const canGenerate = missing.length === 0;
-  const isBusy = isSubmitting || (!!taskId && !stream.plan && stream.status !== "failed");
-  const activityKey = `${taskId ?? "no-task"}-${stream.status}-${stream.events.length}-${stream.plan?.title ?? ""}-${isSubmitting}`;
+  const isBusy = isSubmitting || isChatting || (!!taskId && !stream.plan && stream.status !== "failed");
+  const planningActive = isSubmitting || Boolean(taskId) || Boolean(stream.plan) || Boolean(createError);
+  const activityKey = `${taskId ?? "no-task"}-${stream.status}-${stream.events.length}-${stream.plan?.title ?? ""}-${isSubmitting}-${stream.assistantText.length}`;
 
-  useEffect(() => {
-    if (!taskId || !stream.plan || announcedTaskId === taskId) {
-      return;
-    }
-    setAnnouncedTaskId(taskId);
-    setMessages((current) => [
-      ...current,
-      { id: nextId("assistant"), role: "assistant", text: "行程已经生成。我把完整路线放在下面，可以继续根据预算、节奏或兴趣再调整。" },
-    ]);
-  }, [announcedTaskId, stream.plan, taskId]);
-
-  const acceptText = (text: string) => {
+  const acceptText = async (text: string) => {
     const normalized = text.trim();
     if (!normalized) {
       return;
     }
 
-    const nextBrief = mergeBrief(brief, normalized);
-    const nextMissing = missingFields(nextBrief);
-    setBrief(nextBrief);
     setInput("");
+    setCreateError("");
+    setIsChatting(true);
+    const assistantId = nextId("assistant");
     setMessages((current) => [
       ...current,
       { id: nextId("user"), role: "user", text: normalized },
-      { id: nextId("assistant"), role: "assistant", text: assistantReply(nextMissing) },
+      { id: assistantId, role: "assistant", text: "" },
     ]);
+
+    try {
+      const payload = chatPayloadFromBrief(normalized, brief, testMode, agentMode);
+      const response = await streamChatTravelInfo(payload, (chunk) => {
+        setMessages((current) =>
+          current.map((message) =>
+            message.id === assistantId ? { ...message, text: `${message.text}${chunk}` } : message,
+          ),
+        );
+      });
+
+      setBrief(applyBriefResponse(response));
+      setMessages((current) =>
+        current.map((message) => (message.id === assistantId ? { ...message, text: response.reply } : message)),
+      );
+    } catch (error) {
+      setMessages((current) =>
+        current.map((message) =>
+          message.id === assistantId
+            ? { ...message, text: error instanceof Error ? `处理消息失败：${error.message}` : "处理消息失败，请重试。" }
+            : message,
+        ),
+      );
+    } finally {
+      setIsChatting(false);
+    }
   };
 
   const handleGenerate = async (request: TravelPlanRequest) => {
     setCreateError("");
     setIsSubmitting(true);
     setTaskId(null);
-    setAnnouncedTaskId("");
-    setMessages((current) => [
-      ...current,
-      { id: nextId("system"), role: "system", text: "已提交规划任务，正在接收实时进度。" },
-    ]);
 
     try {
-      const response = await createTravelPlanTask(request);
+      const response = await createTravelPlanTask({ ...request, test_mode: testMode, agent_mode: agentMode });
       setTaskId(response.task_id);
     } catch (error) {
       setCreateError(error instanceof Error ? error.message : "创建任务失败");
@@ -213,14 +170,20 @@ export default function App() {
           input={input}
           disabled={isBusy}
           canGenerate={canGenerate}
+          testMode={testMode}
+          agentMode={agentMode}
           onInputChange={setInput}
           onSend={acceptText}
           onQuickReply={acceptText}
           onGenerate={handleGenerate}
+          onTestModeChange={setTestMode}
+          onAgentModeChange={setAgentMode}
           briefPanel={<TravelBriefPanel brief={brief} missing={missing} />}
           errorPanel={createError ? <StateView title="创建失败" message={createError} /> : undefined}
           activityKey={activityKey}
           planReady={Boolean(stream.plan)}
+          planningActive={planningActive}
+          planningText={stream.assistantText}
           progressPanel={
             <PlanProgress
               taskId={taskId}

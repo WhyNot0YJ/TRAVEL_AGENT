@@ -21,6 +21,8 @@ type Task struct {
 	RequestHash string               `json:"request_hash"`
 	Status      TaskStatus           `json:"status"`
 	Request     domain.TravelRequest `json:"request"`
+	TestMode    bool                 `json:"test_mode,omitempty"`
+	AgentMode   string               `json:"agent_mode,omitempty"`
 	Plan        *domain.TravelPlan   `json:"plan,omitempty"`
 	Error       string               `json:"error,omitempty"`
 	CreatedAt   time.Time            `json:"created_at"`

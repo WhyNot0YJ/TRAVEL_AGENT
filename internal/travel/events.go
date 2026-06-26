@@ -9,11 +9,13 @@ import (
 type EventType string
 
 const (
-	EventProgress EventType = "progress"
-	EventWarning  EventType = "warning"
-	EventError    EventType = "error"
-	EventDone     EventType = "done"
-	EventNode     EventType = "node"
+	EventProgress       EventType = "progress"
+	EventWarning        EventType = "warning"
+	EventError          EventType = "error"
+	EventDone           EventType = "done"
+	EventNode           EventType = "node"
+	EventAssistantDelta EventType = "assistant_delta"
+	EventAssistantDone  EventType = "assistant_done"
 )
 
 type TaskEvent struct {

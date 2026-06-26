@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"strings"
+
+	"travel-agent/internal/agent"
 )
 
 type toolSet struct {
@@ -42,29 +44,33 @@ func (e *ToolFallbackError) Error() string {
 func defaultToolSet() toolSet {
 	cfg := loadToolConfigFromEnv()
 	mock := mockToolSet()
+	configured := mock
 	if cfg.Mode != "real" {
-		return mock
+		return contextToolSet(mock, configured)
 	}
 	if cfg.AMapAPIKey == "" {
-		return toolSet{
+		configured = toolSet{
 			POI:     fallbackPOITool{primary: nil, fallback: mock.POI, toolName: "poi", stage: "configuration", reason: "TRAVEL_AGENT_AMAP_API_KEY is not configured"},
 			Weather: fallbackWeatherTool{primary: nil, fallback: mock.Weather, toolName: "weather", stage: "configuration", reason: "TRAVEL_AGENT_AMAP_API_KEY is not configured"},
 			Route:   fallbackRouteTool{primary: nil, fallback: mock.Route, toolName: "route", stage: "configuration", reason: "TRAVEL_AGENT_AMAP_API_KEY is not configured"},
 			Budget:  mock.Budget,
 		}
+		return contextToolSet(mock, configured)
 	}
 
-	amapClient := newAMapClient(cfg.AMapBaseURL, cfg.AMapAPIKey, cfg.ExternalAPITimeout)
+	limiter := newExternalAPILimiter(cfg.ExternalAPIConcurrency, cfg.ExternalAPIQPS)
+	amapClient := newAMapClient(cfg.AMapBaseURL, cfg.AMapAPIKey, cfg.ExternalAPITimeout, limiter)
 	weatherClient := amapClient
 	if cfg.WeatherBaseURL != cfg.AMapBaseURL || cfg.WeatherAPIKey != cfg.AMapAPIKey {
-		weatherClient = newAMapClient(cfg.WeatherBaseURL, cfg.WeatherAPIKey, cfg.ExternalAPITimeout)
+		weatherClient = newAMapClient(cfg.WeatherBaseURL, cfg.WeatherAPIKey, cfg.ExternalAPITimeout, limiter)
 	}
-	return toolSet{
+	configured = toolSet{
 		POI:     fallbackPOITool{primary: RealPOITool{client: amapClient}, fallback: mock.POI, toolName: "poi"},
 		Weather: fallbackWeatherTool{primary: RealWeatherTool{client: weatherClient, geocoder: amapClient}, fallback: mock.Weather, toolName: "weather"},
 		Route:   fallbackRouteTool{primary: RealRouteTool{client: amapClient}, fallback: mock.Route, toolName: "route"},
 		Budget:  mock.Budget,
 	}
+	return contextToolSet(mock, configured)
 }
 
 func mockToolSet() toolSet {
@@ -74,6 +80,51 @@ func mockToolSet() toolSet {
 		Route:   MockRouteTool{},
 		Budget:  MockBudgetTool{},
 	}
+}
+
+func contextToolSet(mock, configured toolSet) toolSet {
+	return toolSet{
+		POI:     contextPOITool{mock: mock.POI, configured: configured.POI},
+		Weather: contextWeatherTool{mock: mock.Weather, configured: configured.Weather},
+		Route:   contextRouteTool{mock: mock.Route, configured: configured.Route},
+		Budget:  mock.Budget,
+	}
+}
+
+type contextPOITool struct {
+	mock       POITool
+	configured POITool
+}
+
+func (t contextPOITool) Run(ctx context.Context, input POIToolInput) ([]MockPOI, error) {
+	if agent.PlannerOptionsFromContext(ctx).TestMode {
+		return t.mock.Run(ctx, input)
+	}
+	return t.configured.Run(ctx, input)
+}
+
+type contextWeatherTool struct {
+	mock       WeatherTool
+	configured WeatherTool
+}
+
+func (t contextWeatherTool) Run(ctx context.Context, input WeatherToolInput) ([]MockWeather, error) {
+	if agent.PlannerOptionsFromContext(ctx).TestMode {
+		return t.mock.Run(ctx, input)
+	}
+	return t.configured.Run(ctx, input)
+}
+
+type contextRouteTool struct {
+	mock       RouteTool
+	configured RouteTool
+}
+
+func (t contextRouteTool) Run(ctx context.Context, input RouteToolInput) ([]MockRoute, error) {
+	if agent.PlannerOptionsFromContext(ctx).TestMode {
+		return t.mock.Run(ctx, input)
+	}
+	return t.configured.Run(ctx, input)
 }
 
 type fallbackPOITool struct {
@@ -168,6 +219,8 @@ func classifyToolFailure(reason string) string {
 		return "configuration"
 	case strings.Contains(lower, "timeout"), strings.Contains(lower, "deadline exceeded"):
 		return "timeout"
+	case strings.Contains(lower, "cuqps"), strings.Contains(lower, "qps"), strings.Contains(lower, "rate limit"), strings.Contains(lower, "too many requests"):
+		return "rate_limit"
 	case strings.Contains(lower, "status "), strings.Contains(lower, "api error"):
 		return "provider_error"
 	case strings.Contains(lower, "decode"), strings.Contains(lower, "invalid character"), strings.Contains(lower, "json"):

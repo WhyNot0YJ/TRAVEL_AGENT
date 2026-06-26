@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-06-24T03:54:42.2209143Z",
+  "generated_at": "2026-06-26T12:47:32.1194617Z",
   "planner_type": "eino",
   "summary": {
-    "total_cases": 24,
-    "success_cases": 24,
+    "total_cases": 26,
+    "success_cases": 26,
     "failed_cases": 0,
     "success_rate": 1,
     "average_score": 100,
@@ -11,9 +11,9 @@
     "budget_pass_rate": 1,
     "day_match_rate": 1,
     "structure_pass_rate": 1,
-    "tool_fallback_rate": 0,
+    "tool_fallback_rate": 1,
     "llm_fallback_rate": 1,
-    "external_api_success_rate": 1,
+    "external_api_success_rate": 0,
     "average_node_duration_ms": 0,
     "average_token_usage": 0,
     "route_feasibility_pass_rate": 0,
@@ -28,9 +28,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -42,10 +45,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -139,9 +142,12 @@
           "total": 2760
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -153,9 +159,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -167,10 +176,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -240,9 +249,12 @@
           "total": 1380
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -254,10 +266,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
-        "day 4 weather is rainy; keep indoor backup options",
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -269,10 +283,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -390,10 +404,12 @@
           "total": 4600
         },
         "warnings": [
-          "day 4 weather is rainy; keep indoor backup options",
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -405,9 +421,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -419,10 +438,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -516,9 +535,12 @@
           "total": 2300
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -530,9 +552,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -544,10 +569,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -617,9 +642,12 @@
           "total": 1656
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -631,9 +659,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -645,10 +676,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -742,9 +773,12 @@
           "total": 2024
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -756,9 +790,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -770,10 +807,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -819,9 +856,12 @@
           "total": 736
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -833,10 +873,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
-        "day 2 weather is rainy; keep indoor backup options",
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -848,10 +890,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -921,10 +963,12 @@
           "total": 920
         },
         "warnings": [
-          "day 2 weather is rainy; keep indoor backup options",
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -936,9 +980,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -950,10 +997,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -1023,9 +1070,12 @@
           "total": 552
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -1037,10 +1087,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
-        "day 4 weather is rainy; keep indoor backup options",
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -1052,10 +1104,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -1197,10 +1249,12 @@
           "total": 11040
         },
         "warnings": [
-          "day 4 weather is rainy; keep indoor backup options",
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -1212,9 +1266,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -1226,10 +1283,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -1317,9 +1374,12 @@
           "total": 1472
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -1331,9 +1391,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -1345,10 +1408,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -1394,9 +1457,12 @@
           "total": 460
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -1408,10 +1474,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
-        "day 4 weather is rainy; keep indoor backup options",
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -1423,10 +1491,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -1592,10 +1660,12 @@
           "total": 4416
         },
         "warnings": [
-          "day 4 weather is rainy; keep indoor backup options",
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -1607,9 +1677,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -1621,10 +1694,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -1679,9 +1752,12 @@
           "total": 828
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -1693,9 +1769,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -1707,10 +1786,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -1780,9 +1859,12 @@
           "total": 828
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -1794,9 +1876,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -1808,10 +1893,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -1881,9 +1966,12 @@
           "total": 1104
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -1895,9 +1983,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -1909,10 +2000,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -2006,9 +2097,12 @@
           "total": 3312
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -2020,10 +2114,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
-        "day 4 weather is rainy; keep indoor backup options",
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -2035,10 +2131,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -2192,10 +2288,12 @@
           "total": 3864
         },
         "warnings": [
-          "day 4 weather is rainy; keep indoor backup options",
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -2207,9 +2305,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -2221,10 +2322,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -2318,9 +2419,12 @@
           "total": 3220
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -2332,9 +2436,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -2346,10 +2453,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -2395,9 +2502,12 @@
           "total": 276
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -2409,10 +2519,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
-        "day 2 weather is rainy; keep indoor backup options",
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -2424,10 +2536,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -2569,10 +2681,12 @@
           "total": 2300
         },
         "warnings": [
-          "day 2 weather is rainy; keep indoor backup options",
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -2584,10 +2698,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
-        "day 4 weather is rainy; keep indoor backup options",
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -2599,10 +2715,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -2744,10 +2860,12 @@
           "total": 8280
         },
         "warnings": [
-          "day 4 weather is rainy; keep indoor backup options",
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -2759,9 +2877,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -2773,10 +2894,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -2870,9 +2991,12 @@
           "total": 2208
         },
         "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     },
@@ -2884,10 +3008,12 @@
       "score": 100,
       "errors": [],
       "warnings": [
-        "day 4 weather is rainy; keep indoor backup options",
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
         "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
         "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-        "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
       ],
       "checks": {
         "planner_succeeded": true,
@@ -2899,10 +3025,10 @@
         "route_feasible": false
       },
       "diagnostics": {
-        "tool_fallbacks": 0,
+        "tool_fallbacks": 3,
         "llm_fallbacks": 1,
-        "external_api_successes": 1,
-        "external_api_calls": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
         "node_duration_ms": 0,
         "node_duration_samples": 1,
         "prompt_tokens": 0,
@@ -3020,10 +3146,322 @@
           "total": 3864
         },
         "warnings": [
-          "day 4 weather is rainy; keep indoor backup options",
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
           "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
           "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
-          "LLM fallback: prompt_version=travel-plan-v1 category=disabled attempts=0 duration_ms=0 reason=disabled"
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
+        ]
+      }
+    },
+    {
+      "case_id": "case_025",
+      "description": "测试聊天式快速模式常见输入：上海出发杭州三日，预算中等，偏好美食和自然风光。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
+      ],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 3,
+        "llm_fallbacks": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
+      },
+      "plan": {
+        "title": "杭州3-day Eino travel plan",
+        "summary": "Eino workflow planned 3 days in 杭州 from 上海 with budget 3000.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 美食 and 自然风光 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "西湖",
+                "address": "杭州 POI 1",
+                "reason": "matches 美食 and 自然风光 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "灵隐寺",
+                "address": "杭州 POI 2",
+                "reason": "matches 美食 and 自然风光 preference in 杭州",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 美食 and 自然风光 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "河坊街",
+                "address": "杭州 POI 3",
+                "reason": "matches 美食 and 自然风光 preference in 杭州",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "龙井村",
+                "address": "杭州 POI 4",
+                "reason": "matches 美食 and 自然风光 preference in 杭州",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 美食 and 自然风光 route in 杭州",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "京杭大运河",
+                "address": "杭州 POI 5",
+                "reason": "matches 美食 and 自然风光 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "西湖",
+                "address": "杭州 POI 1",
+                "reason": "matches 美食 and 自然风光 preference in 杭州",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 662.4,
+          "food": 717.6,
+          "hotel": 828,
+          "ticket": 552,
+          "total": 2760
+        },
+        "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
+        ]
+      }
+    },
+    {
+      "case_id": "case_026",
+      "description": "测试专家模式适用的高约束长天数输入：北京五日亲子文化路线，预算充足但需要稳定结构。",
+      "success": true,
+      "duration_ms": 0,
+      "score": 100,
+      "errors": [],
+      "warnings": [
+        "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+        "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+        "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+        "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
+      ],
+      "checks": {
+        "planner_succeeded": true,
+        "day_matched": true,
+        "budget_passed": true,
+        "structure_complete": true,
+        "keywords_matched": true,
+        "no_illegal_fields": true,
+        "route_feasible": false
+      },
+      "diagnostics": {
+        "tool_fallbacks": 3,
+        "llm_fallbacks": 1,
+        "external_api_successes": 0,
+        "external_api_calls": 3,
+        "node_duration_ms": 0,
+        "node_duration_samples": 1,
+        "prompt_tokens": 0,
+        "completion_tokens": 0,
+        "total_tokens": 0,
+        "token_usage_known": false,
+        "route_feasibility_warn": true
+      },
+      "plan": {
+        "title": "北京5-day Eino travel plan",
+        "summary": "Eino workflow planned 5 days in 北京 from 广州 with budget 12000.",
+        "days": [
+          {
+            "day": 1,
+            "theme": "day 1 亲子 and 历史文化 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "landmark",
+                "name": "故宫",
+                "address": "北京 POI 1",
+                "reason": "matches 亲子 and 历史文化 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "culture",
+                "name": "天安门",
+                "address": "北京 POI 2",
+                "reason": "matches 亲子 and 历史文化 preference in 北京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              }
+            ]
+          },
+          {
+            "day": 2,
+            "theme": "day 2 亲子 and 历史文化 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "food",
+                "name": "颐和园",
+                "address": "北京 POI 3",
+                "reason": "matches 亲子 and 历史文化 preference in 北京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              },
+              {
+                "time": "14:30",
+                "type": "nature",
+                "name": "国家博物馆",
+                "address": "北京 POI 4",
+                "reason": "matches 亲子 and 历史文化 preference in 北京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 3,
+            "theme": "day 3 亲子 and 历史文化 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "citywalk",
+                "name": "什刹海",
+                "address": "北京 POI 5",
+                "reason": "matches 亲子 and 历史文化 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "landmark",
+                "name": "故宫",
+                "address": "北京 POI 1",
+                "reason": "matches 亲子 and 历史文化 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 90
+              }
+            ]
+          },
+          {
+            "day": 4,
+            "theme": "day 4 亲子 and 历史文化 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "culture",
+                "name": "天安门",
+                "address": "北京 POI 2",
+                "reason": "matches 亲子 and 历史文化 preference in 北京",
+                "estimated_cost": 50,
+                "duration_minutes": 120
+              },
+              {
+                "time": "14:30",
+                "type": "food",
+                "name": "颐和园",
+                "address": "北京 POI 3",
+                "reason": "matches 亲子 and 历史文化 preference in 北京",
+                "estimated_cost": 70,
+                "duration_minutes": 150
+              }
+            ]
+          },
+          {
+            "day": 5,
+            "theme": "day 5 亲子 and 历史文化 route in 北京",
+            "items": [
+              {
+                "time": "09:30",
+                "type": "nature",
+                "name": "国家博物馆",
+                "address": "北京 POI 4",
+                "reason": "matches 亲子 and 历史文化 preference in 北京",
+                "estimated_cost": 90,
+                "duration_minutes": 90
+              },
+              {
+                "time": "14:30",
+                "type": "citywalk",
+                "name": "什刹海",
+                "address": "北京 POI 5",
+                "reason": "matches 亲子 and 历史文化 preference in 北京",
+                "estimated_cost": 30,
+                "duration_minutes": 120
+              }
+            ]
+          }
+        ],
+        "budget": {
+          "transport": 2649.6,
+          "food": 2870.4,
+          "hotel": 3312,
+          "ticket": 2208,
+          "total": 11040
+        },
+        "warnings": [
+          "tool fallback: tool=poi provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=weather provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "tool fallback: tool=route provider=amap stage=configuration category=configuration mock_fallback=true reason=TRAVEL_AGENT_AMAP_API_KEY is not configured",
+          "route feasibility: check=poi_coordinates score=90 message=some POIs do not have coordinates; route duration may use mock fallback",
+          "EinoTravelPlanner uses deterministic mock tools; no real LLM or external API was called.",
+          "LLM fallback: prompt_version=travel-plan-v1 category=missing_api_key attempts=0 duration_ms=0 reason=missing_api_key"
         ]
       }
     }

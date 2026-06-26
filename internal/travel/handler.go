@@ -36,6 +36,51 @@ func (h *Handler) CreatePlan(c *gin.Context) {
 	c.JSON(http.StatusAccepted, resp)
 }
 
+func (h *Handler) Chat(c *gin.Context) {
+	var req ChatRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respondError(c, http.StatusBadRequest, "invalid_request", err.Error())
+		return
+	}
+	resp, err := h.service.Chat(c.Request.Context(), req)
+	if err != nil {
+		respondError(c, http.StatusInternalServerError, "chat_error", err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *Handler) ChatStream(c *gin.Context) {
+	var req ChatRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		respondError(c, http.StatusBadRequest, "invalid_request", err.Error())
+		return
+	}
+
+	c.Header("Content-Type", "text/event-stream; charset=utf-8")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+	c.Header("X-Accel-Buffering", "no")
+
+	resp, err := h.service.ChatStream(c.Request.Context(), req, func(event TaskEvent) bool {
+		c.SSEvent(string(event.Type), event)
+		c.Writer.Flush()
+		return c.Request.Context().Err() == nil
+	})
+	if err != nil {
+		c.SSEvent(string(EventError), TaskEvent{
+			Type:      EventError,
+			RequestID: c.Writer.Header().Get("X-Request-ID"),
+			Message:   err.Error(),
+			CreatedAt: time.Now().UTC(),
+		})
+		c.Writer.Flush()
+		return
+	}
+	c.SSEvent(string(EventDone), resp)
+	c.Writer.Flush()
+}
+
 func (h *Handler) GetPlan(c *gin.Context) {
 	id := c.Param("task_id")
 	if id == "" {
@@ -71,7 +116,7 @@ func (h *Handler) StreamPlan(c *gin.Context) {
 		return
 	}
 
-	c.Header("Content-Type", "text/event-stream")
+	c.Header("Content-Type", "text/event-stream; charset=utf-8")
 	c.Header("Cache-Control", "no-cache")
 	c.Header("Connection", "keep-alive")
 	c.Header("X-Accel-Buffering", "no")

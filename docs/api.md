@@ -1,5 +1,84 @@
 # API
 
+## 2026-06 Chat-First Contract
+
+前端现在以聊天为主入口：先收集旅行需求，信息齐全后在助手消息里展示“生成行程”按钮。
+
+### POST /api/v1/travel/chat/stream
+
+用于用户信息收集阶段，返回 `text/event-stream`。测试模式使用本地规则提取；真实模式使用配置的 LLM 提取，失败时 fallback 到规则提取。
+
+Request:
+
+```json
+{
+  "message": "上海出发，杭州 3 天，预算 3000，喜欢美食和自然风光",
+  "departure_city": "上海",
+  "destination_city": "杭州",
+  "days": 3,
+  "budget": 3000,
+  "interests": ["美食"],
+  "transport_mode": "train_taxi",
+  "pace": "relaxed",
+  "test_mode": true,
+  "agent_mode": "quick"
+}
+```
+
+`agent_mode` 可选：`quick` 为快速模式，`expert` 为专家模式。`test_mode=true` 时始终走本地规则、Mock tools 和 deterministic planner；`test_mode=false` 时按服务端 LLM 与真实工具配置执行。
+
+Stream events:
+
+* `assistant_delta`：助手回复增量文本。`message` 字段长度**不再保证等长**——启用流式（`TRAVEL_AGENT_LLM_STREAM_ENABLED=true`，默认）时按 LLM token 增量到达，单帧通常 1~6 个汉字；前端必须**累加**而不是替换。
+* `assistant_done`：助手回复文本结束。
+* `done`：最终结构化 `ChatResponse`。
+* `error`：处理失败。
+
+Final `done` payload:
+
+```json
+{
+  "departure_city": "上海",
+  "destination_city": "杭州",
+  "days": 3,
+  "budget": 3000,
+  "interests": ["美食", "自然风光"],
+  "transport_mode": "train_taxi",
+  "pace": "relaxed",
+  "reply": "信息已经齐全，可以生成行程了。",
+  "missing": [],
+  "is_complete": true,
+  "agent_mode": "quick"
+}
+```
+
+### POST /api/v1/travel/plans
+
+新增 `agent_mode` 字段。`request_hash` 会同时包含 `test_mode` 和 `agent_mode`，避免测试/真实、快速/专家结果互相复用。
+
+```json
+{
+  "departure_city": "上海",
+  "destination_city": "杭州",
+  "days": 3,
+  "budget": 3000,
+  "interests": ["美食", "自然风光"],
+  "transport_mode": "train_taxi",
+  "pace": "relaxed",
+  "test_mode": false,
+  "agent_mode": "expert"
+}
+```
+
+### GET /api/v1/travel/plans/:task_id/stream
+
+规划任务 SSE 继续返回 `progress`、`node`、`warning`、`error`、`done`、`heartbeat`，并新增：
+
+* `assistant_delta`：生成过程中的助手文本增量。启用流式时，规划链路在结构化 plan 落库前会通过 LLM streaming 推送一段"旁白"（例如"正在为你规划上海到杭州的 3 天行程..."），单帧长度由 LLM token 决定，**不保证等长**。
+* `assistant_done`：助手文本结束。
+
+前端应以最后的 `done.plan` 作为最终结构化行程，以 `assistant_delta` 只作为生成中的可读反馈。`TRAVEL_AGENT_LLM_STREAM_ENABLED=false` 时旁白回退到等长 chunkText 切片（向后兼容）。
+
 ## Current Stage
 
 当前 HTTP API 使用异步任务模式，支持 request hash 去重、任务状态查询、缓存复用、限流和 SSE 流式事件。Redis 可用时使用 Redis；Redis 未配置或不可用时，开发环境降级到内存实现。
@@ -54,9 +133,12 @@ Request:
   "budget": 3000,
   "interests": ["自然风光", "美食"],
   "transport_mode": "train_taxi",
-  "pace": "relaxed"
+  "pace": "relaxed",
+  "test_mode": true
 }
 ```
+
+`test_mode` 可选，默认 `false`。前端开启测试模式时传 `true`，后端会在本次请求中强制使用本地规则解析、deterministic plan generator 和 Mock Tools；关闭测试模式时使用服务端环境变量配置的真实 LLM / real tools，如果 key 或 provider 不可用仍会按原有 fallback 策略降级。
 
 Response:
 
@@ -191,3 +273,5 @@ The React H5 client uses the existing contract without additional endpoints. The
 * `GET /api/v1/travel/plans/:task_id` is used as a polling fallback when SSE disconnects.
 
 Set `VITE_API_BASE_URL` for the web app when the frontend is not served behind the same origin as the API. In local Vite development, leaving it empty uses the dev-server `/api` proxy.
+
+The frontend mode switch maps to the same `test_mode` request field. Test mode uses local deterministic behavior for demos and repeatable checks; real mode depends on backend `TRAVEL_AGENT_LLM_*` and `TRAVEL_AGENT_TOOL_MODE=real` / `TRAVEL_AGENT_AMAP_*` configuration.

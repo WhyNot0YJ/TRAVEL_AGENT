@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 	"time"
 
+	"travel-agent/internal/agent"
 	"travel-agent/internal/domain"
 )
 
@@ -66,6 +68,14 @@ func newDefaultPlanGenerator() TravelPlanGenerator {
 func (g llmPlanGenerator) Generate(ctx context.Context, state TravelPlanningState) (*domain.TravelPlan, error) {
 	if g.fallback == nil {
 		g.fallback = deterministicPlanGenerator{}
+	}
+	if agent.PlannerOptionsFromContext(ctx).TestMode {
+		plan, err := g.fallback.Generate(ctx, state)
+		if err != nil {
+			return nil, err
+		}
+		plan.Warnings = append(plan.Warnings, llmFallbackWarning(fmt.Errorf("test_mode"), 0, 0))
+		return plan, nil
 	}
 
 	var lastErr error
@@ -132,34 +142,51 @@ func newOpenAICompatibleClient(cfg LLMConfig) *openAICompatibleClient {
 }
 
 func (c *openAICompatibleClient) GenerateTravelPlan(ctx context.Context, state TravelPlanningState) (*llmPlanResult, error) {
+	options := agent.PlannerOptionsFromContext(ctx)
+	reporter := agent.LLMDeltaReporterFromContext(ctx)
+	if c.config.StreamEnabled {
+		return c.generateTravelPlanStreaming(ctx, state, options.AgentMode, reporter)
+	}
+	return c.generateTravelPlanBuffered(ctx, state, options.AgentMode)
+}
+
+// generateTravelPlanBuffered is the original non-streaming code path. We keep
+// it for the harness, for reporter-less tests, and for the rollback flag.
+func (c *openAICompatibleClient) generateTravelPlanBuffered(ctx context.Context, state TravelPlanningState, agentMode string) (*llmPlanResult, error) {
 	started := time.Now()
-	messages, err := buildTravelPlanMessages(state)
+
+	messages, err := buildTravelPlanMessages(state, agentMode)
 	if err != nil {
 		return nil, err
 	}
-	payload := buildChatCompletionRequest(c.config, messages, travelPlanJSONSchema())
+	payload := buildChatCompletionRequest(c.config, messages, travelPlanJSONSchema(), submitTravelPlanToolName, "Submit the final structured travel plan.", agentMode)
 
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("marshal chat completion request: %w", err)
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, chatCompletionsEndpoint(c.config.BaseURL), bytes.NewReader(body))
+	endpoint := chatCompletionsEndpoint(c.config.BaseURL)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("build chat completion request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+c.config.APIKey)
 	req.Header.Set("Content-Type", "application/json")
 
+	log.Printf("[%s] call purpose=generate_travel_plan provider=%s model=%s endpoint=%s stream=false", llmAPILogLabel(c.config), c.config.Provider, payload.Model, endpoint)
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
+		log.Printf("[%s] return purpose=generate_travel_plan error=%v duration_ms=%d", llmAPILogLabel(c.config), err, time.Since(started).Milliseconds())
 		return nil, fmt.Errorf("call LLM provider: %w", err)
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
 	if err != nil {
+		log.Printf("[%s] return purpose=generate_travel_plan status=%d error=%v duration_ms=%d", llmAPILogLabel(c.config), resp.StatusCode, err, time.Since(started).Milliseconds())
 		return nil, fmt.Errorf("read LLM response: %w", err)
 	}
+	log.Printf("[%s] return purpose=generate_travel_plan status=%d bytes=%d duration_ms=%d body=%s", llmAPILogLabel(c.config), resp.StatusCode, len(respBody), time.Since(started).Milliseconds(), string(respBody))
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, fmt.Errorf("LLM provider returned status %d: %s", resp.StatusCode, strings.TrimSpace(string(respBody)))
 	}
@@ -172,6 +199,81 @@ func (c *openAICompatibleClient) GenerateTravelPlan(ctx context.Context, state T
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("[%s] value purpose=generate_travel_plan title=%q days=%d prompt_tokens=%d completion_tokens=%d total_tokens=%d", llmAPILogLabel(c.config), plan.Title, len(plan.Days), usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens)
+	return &llmPlanResult{
+		Plan:          plan,
+		PromptVersion: travelPlanPromptVersion,
+		Duration:      time.Since(started),
+		TokenUsage:    usage,
+	}, nil
+}
+
+// generateTravelPlanStreaming runs a single strict tool-call request with
+// stream=true, progressively scans the partial JSON for the "summary" field,
+// and emits each newly produced character of that field through the reporter.
+// On completion the accumulated tool-call arguments are parsed exactly the
+// same way the buffered path parses them, so business validation is identical.
+func (c *openAICompatibleClient) generateTravelPlanStreaming(ctx context.Context, state TravelPlanningState, agentMode string, reporter agent.LLMDeltaReporter) (*llmPlanResult, error) {
+	started := time.Now()
+
+	messages, err := buildTravelPlanMessages(state, agentMode)
+	if err != nil {
+		return nil, err
+	}
+	payload := buildChatCompletionRequest(c.config, messages, travelPlanJSONSchema(), submitTravelPlanToolName, "Submit the final structured travel plan.", agentMode)
+
+	// Track how much of the summary string the user has already seen so we
+	// only emit the new tail on each frame.
+	var emittedPrefix string
+	onToolArgs := func(_ int, accumulated string) {
+		current := extractSummarySoFar(accumulated)
+		if len(current) <= len(emittedPrefix) {
+			return
+		}
+		if !strings.HasPrefix(current, emittedPrefix) {
+			// Defensive: extractor revised earlier output (shouldn't happen
+			// with append-only token streaming, but worth handling). Replay.
+			emittedPrefix = ""
+		}
+		delta := current[len(emittedPrefix):]
+		emittedPrefix = current
+		if delta != "" && reporter != nil {
+			reporter.ReportLLMDelta(ctx, delta)
+		}
+	}
+
+	result, err := c.chatCompletionStream(ctx, payload, nil, onToolArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	rawArgs, err := extractStreamToolPayload(c.config.Provider, payload.Model, result, submitTravelPlanToolName)
+	if err != nil {
+		return nil, err
+	}
+
+	plan, err := parseTravelPlanArguments(rawArgs, state.Request)
+	if err != nil {
+		return nil, err
+	}
+
+	// Flush any remaining summary tail (handles the case where the closing
+	// quote of summary arrived in the same frame as the rest of the JSON).
+	if final := extractSummarySoFar(rawArgs); len(final) > len(emittedPrefix) {
+		if strings.HasPrefix(final, emittedPrefix) {
+			tail := final[len(emittedPrefix):]
+			if tail != "" && reporter != nil {
+				reporter.ReportLLMDelta(ctx, tail)
+			}
+			emittedPrefix = final
+		}
+	}
+	if emittedPrefix != "" && reporter != nil {
+		reporter.ReportLLMDone(ctx, emittedPrefix)
+	}
+
+	usage := result.Usage
+	log.Printf("[%s] value purpose=generate_travel_plan_stream title=%q days=%d prompt_tokens=%d completion_tokens=%d total_tokens=%d duration_ms=%d", llmAPILogLabel(c.config), plan.Title, len(plan.Days), usage.PromptTokens, usage.CompletionTokens, usage.TotalTokens, result.Duration.Milliseconds())
 	return &llmPlanResult{
 		Plan:          plan,
 		PromptVersion: travelPlanPromptVersion,
@@ -185,9 +287,14 @@ type chatCompletionRequest struct {
 	Messages       []chatMessage `json:"messages"`
 	Tools          []chatTool    `json:"tools,omitempty"`
 	ToolChoice     any           `json:"tool_choice,omitempty"`
+	Thinking       *chatThinking `json:"thinking,omitempty"`
 	ResponseFormat any           `json:"response_format,omitempty"`
 	Temperature    float64       `json:"temperature"`
 	Stream         bool          `json:"stream"`
+}
+
+type chatThinking struct {
+	Type string `json:"type"`
 }
 
 type chatMessage struct {
@@ -207,20 +314,53 @@ type chatToolFunction struct {
 	Strict      bool           `json:"strict"`
 }
 
-func buildChatCompletionRequest(cfg LLMConfig, messages []chatMessage, schema map[string]any) chatCompletionRequest {
+// modelForMode returns the configured DeepSeek model for the given agent mode.
+// Quick mode → flash, expert mode → pro. cfg.Model still serves as a global
+// override when QuickModel/ExpertModel are unset, preserving backward compat.
+func modelForMode(cfg LLMConfig, agentMode string) string {
+	if strings.EqualFold(agentMode, "expert") && strings.TrimSpace(cfg.ExpertModel) != "" {
+		return cfg.ExpertModel
+	}
+	if strings.TrimSpace(cfg.QuickModel) != "" {
+		return cfg.QuickModel
+	}
+	return cfg.Model
+}
+
+// modelSupportsToolCall reports whether the chosen model is expected to honor
+// strict OpenAI-style function/tool calls. Reasoner-style models do not.
+func modelSupportsToolCall(model string) bool {
+	lower := strings.ToLower(model)
+	if strings.Contains(lower, "reasoner") {
+		return false
+	}
+	return true
+}
+
+func buildChatCompletionRequest(cfg LLMConfig, messages []chatMessage, schema map[string]any, toolName, toolDesc, agentMode string) chatCompletionRequest {
+	model := modelForMode(cfg, agentMode)
 	req := chatCompletionRequest{
-		Model:       cfg.Model,
+		Model:       model,
 		Messages:    messages,
 		Temperature: 0.2,
 		Stream:      false,
 	}
-	if strings.EqualFold(cfg.Provider, "deepseek") {
+	supportsTools := modelSupportsToolCall(model)
+	if strings.EqualFold(cfg.Provider, "deepseek") && supportsTools {
+		name := toolName
+		if name == "" {
+			name = submitTravelPlanToolName
+		}
+		desc := toolDesc
+		if desc == "" {
+			desc = "Submit the final structured output."
+		}
 		req.Tools = []chatTool{
 			{
 				Type: "function",
 				Function: chatToolFunction{
-					Name:        submitTravelPlanToolName,
-					Description: "Submit the final structured travel plan.",
+					Name:        name,
+					Description: desc,
 					Parameters:  schema,
 					Strict:      true,
 				},
@@ -229,12 +369,15 @@ func buildChatCompletionRequest(cfg LLMConfig, messages []chatMessage, schema ma
 		req.ToolChoice = map[string]any{
 			"type": "function",
 			"function": map[string]any{
-				"name": submitTravelPlanToolName,
+				"name": name,
 			},
 		}
+		req.Thinking = &chatThinking{Type: "disabled"}
 		return req
 	}
 
+	// OpenAI-compatible json_schema path; also used as the reasoner fallback
+	// when the chosen model is known not to support tool calls.
 	req.ResponseFormat = map[string]any{
 		"type": "json_schema",
 		"json_schema": map[string]any{
@@ -295,6 +438,12 @@ func extractTravelPlanPayload(cfg LLMConfig, data []byte) (string, LLMTokenUsage
 				return toolCall.Function.Arguments, llmTokenUsage(resp.Usage), nil
 			}
 		}
+		// Reasoner-style models cannot emit tool_calls; accept content as JSON.
+		// Only the configured model name unlocks this fallback so providers that
+		// silently drop tool_calls still surface as an error.
+		if !modelSupportsToolCall(cfg.Model) && strings.TrimSpace(message.Content) != "" {
+			return strings.TrimSpace(message.Content), llmTokenUsage(resp.Usage), nil
+		}
 		return "", llmTokenUsage(resp.Usage), fmt.Errorf("LLM response did not call %s", submitTravelPlanToolName)
 	}
 	if strings.TrimSpace(message.Content) == "" {
@@ -319,6 +468,13 @@ func llmTokenUsage(usage tokenUsage) LLMTokenUsage {
 		TotalTokens:      usage.TotalTokens,
 		Known:            known,
 	}
+}
+
+func llmAPILogLabel(cfg LLMConfig) string {
+	if strings.EqualFold(cfg.Provider, "deepseek") {
+		return "DeepSeek API"
+	}
+	return "LLM API"
 }
 
 func appendLLMTraceWarning(plan *domain.TravelPlan, result *llmPlanResult) {
@@ -364,6 +520,8 @@ func classifyLLMFallback(reason string, attempts int) string {
 	switch {
 	case lower == "disabled":
 		return "disabled"
+	case lower == "test_mode":
+		return "test_mode"
 	case strings.Contains(lower, "missing_api_key"), strings.Contains(lower, "api key"):
 		return "missing_api_key"
 	case strings.Contains(lower, "timeout"), strings.Contains(lower, "deadline exceeded"):

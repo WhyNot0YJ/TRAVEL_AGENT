@@ -1,5 +1,5 @@
 import { useEffect, useRef, type FormEvent, type ReactNode } from "react";
-import type { TravelPlanRequest } from "../api/types";
+import type { AgentMode, TravelPlanRequest } from "../api/types";
 
 export interface TravelBrief {
   departureCity: string;
@@ -23,16 +23,22 @@ interface AgentConversationProps {
   input: string;
   disabled: boolean;
   canGenerate: boolean;
+  testMode: boolean;
+  agentMode: AgentMode;
   onInputChange: (value: string) => void;
   onSend: (value: string) => void;
   onQuickReply: (value: string) => void;
   onGenerate: (request: TravelPlanRequest) => void;
+  onTestModeChange: (enabled: boolean) => void;
+  onAgentModeChange: (mode: AgentMode) => void;
   briefPanel: ReactNode;
   progressPanel: ReactNode;
   planPanel: ReactNode;
   errorPanel?: ReactNode;
   activityKey: string;
   planReady: boolean;
+  planningActive: boolean;
+  planningText: string;
 }
 
 const quickReplies = ["上海出发，杭州 3 天，预算 3000", "想轻松一点，喜欢美食和自然风光", "高铁优先，少走回头路"];
@@ -49,27 +55,39 @@ function buildRequest(brief: TravelBrief): TravelPlanRequest {
   };
 }
 
+function modeLabel(testMode: boolean, agentMode: AgentMode): string {
+  if (testMode) {
+    return "测试模式";
+  }
+  return agentMode === "expert" ? "真实 LLM · 专家" : "真实 LLM · 快速";
+}
+
 export default function AgentConversation({
   messages,
   brief,
   input,
   disabled,
   canGenerate,
+  testMode,
+  agentMode,
   onInputChange,
   onSend,
   onQuickReply,
   onGenerate,
+  onTestModeChange,
+  onAgentModeChange,
   briefPanel,
   progressPanel,
   planPanel,
   errorPanel,
   activityKey,
   planReady,
+  planningActive,
+  planningText,
 }: AgentConversationProps) {
   const latestRef = useRef<HTMLDivElement>(null);
   const planCardRef = useRef<HTMLElement>(null);
-  const showResultMessage = canGenerate || disabled || planReady || Boolean(errorPanel);
-  const resultTitle = planReady ? "路线已生成" : disabled ? "正在生成路线" : errorPanel ? "需要处理" : "需求已整理";
+  const showPlanningMessage = planningActive || planReady || Boolean(errorPanel);
 
   useEffect(() => {
     if (planReady) {
@@ -86,37 +104,84 @@ export default function AgentConversation({
 
   return (
     <section className="conversation-console" aria-label="旅行助手对话">
-      <div className="console-head">
-        <div className="window-controls" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-        <div>
+      <header className="console-head">
+        <div className="console-title">
           <span>Travel Agent</span>
           <strong>{canGenerate ? "需求已完整" : "正在确认需求"}</strong>
         </div>
-      </div>
+
+        <div className="mode-bar" aria-label="运行模式">
+          <label className="mode-toggle">
+            <input
+              type="checkbox"
+              checked={testMode}
+              disabled={disabled}
+              onChange={(event) => onTestModeChange(event.target.checked)}
+            />
+            <span aria-hidden="true" />
+            <strong>{testMode ? "测试" : "真实"}</strong>
+          </label>
+          <div className="agent-mode-tabs" aria-label="DeepSeek 模式">
+            <button
+              type="button"
+              className={agentMode === "quick" ? "active" : ""}
+              disabled={disabled}
+              onClick={() => onAgentModeChange("quick")}
+              title={testMode ? "测试模式不调用真实 LLM；切到真实模式后此选择生效" : "使用 deepseek-v4-flash，速度优先"}
+            >
+              快速
+            </button>
+            <button
+              type="button"
+              className={agentMode === "expert" ? "active" : ""}
+              disabled={disabled}
+              onClick={() => onAgentModeChange("expert")}
+              title={testMode ? "测试模式不调用真实 LLM；切到真实模式后此选择生效" : "使用 deepseek-v4-pro，更强推理（成本更高）"}
+            >
+              专家
+            </button>
+          </div>
+        </div>
+      </header>
 
       <div className="message-rail" data-testid="message-rail">
+        <div className="mode-strip">{modeLabel(testMode, agentMode)}</div>
         {messages.map((message) => (
-          <article className={`message ${message.role}`} key={message.id}>
-            <span>{message.role === "assistant" ? "助手" : message.role === "user" ? "你" : "状态"}</span>
-            <p>{message.text}</p>
+          <article className={`message ${message.role}`} data-testid={`message-${message.role}`} key={message.id}>
+            <p>{message.text || "正在输入..."}</p>
           </article>
         ))}
 
-        {showResultMessage ? (
-          <article className="message assistant assistant-result-message" ref={planCardRef}>
-            <span>助手 · {resultTitle}</span>
+        {canGenerate && !showPlanningMessage ? (
+          <article className="message assistant assistant-result-message" data-testid="planning-message" ref={planCardRef}>
+            <p>信息齐了，可以开始生成行程。</p>
+            <div className="assistant-result-content">
+              <div className="result-block result-brief">{briefPanel}</div>
+              <div className="confirm-actions">
+                <button type="button" data-testid="generate-plan" onClick={() => onGenerate(buildRequest(brief))}>
+                  生成行程
+                </button>
+                <button type="button" onClick={() => onInputChange("我想修改一下：")}>
+                  修改需求
+                </button>
+              </div>
+            </div>
+          </article>
+        ) : null}
+
+        {showPlanningMessage ? (
+          <article className="message assistant assistant-result-message" data-testid="planning-message" ref={planCardRef}>
+            {planningText ? (
+              <p className="streaming-answer" data-testid="planning-stream-text">
+                {planningText}
+              </p>
+            ) : null}
             <div className="assistant-result-content">
               {errorPanel ? <div className="result-block result-error">{errorPanel}</div> : null}
               {planReady ? (
                 <div className="result-block result-plan">{planPanel}</div>
-              ) : disabled ? (
-                <div className="result-block result-progress">{progressPanel}</div>
               ) : (
-                <div className="result-block result-brief">{briefPanel}</div>
+                <div className="result-block result-progress">{progressPanel}</div>
               )}
             </div>
           </article>
@@ -134,6 +199,9 @@ export default function AgentConversation({
       </div>
 
       <form className="chat-composer" onSubmit={handleSubmit}>
+        <button className="composer-tool" type="button" disabled aria-label="更多">
+          +
+        </button>
         <label className="sr-only" htmlFor="travel-chat-input">
           输入旅行需求
         </label>
@@ -142,24 +210,13 @@ export default function AgentConversation({
           data-testid="chat-input"
           value={input}
           onChange={(event) => onInputChange(event.target.value)}
-          placeholder="告诉我你从哪里出发、想去哪、玩几天、预算和偏好"
-          rows={3}
+          placeholder="说说你想去哪里、玩几天、预算和偏好"
+          rows={1}
           disabled={disabled}
         />
-        <div className="composer-actions">
-          <button type="submit" data-testid="send-message" disabled={disabled || input.trim().length === 0}>
-            发送
-          </button>
-          <button
-            type="button"
-            className="generate-action"
-            data-testid="generate-plan"
-            disabled={disabled || !canGenerate}
-            onClick={() => onGenerate(buildRequest(brief))}
-          >
-            生成行程
-          </button>
-        </div>
+        <button className="send-action" type="submit" data-testid="send-message" disabled={disabled || input.trim().length === 0}>
+          发送
+        </button>
       </form>
     </section>
   );

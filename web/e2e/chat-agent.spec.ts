@@ -69,7 +69,40 @@ const mockPlan = {
   warnings: ["预算为估算值，请以现场价格为准。"],
 };
 
+const chatResponse = {
+  departure_city: "上海",
+  destination_city: "杭州",
+  days: 3,
+  budget: 3000,
+  interests: ["美食", "自然风光"],
+  transport_mode: "train_taxi",
+  pace: "relaxed",
+  reply: "信息已经齐全，可以生成行程了。",
+  missing: [],
+  is_complete: true,
+  agent_mode: "quick",
+};
+
+function sseBlock(event: string, data: unknown): string {
+  return [`event: ${event}`, `data: ${JSON.stringify(data)}`, "", ""].join("\n");
+}
+
 test.beforeEach(async ({ page }) => {
+  await page.route("**/api/v1/travel/chat/stream", async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+      },
+      body:
+        sseBlock("assistant_delta", { type: "assistant_delta", message: "信息已经齐全，" }) +
+        sseBlock("assistant_delta", { type: "assistant_delta", message: "可以生成行程了。" }) +
+        sseBlock("assistant_done", { type: "assistant_done", message: chatResponse.reply }) +
+        sseBlock("done", chatResponse),
+    });
+  });
+
   await page.route("**/api/v1/travel/plans", async (route) => {
     if (route.request().method() !== "POST") {
       await route.fallback();
@@ -95,17 +128,52 @@ test.beforeEach(async ({ page }) => {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
       },
-      body: [
-        `event: progress`,
-        `data: ${JSON.stringify({ type: "progress", task_id: "task_ui_mock", status: "running", message: "planner started", created_at: new Date().toISOString() })}`,
-        "",
-        `event: node`,
-        `data: ${JSON.stringify({ type: "node", task_id: "task_ui_mock", status: "running", node_name: "SearchPOIsToolNode", node_status: "success", duration_ms: 8, created_at: new Date().toISOString() })}`,
-        "",
-        `event: done`,
-        `data: ${JSON.stringify({ type: "done", task_id: "task_ui_mock", status: "succeeded", message: "task finished", plan: mockPlan, created_at: new Date().toISOString() })}`,
-        "",
-      ].join("\n"),
+      body:
+        sseBlock("progress", {
+          type: "progress",
+          task_id: "task_ui_mock",
+          status: "running",
+          message: "planner started",
+          created_at: new Date().toISOString(),
+        }) +
+        sseBlock("assistant_delta", {
+          type: "assistant_delta",
+          task_id: "task_ui_mock",
+          status: "running",
+          message: "Planning ",
+          created_at: new Date().toISOString(),
+        }) +
+        sseBlock("assistant_delta", {
+          type: "assistant_delta",
+          task_id: "task_ui_mock",
+          status: "running",
+          message: "Hangzhou ",
+          created_at: new Date().toISOString(),
+        }) +
+        sseBlock("assistant_delta", {
+          type: "assistant_delta",
+          task_id: "task_ui_mock",
+          status: "running",
+          message: "route",
+          created_at: new Date().toISOString(),
+        }) +
+        sseBlock("node", {
+          type: "node",
+          task_id: "task_ui_mock",
+          status: "running",
+          node_name: "SearchPOIsToolNode",
+          node_status: "success",
+          duration_ms: 8,
+          created_at: new Date().toISOString(),
+        }) +
+        sseBlock("done", {
+          type: "done",
+          task_id: "task_ui_mock",
+          status: "succeeded",
+          message: "task finished",
+          plan: mockPlan,
+          created_at: new Date().toISOString(),
+        }),
     });
   });
 
@@ -129,7 +197,7 @@ test("chat UI generates and displays a travel plan", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByTestId("chat-input")).toBeVisible();
-  await expect(page.getByTestId("generate-plan")).toBeDisabled();
+  await expect(page.getByTestId("generate-plan")).toHaveCount(0);
 
   await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，预算 3000，喜欢美食和自然风光，高铁优先");
   await page.getByTestId("send-message").click();
@@ -139,12 +207,25 @@ test("chat UI generates and displays a travel plan", async ({ page }) => {
 
   await page.getByTestId("generate-plan").click();
 
-  await expect(page.getByTestId("progress-panel")).toContainText("生成路线");
-  await expect(page.getByText("行程已经生成")).toBeVisible();
   await expect(page.getByTestId("plan-detail")).toContainText("杭州 3 日旅行规划");
   await expect(page.getByTestId("plan-detail")).toContainText("西湖断桥");
   await expect(page.getByTestId("plan-detail")).toContainText("调整预算");
   await expect(page.getByTestId("plan-detail")).toContainText("预算拆分");
+});
+
+test("planning stream appends chunks inside one assistant result bubble", async ({ page }) => {
+  await page.goto("/");
+
+  await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，预算 3000，喜欢美食和自然风光，高铁优先");
+  await page.getByTestId("send-message").click();
+  await expect(page.getByTestId("generate-plan")).toBeEnabled();
+
+  await expect(page.getByTestId("message-assistant")).toHaveCount(2);
+  await page.getByTestId("generate-plan").click();
+
+  await expect(page.getByTestId("planning-message")).toHaveCount(1);
+  await expect(page.getByTestId("planning-stream-text")).toHaveText("Planning Hangzhou route");
+  await expect(page.getByTestId("message-assistant")).toHaveCount(2);
 });
 
 test("chat UI recovers with polling when SSE disconnects", async ({ page }) => {

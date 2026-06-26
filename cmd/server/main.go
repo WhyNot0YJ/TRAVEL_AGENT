@@ -9,6 +9,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 
 	"travel-agent/internal/config"
+	"travel-agent/internal/agent/eino"
 	redisclient "travel-agent/internal/redis"
 	"travel-agent/internal/server"
 	"travel-agent/internal/travel"
@@ -49,7 +50,7 @@ func main() {
 	} else if cfg.SQLEnabled {
 		log.Printf("TRAVEL_AGENT_SQL_ENABLED=true but TRAVEL_AGENT_SQL_DSN is empty; keeping %T task store", store)
 	}
-	service := travel.NewTravelPlanService(planner, store, limiter)
+	service := travel.NewTravelPlanService(planner, store, limiter, eino.NewTravelInfoExtractor())
 	router := server.NewRouter(service)
 
 	log.Printf("travel agent server listening on %s with planner=%s", cfg.HTTPAddr, cfg.Planner)

@@ -197,8 +197,15 @@ The route detail view is productized for mobile scanning: each day renders as a 
 set TRAVEL_AGENT_LLM_ENABLED=true
 set TRAVEL_AGENT_LLM_PROVIDER=deepseek
 set TRAVEL_AGENT_LLM_API_KEY=your-api-key
+set TRAVEL_AGENT_LLM_MODEL_QUICK=deepseek-v4-flash
+set TRAVEL_AGENT_LLM_MODEL_EXPERT=deepseek-v4-pro
+set TRAVEL_AGENT_LLM_STREAM_ENABLED=true
 go run ./cmd/harness -planner eino
 ```
+
+`TRAVEL_AGENT_LLM_MODEL_QUICK` / `TRAVEL_AGENT_LLM_MODEL_EXPERT` 控制 `agent_mode=quick` / `agent_mode=expert` 实际调用的模型。两者未设置时，`TRAVEL_AGENT_LLM_MODEL` 既作为 quick 也作为 expert 的回退（向后兼容）。`request_hash` 包含 agent_mode，所以两种模式的缓存互不污染。
+
+`TRAVEL_AGENT_LLM_STREAM_ENABLED=true`（默认）打开 DeepSeek 真·流式：信息抽取、规划生成和聊天 reply 都以 `stream=true` 调用 Chat Completions。结构化 tool args 会在后端聚合后解析；规划生成会同步扫描 `summary` 字段并通过 `assistant_delta` 增量推送，单帧长度不再保证等长。设为 `false` 时整体回退到非流式 + `chunkText` 等长切片（生产回滚开关）。详细 wire format 见 `docs/external-apis.md`。
 
 如果 LLM 未启用、配置缺失、provider 不支持 schema 输出、tool call 缺失、返回结构无效或业务校验失败，Eino planner 会自动 fallback 到 deterministic generator，并在 `warnings` 中记录原因。
 
@@ -233,8 +240,11 @@ go run ./cmd/harness -planner eino
 * `TRAVEL_AGENT_WEATHER_API_KEY`
 * `TRAVEL_AGENT_WEATHER_BASE_URL`
 * `TRAVEL_AGENT_EXTERNAL_API_TIMEOUT`
+* `TRAVEL_AGENT_EXTERNAL_API_CONCURRENCY`
+* `TRAVEL_AGENT_EXTERNAL_API_QPS`
 
 real tool 初始化失败、请求失败或响应缺字段时，会自动 fallback 到 mock tool，并在 `warnings` 中说明原因。
+高德 real tools 默认在后端进程内限流：最多 2 个并发外部 API 请求，且每秒最多发起 2 次请求；可通过 `TRAVEL_AGENT_EXTERNAL_API_CONCURRENCY` 和 `TRAVEL_AGENT_EXTERNAL_API_QPS` 调整。
 
 fallback warning 使用稳定格式，便于后续报告统计：
 
@@ -242,7 +252,7 @@ fallback warning 使用稳定格式，便于后续报告统计：
 tool fallback: tool=poi provider=amap stage=request category=provider_error mock_fallback=true reason=...
 ```
 
-当前分类包括 `configuration`、`timeout`、`provider_error`、`invalid_json`、`missing_field`、`request_error` 和 `unknown`。默认 `TRAVEL_AGENT_TOOL_MODE=mock` 不会调用任何外部 API；`real` mode 配置不完整或 provider 异常时会降级到 mock，避免本地 Harness 因外部依赖不可用而失败。
+当前分类包括 `configuration`、`timeout`、`rate_limit`、`provider_error`、`invalid_json`、`missing_field`、`request_error` 和 `unknown`。默认 `TRAVEL_AGENT_TOOL_MODE=mock` 不会调用任何外部 API；`real` mode 配置不完整、触发限流或 provider 异常时会降级到 mock，避免本地 Harness 因外部依赖不可用而失败。
 
 ## 路线真实性校验
 

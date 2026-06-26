@@ -454,5 +454,43 @@
       "max_budget_ratio": 1.1,
       "required_keywords": ["杭州"]
     }
+  },
+  {
+    "id": "case_025",
+    "description": "测试聊天式快速模式常见输入：上海出发杭州三日，预算中等，偏好美食和自然风光。",
+    "input": {
+      "id": "case_025",
+      "departure_city": "上海",
+      "destination_city": "杭州",
+      "days": 3,
+      "budget": 3000,
+      "interests": ["美食", "自然风光"],
+      "transport_mode": "train_taxi",
+      "pace": "relaxed"
+    },
+    "expectation": {
+      "min_days": 3,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["杭州"]
+    }
+  },
+  {
+    "id": "case_026",
+    "description": "测试专家模式适用的高约束长天数输入：北京五日亲子文化路线，预算充足但需要稳定结构。",
+    "input": {
+      "id": "case_026",
+      "departure_city": "广州",
+      "destination_city": "北京",
+      "days": 5,
+      "budget": 12000,
+      "interests": ["亲子", "历史文化", "博物馆"],
+      "transport_mode": "flight_taxi",
+      "pace": "balanced"
+    },
+    "expectation": {
+      "min_days": 5,
+      "max_budget_ratio": 1.1,
+      "required_keywords": ["北京"]
+    }
   }
 ]

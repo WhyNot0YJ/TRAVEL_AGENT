@@ -17,7 +17,10 @@ LLM 链路会记录 prompt version、调用耗时、fallback 分类和 provider 
 | `TRAVEL_AGENT_LLM_API_KEY` | LLM API Key | 空 |
 | `DEEPSEEK_API_KEY` | DeepSeek provider 的备用 API Key 变量 | 空 |
 | `TRAVEL_AGENT_LLM_BASE_URL` | OpenAI-compatible base URL | DeepSeek 为 `https://api.deepseek.com/beta` |
-| `TRAVEL_AGENT_LLM_MODEL` | 模型名称 | `deepseek-v4-flash` |
+| `TRAVEL_AGENT_LLM_MODEL` | 模型名称（向后兼容：未设置 quick/expert 模型时作为两个的回退） | `deepseek-v4-flash` |
+| `TRAVEL_AGENT_LLM_MODEL_QUICK` | 快速模式（agent_mode=quick）使用的模型 | `deepseek-v4-flash` |
+| `TRAVEL_AGENT_LLM_MODEL_EXPERT` | 专家模式（agent_mode=expert）使用的模型 | `deepseek-v4-pro` |
+| `TRAVEL_AGENT_LLM_STREAM_ENABLED` | 是否启用 LLM 真·流式 SSE 透传；关闭后回退到等长 chunkText 切片 | `true` |
 | `TRAVEL_AGENT_LLM_TIMEOUT` | HTTP timeout，可写 `30s` 或秒数 | `30s` |
 | `TRAVEL_AGENT_LLM_MAX_RETRIES` | LLM 输出解析或校验失败后的重试次数 | `1` |
 
@@ -96,6 +99,31 @@ submit_travel_plan
 
 如果 provider 不支持 JSON Schema 输出或返回结构不符合本地校验，系统不会降级到 prompt-only JSON，而是 fallback 到 deterministic generator。
 
+## 4.1 Streaming Chat Completion（OpenAI 兼容 wire format）
+
+`TRAVEL_AGENT_LLM_STREAM_ENABLED=true`（默认）时，信息抽取、规划生成和自然语言回复都会以 OpenAI/DeepSeek 兼容的 `text/event-stream` 协议消费：
+
+```
+data: {"choices":[{"index":0,"delta":{"content":"你"},"finish_reason":null}]}
+
+data: {"choices":[{"index":0,"delta":{"content":"好"},"finish_reason":null}]}
+
+data: {"choices":[{"index":0,"delta":{"content":"，"},"finish_reason":"stop"}]}
+
+data: [DONE]
+```
+
+约束：
+
+* 解析采用 `bufio.Reader.ReadBytes('\n')` 按帧（空行）切分；支持跨 TCP 包的半截 JSON 帧。
+* `delta.content` 累加为自然语言回复，并在聊天回复链路转成 `assistant_delta` 事件的 message。
+* `delta.tool_calls[].function.arguments` 按 index 累加。信息抽取和最终规划会在 `[DONE]` 后解析完整 JSON；规划链路还会实时扫描顶层 `summary` 字段，把新增文本透传为 `assistant_delta`。
+* 收到 `data: [DONE]` 立刻关闭连接；ctx 取消时立即 `Body.Close()`。
+* `agent_mode=quick` 走 `TRAVEL_AGENT_LLM_MODEL_QUICK`（默认 `deepseek-v4-flash`）；`agent_mode=expert` 走 `TRAVEL_AGENT_LLM_MODEL_EXPERT`（默认 `deepseek-v4-pro`）。
+* 若选用的模型名包含 `reasoner`，自动关闭 strict tool call，改用 `response_format=json_schema`，并允许从 `message.content` 解 JSON。
+
+回滚：把 `TRAVEL_AGENT_LLM_STREAM_ENABLED` 设为 `false`，全部链路退回到非流式 + `chunkText` 等长切片。
+
 ## 5. 高德 / 天气 / POI Tools
 
 阶段 4 已为 Eino Tools 增加真实外部 API 能力。默认仍使用 Mock Tools；只有显式设置 real mode 且配置 API Key 时才调用真实外部接口。
@@ -108,6 +136,8 @@ submit_travel_plan
 | `TRAVEL_AGENT_WEATHER_API_KEY` | 天气 API Key；为空时复用高德 Key | 空 |
 | `TRAVEL_AGENT_WEATHER_BASE_URL` | 天气 API Base URL；为空时复用高德 Base URL | 空 |
 | `TRAVEL_AGENT_EXTERNAL_API_TIMEOUT` | 外部 API timeout，可写 `10s` 或秒数 | `10s` |
+| `TRAVEL_AGENT_EXTERNAL_API_CONCURRENCY` | 外部 API 最大并发请求数 | `2` |
+| `TRAVEL_AGENT_EXTERNAL_API_QPS` | 外部 API 每秒最多发起请求数 | `2` |
 
 当前 real tools：
 
@@ -124,6 +154,8 @@ submit_travel_plan
 * 响应缺少必要字段
 * 路线计算缺少 POI 坐标
 
+高德请求会在 `amapClient` 层统一做进程内流量控制，POI、天气和路线共享同一个 limiter。默认最多 2 个并发请求，并且最多每秒发起 2 次请求；可通过 `TRAVEL_AGENT_EXTERNAL_API_CONCURRENCY` 和 `TRAVEL_AGENT_EXTERNAL_API_QPS` 调整。该限制用于降低触发高德 `CUQPS_HAS_EXCEEDED_THE_LIMIT` 的概率，但不能替代高德控制台配额。
+
 fallback warning 使用稳定的 key-value 文本格式，便于后续 Harness 统计：
 
 ```text
@@ -135,7 +167,7 @@ tool fallback: tool=poi provider=amap stage=request category=provider_error mock
 * `tool`：`poi`、`weather` 或 `route`
 * `provider`：当前为 `amap`
 * `stage`：`configuration` 或 `request`
-* `category`：`configuration`、`timeout`、`provider_error`、`invalid_json`、`missing_field`、`request_error` 或 `unknown`
+* `category`：`configuration`、`timeout`、`rate_limit`、`provider_error`、`invalid_json`、`missing_field`、`request_error` 或 `unknown`
 * `mock_fallback`：是否已使用 mock tool 兜底
 * `reason`：脱敏后的错误摘要，不包含 API Key 或原始敏感响应
 
