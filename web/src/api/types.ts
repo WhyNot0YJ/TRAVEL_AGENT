@@ -16,8 +16,17 @@ export interface TravelPlanRequest {
   days: number;
   budget: number;
   interests: string[];
+  travelers: number;
+  date_range: string;
   transport_mode: string;
   pace: string;
+  walking_tolerance: string;
+  hotel_area: string;
+  must_visit: string[];
+  avoid: string[];
+  traveler_type: string;
+  budget_type: string;
+  budget_includes: string[];
   test_mode?: boolean;
   agent_mode?: AgentMode;
 }
@@ -98,8 +107,17 @@ export interface ChatRequest {
   days?: number;
   budget?: number;
   interests?: string[];
+  travelers?: number;
+  date_range?: string;
   transport_mode?: string;
   pace?: string;
+  walking_tolerance?: string;
+  hotel_area?: string;
+  must_visit?: string[];
+  avoid?: string[];
+  traveler_type?: string;
+  budget_type?: string;
+  budget_includes?: string[];
   test_mode?: boolean;
   agent_mode?: AgentMode;
 }
@@ -110,8 +128,17 @@ export interface ChatResponse {
   days: number;
   budget: number;
   interests: string[];
+  travelers: number;
+  date_range: string;
   transport_mode: string;
   pace: string;
+  walking_tolerance: string;
+  hotel_area: string;
+  must_visit: string[];
+  avoid: string[];
+  traveler_type: string;
+  budget_type: string;
+  budget_includes: string[];
   reply: string;
   missing: string[];
   is_complete: boolean;

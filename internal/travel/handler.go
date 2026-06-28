@@ -29,6 +29,10 @@ func (h *Handler) CreatePlan(c *gin.Context) {
 		respondError(c, http.StatusTooManyRequests, "rate_limited", "rate limit exceeded")
 		return
 	}
+	if errors.Is(err, ErrInvalidRequest) {
+		respondError(c, http.StatusBadRequest, "invalid_request", err.Error())
+		return
+	}
 	if err != nil {
 		respondError(c, http.StatusInternalServerError, "task_error", err.Error())
 		return

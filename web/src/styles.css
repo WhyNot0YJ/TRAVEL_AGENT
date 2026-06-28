@@ -20,6 +20,11 @@ body {
   background: #eef2f5;
 }
 
+#root {
+  min-height: 100vh;
+  background: #eef2f5;
+}
+
 button,
 textarea {
   font: inherit;
@@ -55,7 +60,9 @@ textarea:focus-visible {
 .agent-shell {
   display: grid;
   min-height: 100vh;
+  min-height: 100dvh;
   place-items: center;
+  background: #eef2f5;
   padding: 18px;
 }
 
@@ -65,7 +72,7 @@ textarea:focus-visible {
 
 .conversation-console {
   display: grid;
-  grid-template-rows: auto auto auto auto;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
   min-height: min(900px, calc(100vh - 36px));
   border: 1px solid rgb(17 24 39 / 10%);
   border-radius: 8px;
@@ -75,7 +82,7 @@ textarea:focus-visible {
 
 .console-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   align-items: center;
   border-bottom: 1px solid rgb(17 24 39 / 8%);
@@ -87,8 +94,7 @@ textarea:focus-visible {
   min-width: 0;
 }
 
-.console-title span,
-.mode-strip {
+.console-title span {
   display: block;
   color: #64748b;
   font-size: 12px;
@@ -101,14 +107,6 @@ textarea:focus-visible {
   color: #0f172a;
   font-size: 17px;
   font-weight: 780;
-}
-
-.mode-bar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  min-width: 0;
 }
 
 .mode-toggle {
@@ -202,14 +200,6 @@ textarea:focus-visible {
   gap: 10px;
   padding: 18px clamp(12px, 3vw, 32px);
   scroll-behavior: smooth;
-}
-
-.mode-strip {
-  align-self: center;
-  border-radius: 999px;
-  background: rgb(255 255 255 / 86%);
-  padding: 5px 10px;
-  color: #64748b;
 }
 
 .message {
@@ -329,45 +319,77 @@ textarea:focus-visible {
 
 .chat-composer {
   display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) 64px;
-  gap: 9px;
-  align-items: end;
-  border-top: 1px solid rgb(17 24 39 / 8%);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  align-items: stretch;
+  margin: 10px 14px 12px;
+  border: 1px solid rgb(17 24 39 / 10%);
+  border-radius: 8px;
   background: #ffffff;
-  padding: 10px 12px;
+  padding: 8px;
+  box-shadow: 0 8px 22px rgb(15 23 42 / 8%);
 }
 
 .chat-composer textarea {
   width: 100%;
-  min-height: 38px;
+  min-height: 44px;
   max-height: 118px;
   resize: none;
-  border: 1px solid rgb(17 24 39 / 10%);
-  border-radius: 8px;
-  background: #f8fafc;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   color: #0f172a;
-  padding: 8px 10px;
+  padding: 5px 6px;
   line-height: 1.45;
   outline: none;
 }
 
+.composer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.composer-modes,
+.composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.composer-modes {
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+}
+
+.composer-actions {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
 .composer-tool,
 .send-action {
-  min-height: 38px;
+  min-height: 34px;
   border: 0;
   border-radius: 8px;
   font-weight: 780;
 }
 
 .composer-tool {
+  width: 34px;
   background: #eef2f7;
   color: #64748b;
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .send-action {
+  min-width: 58px;
   background: #0f766e;
   color: #ffffff;
+  padding: 0 12px;
 }
 
 .brief-panel,
@@ -426,6 +448,44 @@ textarea:focus-visible {
   margin: 3px 0 0;
   color: #0f172a;
   font-weight: 760;
+  overflow-wrap: anywhere;
+}
+
+.brief-defaults {
+  border-top: 1px solid rgb(17 24 39 / 8%);
+  padding: 10px 12px 12px;
+}
+
+.brief-defaults > span {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 780;
+  margin-bottom: 7px;
+}
+
+.brief-defaults dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 12px;
+  margin: 0;
+}
+
+.brief-defaults div {
+  min-width: 0;
+}
+
+.brief-defaults dt {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.brief-defaults dd {
+  margin: 2px 0 0;
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 720;
   overflow-wrap: anywhere;
 }
 
@@ -679,6 +739,15 @@ textarea:focus-visible {
   font-weight: 800;
 }
 
+.budget-note {
+  margin: 0 0 4px;
+  border-left: 3px solid #0f766e;
+  padding-left: 8px;
+  color: #475569;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .budget-row {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 76px;
@@ -877,6 +946,7 @@ textarea:focus-visible {
   .agent-shell {
     display: block;
     min-height: 100vh;
+    min-height: 100dvh;
     padding: 0;
   }
 
@@ -885,8 +955,8 @@ textarea:focus-visible {
   }
 
   .conversation-console {
-    height: 100vh;
     min-height: 100vh;
+    min-height: 100dvh;
     border: 0;
     border-radius: 0;
   }
@@ -894,10 +964,6 @@ textarea:focus-visible {
   .console-head {
     grid-template-columns: 1fr;
     padding-top: max(12px, env(safe-area-inset-top));
-  }
-
-  .mode-bar {
-    justify-content: stretch;
   }
 
   .mode-toggle,

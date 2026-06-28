@@ -137,6 +137,9 @@ export default function PlanDetail({ plan, status = "empty", onRefine }: PlanDet
 
       <div className="budget-panel" aria-label="预算拆分">
         <p className="section-label">预算拆分</p>
+        <p className="budget-note">
+          当前数字是按总预算、人数和固定比例生成的规划估算，不是实时酒店、门票或交通报价；请以实际平台和现场价格为准。
+        </p>
         {budgetItems(plan).map((item) => {
           const pct = plan.budget.total > 0 ? Math.max(4, Math.round((item.value / plan.budget.total) * 100)) : 0;
           return (

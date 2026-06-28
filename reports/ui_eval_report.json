@@ -1,14 +1,14 @@
 {
   "config": {
     "argv": [
-      "C:\\nvm4w\\nodejs\\node.exe",
-      "C:\\Users\\romainyu\\Desktop\\Travel Agent\\web\\node_modules\\@playwright\\test\\cli.js",
+      "P:\\nvm\\nodejs\\node.exe",
+      "C:\\Users\\yujie\\TRAVEL_AGENT\\web\\node_modules\\@playwright\\test\\cli.js",
       "test",
       "--config",
       "playwright.config.ts"
     ],
-    "configFile": "C:\\Users\\romainyu\\Desktop\\Travel Agent\\web\\playwright.config.ts",
-    "rootDir": "C:/Users/romainyu/Desktop/Travel Agent/web/e2e",
+    "configFile": "C:\\Users\\yujie\\TRAVEL_AGENT\\web\\playwright.config.ts",
+    "rootDir": "C:/Users/yujie/TRAVEL_AGENT/web/e2e",
     "failOnFlakyTests": false,
     "forbidOnly": false,
     "fullyParallel": false,
@@ -19,20 +19,20 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 2
+      "actualWorkers": 1
     },
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "C:/Users/romainyu/Desktop/Travel Agent/web/test-results",
+        "outputDir": "C:/Users/yujie/TRAVEL_AGENT/web/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 2
+          "actualWorkers": 1
         },
         "id": "chromium-desktop",
         "name": "chromium-desktop",
-        "testDir": "C:/Users/romainyu/Desktop/Travel Agent/web/e2e",
+        "testDir": "C:/Users/yujie/TRAVEL_AGENT/web/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -40,15 +40,15 @@
         "timeout": 30000
       },
       {
-        "outputDir": "C:/Users/romainyu/Desktop/Travel Agent/web/test-results",
+        "outputDir": "C:/Users/yujie/TRAVEL_AGENT/web/test-results",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
-          "actualWorkers": 2
+          "actualWorkers": 1
         },
         "id": "chromium-mobile",
         "name": "chromium-mobile",
-        "testDir": "C:/Users/romainyu/Desktop/Travel Agent/web/e2e",
+        "testDir": "C:/Users/yujie/TRAVEL_AGENT/web/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -78,7 +78,7 @@
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.61.0",
-    "workers": 12,
+    "workers": 1,
     "webServer": null
   },
   "suites": [
@@ -104,12 +104,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 806,
+                  "duration": 875,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-06-26T12:53:12.343Z",
+                  "startTime": "2026-06-28T14:10:45.455Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -119,7 +119,7 @@
           ],
           "id": "eb52e35d3e4320ea190c-8f82702defd8589e8fa7",
           "file": "chat-agent.spec.ts",
-          "line": 196,
+          "line": 205,
           "column": 1
         },
         {
@@ -138,12 +138,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 627,
+                  "duration": 612,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-06-26T12:53:13.996Z",
+                  "startTime": "2026-06-28T14:10:46.552Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -153,7 +153,41 @@
           ],
           "id": "eb52e35d3e4320ea190c-117a45ba412abaeee8c1",
           "file": "chat-agent.spec.ts",
-          "line": 216,
+          "line": 225,
+          "column": 1
+        },
+        {
+          "title": "chat UI blocks generation when required brief fields are missing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-desktop",
+              "projectName": "chromium-desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 344,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-06-28T14:10:47.176Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eb52e35d3e4320ea190c-320a50b21fbf67f45283",
+          "file": "chat-agent.spec.ts",
+          "line": 240,
           "column": 1
         },
         {
@@ -172,12 +206,12 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 581,
+                  "duration": 669,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-06-26T12:53:14.631Z",
+                  "startTime": "2026-06-28T14:10:47.530Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -187,7 +221,7 @@
           ],
           "id": "eb52e35d3e4320ea190c-e839128900cdbbce15ba",
           "file": "chat-agent.spec.ts",
-          "line": 231,
+          "line": 270,
           "column": 1
         },
         {
@@ -204,14 +238,14 @@
               "results": [
                 {
                   "workerIndex": 1,
-                  "parallelIndex": 1,
+                  "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 893,
+                  "duration": 897,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-06-26T12:53:12.343Z",
+                  "startTime": "2026-06-28T14:10:49.013Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -221,7 +255,7 @@
           ],
           "id": "eb52e35d3e4320ea190c-166934b7f9c523296942",
           "file": "chat-agent.spec.ts",
-          "line": 196,
+          "line": 205,
           "column": 1
         },
         {
@@ -238,14 +272,14 @@
               "results": [
                 {
                   "workerIndex": 1,
-                  "parallelIndex": 1,
+                  "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 679,
+                  "duration": 796,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-06-26T12:53:14.086Z",
+                  "startTime": "2026-06-28T14:10:50.087Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -255,7 +289,41 @@
           ],
           "id": "eb52e35d3e4320ea190c-7a7f9cd8c78dbc63d54c",
           "file": "chat-agent.spec.ts",
-          "line": 216,
+          "line": 225,
+          "column": 1
+        },
+        {
+          "title": "chat UI blocks generation when required brief fields are missing",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-mobile",
+              "projectName": "chromium-mobile",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 417,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-06-28T14:10:50.893Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eb52e35d3e4320ea190c-378fe8e8b1123a9bf4d5",
+          "file": "chat-agent.spec.ts",
+          "line": 240,
           "column": 1
         },
         {
@@ -272,14 +340,14 @@
               "results": [
                 {
                   "workerIndex": 1,
-                  "parallelIndex": 1,
+                  "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 669,
+                  "duration": 838,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-06-26T12:53:14.774Z",
+                  "startTime": "2026-06-28T14:10:51.320Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -289,7 +357,7 @@
           ],
           "id": "eb52e35d3e4320ea190c-5a0767387ceb3ae54b2a",
           "file": "chat-agent.spec.ts",
-          "line": 231,
+          "line": 270,
           "column": 1
         }
       ]
@@ -297,9 +365,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-06-26T12:53:11.764Z",
-    "duration": 3757.9990000000003,
-    "expected": 6,
+    "startTime": "2026-06-28T14:10:44.868Z",
+    "duration": 7554.438999999999,
+    "expected": 8,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

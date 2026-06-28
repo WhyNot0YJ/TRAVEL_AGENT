@@ -19,14 +19,23 @@ type TravelInfoExtractor interface {
 
 // TravelInfoResult carries extracted fields and assistant reply after processing one message.
 type TravelInfoResult struct {
-	DepartureCity   string
-	DestinationCity string
-	Days            int
-	Budget          float64
-	Interests       []string
-	TransportMode   string
-	Pace            string
-	Reply           string
-	Missing         []string
-	IsComplete      bool
+	DepartureCity    string
+	DestinationCity  string
+	Days             int
+	Budget           float64
+	Interests        []string
+	Travelers        int
+	DateRange        string
+	TransportMode    string
+	Pace             string
+	WalkingTolerance string
+	HotelArea        string
+	MustVisit        []string
+	Avoid            []string
+	TravelerType     string
+	BudgetType       string
+	BudgetIncludes   []string
+	Reply            string
+	Missing          []string
+	IsComplete       bool
 }

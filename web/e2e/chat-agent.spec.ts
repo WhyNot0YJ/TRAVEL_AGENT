@@ -75,8 +75,17 @@ const chatResponse = {
   days: 3,
   budget: 3000,
   interests: ["美食", "自然风光"],
+  travelers: 2,
+  date_range: "任意",
   transport_mode: "train_taxi",
   pace: "relaxed",
+  walking_tolerance: "任意",
+  hotel_area: "任意",
+  must_visit: [],
+  avoid: [],
+  traveler_type: "无要求",
+  budget_type: "总预算",
+  budget_includes: ["住宿", "餐饮", "门票", "市内交通"],
   reply: "信息已经齐全，可以生成行程了。",
   missing: [],
   is_complete: true,
@@ -199,7 +208,7 @@ test("chat UI generates and displays a travel plan", async ({ page }) => {
   await expect(page.getByTestId("chat-input")).toBeVisible();
   await expect(page.getByTestId("generate-plan")).toHaveCount(0);
 
-  await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，预算 3000，喜欢美食和自然风光，高铁优先");
+  await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，2 人，预算 3000，喜欢美食和自然风光，高铁优先");
   await page.getByTestId("send-message").click();
 
   await expect(page.getByTestId("brief-panel")).toContainText("杭州");
@@ -216,7 +225,7 @@ test("chat UI generates and displays a travel plan", async ({ page }) => {
 test("planning stream appends chunks inside one assistant result bubble", async ({ page }) => {
   await page.goto("/");
 
-  await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，预算 3000，喜欢美食和自然风光，高铁优先");
+  await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，2 人，预算 3000，喜欢美食和自然风光，高铁优先");
   await page.getByTestId("send-message").click();
   await expect(page.getByTestId("generate-plan")).toBeEnabled();
 
@@ -228,6 +237,36 @@ test("planning stream appends chunks inside one assistant result bubble", async 
   await expect(page.getByTestId("message-assistant")).toHaveCount(2);
 });
 
+test("chat UI blocks generation when required brief fields are missing", async ({ page }) => {
+  const incomplete = {
+    ...chatResponse,
+    travelers: 0,
+    reply: "还需要确认：出行人数。",
+    missing: ["出行人数"],
+    is_complete: false,
+  };
+  await page.route("**/api/v1/travel/chat/stream", async (route) => {
+    await route.fulfill({
+      status: 200,
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+      },
+      body:
+        sseBlock("assistant_delta", { type: "assistant_delta", message: incomplete.reply }) +
+        sseBlock("assistant_done", { type: "assistant_done", message: incomplete.reply }) +
+        sseBlock("done", incomplete),
+    });
+  });
+
+  await page.goto("/");
+  await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，预算 3000，喜欢美食和自然风光");
+  await page.getByTestId("send-message").click();
+
+  await expect(page.getByTestId("brief-review-message")).toContainText("出行人数");
+  await expect(page.getByTestId("generate-plan")).toBeDisabled();
+});
+
 test("chat UI recovers with polling when SSE disconnects", async ({ page }) => {
   let streamAttempts = 0;
 
@@ -237,7 +276,7 @@ test("chat UI recovers with polling when SSE disconnects", async ({ page }) => {
   });
 
   await page.goto("/");
-  await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，预算 3000，喜欢美食和自然风光，高铁优先");
+  await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，2 人，预算 3000，喜欢美食和自然风光，高铁优先");
   await page.getByTestId("send-message").click();
   await page.getByTestId("generate-plan").click();
 

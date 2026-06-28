@@ -126,7 +126,11 @@ func checkDays(tc TravelCase, plan *domain.TravelPlan, result *CaseResult) bool 
 }
 
 func checkBudget(tc TravelCase, plan *domain.TravelPlan, result *CaseResult) bool {
-	limit := tc.Input.Budget * tc.Expectation.MaxBudgetRatio
+	budget := tc.Input.Budget
+	if domain.IsBudgetPerPerson(tc.Input.BudgetType) && tc.Input.Travelers > 0 {
+		budget *= float64(tc.Input.Travelers)
+	}
+	limit := budget * tc.Expectation.MaxBudgetRatio
 	if plan.Budget.Total > limit {
 		result.Errors = append(result.Errors, fmt.Sprintf("budget total %.2f exceeds limit %.2f", plan.Budget.Total, limit))
 		return false

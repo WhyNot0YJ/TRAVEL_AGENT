@@ -1,40 +1,40 @@
-# Agent Flow
+# Agent 流程
 
-## Current Stage
+## 当前阶段
 
-The project uses a Go `TravelPlanner` interface with an Eino implementation in `internal/agent/eino`.
-The frontend is a React H5 chat interface. The backend exposes asynchronous travel-plan tasks, SSE progress, a chat-based requirement collection API, deterministic test mode, and optional real LLM / real external tools.
+项目使用 Go `TravelPlanner` 接口，并在 `internal/agent/eino` 中提供 Eino 实现。
+前端是 React H5 对话界面。后端提供异步旅行规划任务、SSE 进度、基于聊天的需求收集 API、确定性测试模式，以及可选的真实 LLM / 真实外部工具。
 
-## Chat-First Flow
+## 聊天优先流程
 
 ```text
-User message
+用户消息
   -> POST /api/v1/travel/chat/stream
   -> TravelInfoExtractor
-     -> test_mode: local rule extractor
-     -> real mode: LLM extractor with rule fallback
-  -> ChatResponse(is_complete, missing, collected fields)
-  -> Assistant confirmation card in chat
+     -> test_mode: 本地规则抽取
+     -> real mode: LLM 抽取，失败时回退到规则
+  -> ChatResponse(is_complete, missing, full Travel Brief)
+  -> 聊天中的 Travel Brief 确认卡
   -> POST /api/v1/travel/plans
   -> Eino TravelPlanning Graph
   -> GET /api/v1/travel/plans/:task_id/stream
   -> TravelPlan
 ```
 
-The frontend no longer renders a fixed outer "Generate itinerary" form button. When `is_complete=true`, the assistant message renders a requirement summary and a `生成行程` action. Clicking it creates a plan task from the collected structured brief.
+前端不再渲染固定的外层“生成行程”表单按钮。当 `is_complete=true` 时，助手消息会渲染 Travel Brief 确认卡和 `生成行程` 操作。点击该操作后，前端会用已收集的结构化需求创建规划任务。缺少出行人数等必填项时，前端不展示可用的生成动作，后端也会拒绝创建任务。
 
-## Runtime Options
+## 运行选项
 
-Runtime behavior is carried by `agent.PlannerOptions`:
+运行行为由 `agent.PlannerOptions` 承载：
 
-* `TestMode=true`: collection, tools, and final generation use local deterministic rules, mock tools, and deterministic fallback generation.
-* `TestMode=false`: collection and final generation prefer the configured LLM; tools use `TRAVEL_AGENT_TOOL_MODE`.
-* `AgentMode=quick`: routed to the model in `TRAVEL_AGENT_LLM_MODEL_QUICK` (default `deepseek-v4-flash`)—lower latency, lower cost.
-* `AgentMode=expert`: routed to the model in `TRAVEL_AGENT_LLM_MODEL_EXPERT` (default `deepseek-v4-pro`)—stronger reasoning, higher cost. The agent_mode is part of `request_hash`, so quick/expert results never collide in the cache.
+* `TestMode=true`：需求收集、工具调用和最终生成都使用本地确定性规则、mock tools 和 deterministic fallback generation。
+* `TestMode=false`：需求收集和最终生成优先使用已配置的 LLM；工具按 `TRAVEL_AGENT_TOOL_MODE` 选择。
+* `AgentMode=quick`：路由到 `TRAVEL_AGENT_LLM_MODEL_QUICK` 中配置的模型，默认 `deepseek-v4-flash`，延迟更低、成本更低。
+* `AgentMode=expert`：路由到 `TRAVEL_AGENT_LLM_MODEL_EXPERT` 中配置的模型，默认 `deepseek-v4-pro`，推理能力更强、成本更高。`agent_mode` 会参与 `request_hash`，因此 quick/expert 的结果不会共用缓存。
 
-DeepSeek strict tool calling still sends `thinking.type=disabled` because DeepSeek thinking mode does not support forced `tool_choice`. When the configured model name contains `reasoner`, the client automatically falls back to `response_format=json_schema` and accepts JSON via `message.content`, since reasoner-class models do not emit tool calls.
+DeepSeek strict tool calling 仍会发送 `thinking.type=disabled`，因为 DeepSeek thinking mode 不支持强制 `tool_choice`。当配置的模型名包含 `reasoner` 时，客户端会自动回退到 `response_format=json_schema`，并从 `message.content` 接收 JSON，因为 reasoner 类模型不产生 tool calls。
 
-## Eino Planning Graph
+## Eino 规划图
 
 ```text
 TravelRequest
@@ -50,62 +50,76 @@ TravelRequest
   -> TravelPlan
 ```
 
-## LLM Generation
+## LLM 生成
 
-`GenerateTravelPlanNode` uses `travel-plan-v1`.
+`GenerateTravelPlanNode` 使用 `travel-plan-v1`。
 
-When LLM is enabled and configured, the OpenAI-compatible client requests provider-native structured output:
+启用并正确配置 LLM 后，OpenAI-compatible client 会请求 provider 原生结构化输出：
 
-* DeepSeek: strict function tool `submit_travel_plan`.
-* Other compatible providers: JSON schema response format when supported.
-* Reasoner-class DeepSeek models: automatically downgraded to `response_format=json_schema` (no tool calls).
+* DeepSeek：strict function tool `submit_travel_plan`。
+* 其他兼容 provider：支持时使用 JSON schema response format。
+* DeepSeek reasoner 类模型：自动降级到 `response_format=json_schema`，不使用 tool calls。
 
-If test mode is enabled, the LLM is disabled, the API key is missing, the provider returns invalid output, retries are exhausted, or business validation fails, the node falls back to deterministic generation and records an `LLM fallback` warning.
+如果启用了测试模式、LLM 未启用、API key 缺失、provider 返回无效输出、重试耗尽或业务校验失败，该节点会回退到确定性生成，并记录 `LLM fallback` warning。
 
-### Streaming LLM output
+### 流式 LLM 输出
 
-When `TRAVEL_AGENT_LLM_STREAM_ENABLED=true` (default), DeepSeek chat completions are called with `stream=true` for requirement extraction, final plan generation, and assistant replies. Structured calls still use strict tool schemas; the server accumulates streamed tool arguments and parses the final JSON after `[DONE]`.
+当 `TRAVEL_AGENT_LLM_STREAM_ENABLED=true`（默认）时，需求抽取、最终计划生成和助手回复都会以 `stream=true` 调用 DeepSeek chat completions。结构化调用仍使用 strict tool schemas；服务端会累积流式 tool arguments，并在 `[DONE]` 后解析最终 JSON。
 
-For plan generation, the same streamed `submit_travel_plan` tool arguments are scanned incrementally for the top-level `summary` field. If an `LLMDeltaReporter` is attached, newly observed summary text is forwarded as `assistant_delta`; after the stream completes, the accumulated arguments are parsed into the final `TravelPlan`. If no reporter is attached (for example in `cmd/harness`), the provider call still uses `stream=true`, but the deltas are only accumulated internally.
+规划生成时，同一份流式 `submit_travel_plan` tool arguments 会被增量扫描顶层 `summary` 字段。如果挂载了 `LLMDeltaReporter`，新观察到的 summary 文本会作为 `assistant_delta` 转发；流结束后，累积参数会被解析为最终 `TravelPlan`。如果没有 reporter，例如在 `cmd/harness` 中，provider 调用仍使用 `stream=true`，但 delta 只在内部累积。
 
-`LLMDeltaReporter` is defined in `internal/agent/metadata.go` and follows the same context-key pattern as `PlannerEventReporter`. The `internal/travel` package supplies the implementation that translates deltas into `EventAssistantDelta` events on the `EventBus`. `internal/agent/eino` depends only on the abstraction—it never imports `internal/travel`.
+`LLMDeltaReporter` 定义在 `internal/agent/metadata.go`，使用与 `PlannerEventReporter` 相同的 context-key 模式。`internal/travel` 包提供实现，把 delta 转换为 `EventAssistantDelta` 并发布到 `EventBus`。`internal/agent/eino` 只依赖该抽象，不 import `internal/travel`。
 
-## Requirement Collection
+## 需求收集
 
-`TravelInfoExtractor` uses `chat-info-v1`.
+`TravelInfoExtractor` 使用 `chat-info-v1`。
 
-* `POST /api/v1/travel/chat` returns a single JSON response.
-* `POST /api/v1/travel/chat/stream` returns SSE `assistant_delta` chunks followed by final `done` with the same structured `ChatResponse`.
+* `POST /api/v1/travel/chat` 返回单次 JSON 响应。
+* `POST /api/v1/travel/chat/stream` 返回 SSE `assistant_delta` 分片，最后返回带同一份结构化 `ChatResponse` 的 `done`。
 
-Required fields are:
+必填字段：
 
 * `departure_city`
 * `destination_city`
 * `days`
 * `budget`
 * `interests`
+* `travelers`
 
-Test mode always uses the local rule extractor. Real mode tries streamed LLM extraction first and falls back to rules if unavailable.
+可选字段缺失时不阻塞生成，统一默认：
 
-## Tools
+* `date_range=任意`
+* `pace=适中`
+* `transport_mode=任意`
+* `walking_tolerance=任意`
+* `hotel_area=任意`
+* `must_visit=[]`
+* `avoid=[]`
+* `traveler_type=无要求`
+* `budget_type=总预算`
+* `budget_includes=["住宿","餐饮","门票","市内交通"]`
 
-Tools support `mock` and `real` modes:
+测试模式始终使用本地规则抽取器。真实模式会先尝试流式 LLM 抽取，不可用时回退到规则。Planner 会读取 `travelers`、`walking_tolerance`、`hotel_area`、`must_visit`、`avoid`、`traveler_type`、`budget_type` 和 `budget_includes`，用于预算、强度、POI 排序和 warning 文案。
+
+## 工具
+
+Tools 支持 `mock` 和 `real` 两种模式：
 
 ```text
 TRAVEL_AGENT_TOOL_MODE=mock
 TRAVEL_AGENT_TOOL_MODE=real
 ```
 
-Real AMap/weather/route requests share a backend limiter. Defaults:
+真实高德/天气/路线请求共享后端限流器。默认值：
 
 * `TRAVEL_AGENT_EXTERNAL_API_CONCURRENCY=2`
 * `TRAVEL_AGENT_EXTERNAL_API_QPS=2`
 
-When `test_mode=true`, tools are forced to mock even if the server is configured for real tools.
+当 `test_mode=true` 时，即使服务端配置为真实工具，tools 也会被强制设置为 mock。
 
-## SSE Events
+## SSE 事件
 
-Planning task stream events:
+规划任务流事件：
 
 * `progress`
 * `node`
@@ -116,11 +130,11 @@ Planning task stream events:
 * `error`
 * `heartbeat`
 
-`done.plan` is the final source of truth for structured itinerary data. `assistant_delta` is user-facing generation text only.
+`done.plan` 是结构化行程数据的最终可信来源。`assistant_delta` 只用于展示面向用户的生成中文本。
 
-## Boundaries
+## 边界
 
-* `internal/harness` depends only on `TravelPlanner`, never on the Eino implementation.
-* Eino code stays under `internal/agent/eino`.
-* HTTP/SSE stays under `internal/travel` and `internal/server`.
-* API keys are read from environment variables or `.env`, never hardcoded.
+* `internal/harness` 只依赖 `TravelPlanner`，不依赖 Eino 实现。
+* Eino 代码只放在 `internal/agent/eino` 下。
+* HTTP/SSE 代码放在 `internal/travel` 和 `internal/server` 下。
+* API key 从环境变量或 `.env` 读取，不硬编码。

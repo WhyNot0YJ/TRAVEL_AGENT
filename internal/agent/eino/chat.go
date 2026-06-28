@@ -20,6 +20,16 @@ import (
 const chatInfoPromptVersion = "chat-info-v1"
 const extractTravelInfoToolName = "extract_travel_info"
 
+const (
+	defaultDateRange        = domain.DefaultDateRange
+	defaultTransportMode    = domain.DefaultTransportMode
+	defaultPace             = domain.DefaultPace
+	defaultWalkingTolerance = domain.DefaultWalkingTolerance
+	defaultHotelArea        = domain.DefaultHotelArea
+	defaultTravelerType     = domain.DefaultTravelerType
+	defaultBudgetType       = domain.DefaultBudgetType
+)
+
 // chatInfoExtractor uses an OpenAI-compatible LLM to extract structured travel
 // information from free-text user messages. Test mode always uses the local
 // fallback extractor so the app remains deterministic.
@@ -201,16 +211,25 @@ func parseChatInfoResult(raw string) (*agent.TravelInfoResult, error) {
 		return nil, fmt.Errorf("chat info result is empty")
 	}
 	var payload struct {
-		DepartureCity   string   `json:"departure_city"`
-		DestinationCity string   `json:"destination_city"`
-		Days            int      `json:"days"`
-		Budget          float64  `json:"budget"`
-		Interests       []string `json:"interests"`
-		TransportMode   string   `json:"transport_mode"`
-		Pace            string   `json:"pace"`
-		Reply           string   `json:"reply"`
-		Missing         []string `json:"missing"`
-		IsComplete      bool     `json:"is_complete"`
+		DepartureCity    string   `json:"departure_city"`
+		DestinationCity  string   `json:"destination_city"`
+		Days             int      `json:"days"`
+		Budget           float64  `json:"budget"`
+		Interests        []string `json:"interests"`
+		Travelers        int      `json:"travelers"`
+		DateRange        string   `json:"date_range"`
+		TransportMode    string   `json:"transport_mode"`
+		Pace             string   `json:"pace"`
+		WalkingTolerance string   `json:"walking_tolerance"`
+		HotelArea        string   `json:"hotel_area"`
+		MustVisit        []string `json:"must_visit"`
+		Avoid            []string `json:"avoid"`
+		TravelerType     string   `json:"traveler_type"`
+		BudgetType       string   `json:"budget_type"`
+		BudgetIncludes   []string `json:"budget_includes"`
+		Reply            string   `json:"reply"`
+		Missing          []string `json:"missing"`
+		IsComplete       bool     `json:"is_complete"`
 	}
 	decoder := json.NewDecoder(bytes.NewBufferString(raw))
 	decoder.DisallowUnknownFields()
@@ -224,39 +243,85 @@ func parseChatInfoResult(raw string) (*agent.TravelInfoResult, error) {
 	if strings.TrimSpace(payload.Reply) == "" {
 		return nil, fmt.Errorf("chat info result reply is empty")
 	}
+	req := normalizeTravelBrief(domain.TravelRequest{
+		DepartureCity:    payload.DepartureCity,
+		DestinationCity:  payload.DestinationCity,
+		Days:             payload.Days,
+		Budget:           payload.Budget,
+		Interests:        payload.Interests,
+		Travelers:        payload.Travelers,
+		DateRange:        payload.DateRange,
+		TransportMode:    payload.TransportMode,
+		Pace:             payload.Pace,
+		WalkingTolerance: payload.WalkingTolerance,
+		HotelArea:        payload.HotelArea,
+		MustVisit:        payload.MustVisit,
+		Avoid:            payload.Avoid,
+		TravelerType:     payload.TravelerType,
+		BudgetType:       payload.BudgetType,
+		BudgetIncludes:   payload.BudgetIncludes,
+	})
+	missing := missingFieldsFromRequest(req)
 	return &agent.TravelInfoResult{
-		DepartureCity:   payload.DepartureCity,
-		DestinationCity: payload.DestinationCity,
-		Days:            payload.Days,
-		Budget:          payload.Budget,
-		Interests:       payload.Interests,
-		TransportMode:   payload.TransportMode,
-		Pace:            payload.Pace,
-		Reply:           payload.Reply,
-		Missing:         payload.Missing,
-		IsComplete:      payload.IsComplete,
+		DepartureCity:    req.DepartureCity,
+		DestinationCity:  req.DestinationCity,
+		Days:             req.Days,
+		Budget:           req.Budget,
+		Interests:        req.Interests,
+		Travelers:        req.Travelers,
+		DateRange:        req.DateRange,
+		TransportMode:    req.TransportMode,
+		Pace:             req.Pace,
+		WalkingTolerance: req.WalkingTolerance,
+		HotelArea:        req.HotelArea,
+		MustVisit:        req.MustVisit,
+		Avoid:            req.Avoid,
+		TravelerType:     req.TravelerType,
+		BudgetType:       req.BudgetType,
+		BudgetIncludes:   req.BudgetIncludes,
+		Reply:            payload.Reply,
+		Missing:          missing,
+		IsComplete:       len(missing) == 0,
 	}, nil
 }
 
 func buildChatInfoMessages(message string, current domain.TravelRequest, agentMode string) ([]chatMessage, error) {
 	contextPayload := struct {
-		Message         string   `json:"message"`
-		DepartureCity   string   `json:"departure_city"`
-		DestinationCity string   `json:"destination_city"`
-		Days            int      `json:"days"`
-		Budget          float64  `json:"budget"`
-		Interests       []string `json:"interests"`
-		TransportMode   string   `json:"transport_mode"`
-		Pace            string   `json:"pace"`
+		Message          string   `json:"message"`
+		DepartureCity    string   `json:"departure_city"`
+		DestinationCity  string   `json:"destination_city"`
+		Days             int      `json:"days"`
+		Budget           float64  `json:"budget"`
+		Interests        []string `json:"interests"`
+		Travelers        int      `json:"travelers"`
+		DateRange        string   `json:"date_range"`
+		TransportMode    string   `json:"transport_mode"`
+		Pace             string   `json:"pace"`
+		WalkingTolerance string   `json:"walking_tolerance"`
+		HotelArea        string   `json:"hotel_area"`
+		MustVisit        []string `json:"must_visit"`
+		Avoid            []string `json:"avoid"`
+		TravelerType     string   `json:"traveler_type"`
+		BudgetType       string   `json:"budget_type"`
+		BudgetIncludes   []string `json:"budget_includes"`
 	}{
-		Message:         message,
-		DepartureCity:   current.DepartureCity,
-		DestinationCity: current.DestinationCity,
-		Days:            current.Days,
-		Budget:          current.Budget,
-		Interests:       current.Interests,
-		TransportMode:   current.TransportMode,
-		Pace:            current.Pace,
+		Message:          message,
+		DepartureCity:    current.DepartureCity,
+		DestinationCity:  current.DestinationCity,
+		Days:             current.Days,
+		Budget:           current.Budget,
+		Interests:        current.Interests,
+		Travelers:        current.Travelers,
+		DateRange:        current.DateRange,
+		TransportMode:    current.TransportMode,
+		Pace:             current.Pace,
+		WalkingTolerance: current.WalkingTolerance,
+		HotelArea:        current.HotelArea,
+		MustVisit:        current.MustVisit,
+		Avoid:            current.Avoid,
+		TravelerType:     current.TravelerType,
+		BudgetType:       current.BudgetType,
+		BudgetIncludes:   current.BudgetIncludes,
 	}
 	data, err := json.Marshal(contextPayload)
 	if err != nil {
@@ -265,11 +330,11 @@ func buildChatInfoMessages(message string, current domain.TravelRequest, agentMo
 
 	system := strings.Join([]string{
 		"You are a Chinese travel requirement collection assistant.",
-		"Extract departure_city, destination_city, days, budget, interests, transport_mode and pace from the user message.",
+		"Extract departure_city, destination_city, days, budget, interests, travelers, date_range, transport_mode, pace, walking_tolerance, hotel_area, must_visit, avoid, traveler_type, budget_type and budget_includes from the user message.",
 		"Merge newly extracted fields with the existing confirmed fields. New explicit values override old values.",
-		"Required fields are departure_city, destination_city, days, budget and interests.",
-		"transport_mode values: train_taxi, train_walk, subway_walk, flight_taxi, walk_taxi.",
-		"pace values: relaxed, balanced, intensive.",
+		"Required fields are departure_city, destination_city, days, budget, interests and travelers.",
+		"Optional fields must use product defaults when unknown: date_range=任意, transport_mode=任意, pace=适中, walking_tolerance=任意, hotel_area=任意, must_visit=[], avoid=[], traveler_type=无要求, budget_type=总预算, budget_includes=[住宿,餐饮,门票,市内交通].",
+		"Prefer product-facing Chinese values. Acceptable legacy values may appear in existing context and should be normalized: transport_mode any/train_taxi/train_walk/subway_walk/flight_taxi/walk_taxi, pace relaxed/balanced/intensive, walking_tolerance any/low/medium/high, budget_type total/per_person.",
 		"Reply to the user in concise Chinese. Confirm collected information and ask only for missing required fields.",
 		"If every required field is present, tell the user the information is ready for itinerary generation.",
 		plannerModeInstruction(agentMode),
@@ -285,19 +350,30 @@ func buildChatInfoMessages(message string, current domain.TravelRequest, agentMo
 func chatInfoJSONSchema() map[string]any {
 	return objectSchema(
 		map[string]any{
-			"departure_city":   stringSchema(),
-			"destination_city": stringSchema(),
-			"days":             integerSchema(),
-			"budget":           numberSchema(),
-			"interests":        arraySchema(stringSchema()),
-			"transport_mode":   stringSchema(),
-			"pace":             stringSchema(),
-			"reply":            stringSchema(),
-			"missing":          arraySchema(stringSchema()),
-			"is_complete":      map[string]any{"type": "boolean"},
+			"departure_city":    stringSchema(),
+			"destination_city":  stringSchema(),
+			"days":              integerSchema(),
+			"budget":            numberSchema(),
+			"interests":         arraySchema(stringSchema()),
+			"travelers":         integerSchema(),
+			"date_range":        stringSchema(),
+			"transport_mode":    stringSchema(),
+			"pace":              stringSchema(),
+			"walking_tolerance": stringSchema(),
+			"hotel_area":        stringSchema(),
+			"must_visit":        arraySchema(stringSchema()),
+			"avoid":             arraySchema(stringSchema()),
+			"traveler_type":     stringSchema(),
+			"budget_type":       stringSchema(),
+			"budget_includes":   arraySchema(stringSchema()),
+			"reply":             stringSchema(),
+			"missing":           arraySchema(stringSchema()),
+			"is_complete":       map[string]any{"type": "boolean"},
 		},
 		"departure_city", "destination_city", "days", "budget", "interests",
-		"transport_mode", "pace", "reply", "missing", "is_complete",
+		"travelers", "date_range", "transport_mode", "pace", "walking_tolerance",
+		"hotel_area", "must_visit", "avoid", "traveler_type", "budget_type",
+		"budget_includes", "reply", "missing", "is_complete",
 	)
 }
 
@@ -308,26 +384,42 @@ func (simpleFallbackExtractor) Extract(ctx context.Context, message string, curr
 		return nil, err
 	}
 	extracted := mergeTravelRequest(current, extractTravelInfoFromMessage(message))
+	extracted = normalizeTravelBrief(extracted)
 	missing := missingFieldsFromRequest(extracted)
 	return &agent.TravelInfoResult{
-		DepartureCity:   extracted.DepartureCity,
-		DestinationCity: extracted.DestinationCity,
-		Days:            extracted.Days,
-		Budget:          extracted.Budget,
-		Interests:       extracted.Interests,
-		TransportMode:   extracted.TransportMode,
-		Pace:            extracted.Pace,
-		Reply:           buildFallbackChatReply(extracted, missing),
-		Missing:         missing,
-		IsComplete:      len(missing) == 0,
+		DepartureCity:    extracted.DepartureCity,
+		DestinationCity:  extracted.DestinationCity,
+		Days:             extracted.Days,
+		Budget:           extracted.Budget,
+		Interests:        extracted.Interests,
+		Travelers:        extracted.Travelers,
+		DateRange:        extracted.DateRange,
+		TransportMode:    extracted.TransportMode,
+		Pace:             extracted.Pace,
+		WalkingTolerance: extracted.WalkingTolerance,
+		HotelArea:        extracted.HotelArea,
+		MustVisit:        extracted.MustVisit,
+		Avoid:            extracted.Avoid,
+		TravelerType:     extracted.TravelerType,
+		BudgetType:       extracted.BudgetType,
+		BudgetIncludes:   extracted.BudgetIncludes,
+		Reply:            buildFallbackChatReply(extracted, missing),
+		Missing:          missing,
+		IsComplete:       len(missing) == 0,
 	}, nil
 }
 
 var (
 	arabicDayPattern         = regexp.MustCompile(`(?i)(\d{1,2})\s*(?:天|日|days?)`)
 	chineseDayPattern        = regexp.MustCompile(`([一二两三四五六七八九十]{1,3})\s*(?:天|日)`)
+	arabicTravelersPattern   = regexp.MustCompile(`(?i)(\d{1,2})\s*(?:人|位|个人|adult|adults|traveler|travelers)`)
+	chineseTravelersPattern  = regexp.MustCompile(`([一二两三四五六七八九十]{1,3})\s*(?:人|位|个人)`)
 	budgetWithKeywordPattern = regexp.MustCompile(`(?i)(?:预算|人均|费用|花费|控制在|大概|约|左右)\s*(?:人民币|rmb|¥|￥)?\s*(\d+(?:\.\d+)?)\s*(k|K|千|万|元|块)?`)
 	budgetWithUnitPattern    = regexp.MustCompile(`(?i)(\d+(?:\.\d+)?)\s*(k|K|千|万|元|块)`)
+	dateRangePattern         = regexp.MustCompile(`(?i)(\d{1,2}\s*月\s*\d{1,2}\s*(?:日|号)?(?:\s*[-~到至]\s*\d{1,2}\s*月?\s*\d{0,2}\s*(?:日|号)?)?|\d{4}-\d{1,2}-\d{1,2}|本周末|周末|下周末|下周|明天|后天|暑假|国庆|春节|五一|端午|中秋)`)
+	mustVisitPattern         = regexp.MustCompile(`(?:必去|一定要去|想去|必须安排)\s*([^，。；;]+)`)
+	avoidPattern             = regexp.MustCompile(`(?:避开|不要|不想去|别安排|不安排|不喜欢)\s*([^，。；;]+)`)
+	hotelAreaPattern         = regexp.MustCompile(`(?:酒店|住宿|住)(?:区域|位置|附近|在)?\s*([^，。；;]{2,16})`)
 	departurePatterns        = []*regexp.Regexp{
 		regexp.MustCompile(`(?:从|出发地(?:是|为)?|起点(?:是|为)?)\s*([A-Za-z\p{Han}]{2,20}?)(?:出发|到|去|前往|[，。；;]|$)`),
 		regexp.MustCompile(`([A-Za-z\p{Han}]{2,20}?)\s*出发`),
@@ -342,12 +434,21 @@ var (
 func extractTravelInfoFromMessage(message string) domain.TravelRequest {
 	normalized := strings.TrimSpace(message)
 	req := domain.TravelRequest{
-		DepartureCity: extractDepartureCity(normalized),
-		Days:          extractDays(normalized),
-		Budget:        extractBudget(normalized),
-		Interests:     extractInterests(normalized),
-		TransportMode: extractTransportMode(normalized),
-		Pace:          extractPace(normalized),
+		DepartureCity:    extractDepartureCity(normalized),
+		Days:             extractDays(normalized),
+		Budget:           extractBudget(normalized),
+		Interests:        extractInterests(normalized),
+		Travelers:        extractTravelers(normalized),
+		DateRange:        extractDateRange(normalized),
+		TransportMode:    extractTransportMode(normalized),
+		Pace:             extractPace(normalized),
+		WalkingTolerance: extractWalkingTolerance(normalized),
+		HotelArea:        extractHotelArea(normalized),
+		MustVisit:        extractListByPattern(normalized, mustVisitPattern),
+		Avoid:            extractListByPattern(normalized, avoidPattern),
+		TravelerType:     extractTravelerType(normalized),
+		BudgetType:       extractBudgetType(normalized),
+		BudgetIncludes:   extractBudgetIncludes(normalized),
 	}
 	req.DestinationCity = extractDestinationCity(normalized, req.DepartureCity)
 	return req
@@ -370,11 +471,38 @@ func mergeTravelRequest(current, extracted domain.TravelRequest) domain.TravelRe
 	if len(extracted.Interests) > 0 {
 		merged.Interests = mergeUniqueStrings(merged.Interests, extracted.Interests)
 	}
+	if extracted.Travelers > 0 {
+		merged.Travelers = extracted.Travelers
+	}
+	if extracted.DateRange != "" {
+		merged.DateRange = extracted.DateRange
+	}
 	if extracted.TransportMode != "" {
 		merged.TransportMode = extracted.TransportMode
 	}
 	if extracted.Pace != "" {
 		merged.Pace = extracted.Pace
+	}
+	if extracted.WalkingTolerance != "" {
+		merged.WalkingTolerance = extracted.WalkingTolerance
+	}
+	if extracted.HotelArea != "" {
+		merged.HotelArea = extracted.HotelArea
+	}
+	if len(extracted.MustVisit) > 0 {
+		merged.MustVisit = mergeUniqueStrings(merged.MustVisit, extracted.MustVisit)
+	}
+	if len(extracted.Avoid) > 0 {
+		merged.Avoid = mergeUniqueStrings(merged.Avoid, extracted.Avoid)
+	}
+	if extracted.TravelerType != "" {
+		merged.TravelerType = extracted.TravelerType
+	}
+	if extracted.BudgetType != "" {
+		merged.BudgetType = extracted.BudgetType
+	}
+	if len(extracted.BudgetIncludes) > 0 {
+		merged.BudgetIncludes = mergeUniqueStrings(nil, extracted.BudgetIncludes)
 	}
 	return merged
 }
@@ -424,6 +552,31 @@ func extractDays(message string) int {
 		return parseSmallChineseNumber(match[1])
 	}
 	return 0
+}
+
+func extractTravelers(message string) int {
+	if match := arabicTravelersPattern.FindStringSubmatch(message); len(match) > 1 {
+		if travelers, err := strconv.Atoi(match[1]); err == nil {
+			return travelers
+		}
+	}
+	if match := chineseTravelersPattern.FindStringSubmatch(message); len(match) > 1 {
+		return parseSmallChineseNumber(match[1])
+	}
+	if strings.Contains(message, "情侣") || strings.Contains(message, "两个人") || strings.Contains(message, "俩人") {
+		return 2
+	}
+	if strings.Contains(message, "独自") || strings.Contains(message, "一个人") || strings.Contains(message, "单人") {
+		return 1
+	}
+	return 0
+}
+
+func extractDateRange(message string) string {
+	if match := dateRangePattern.FindString(message); match != "" {
+		return strings.TrimSpace(match)
+	}
+	return ""
 }
 
 func extractBudget(message string) float64 {
@@ -480,8 +633,105 @@ func extractInterests(message string) []string {
 	return interests
 }
 
+func extractWalkingTolerance(message string) string {
+	switch {
+	case strings.Contains(message, "少走") || strings.Contains(message, "不想走") || strings.Contains(message, "少步行") || strings.Contains(message, "走路少"):
+		return "low"
+	case strings.Contains(message, "步行适中") || strings.Contains(message, "适中步行") || strings.Contains(message, "能走一点"):
+		return "medium"
+	case strings.Contains(message, "不介意走") || strings.Contains(message, "多走路") || strings.Contains(message, "徒步"):
+		return "high"
+	default:
+		return ""
+	}
+}
+
+func extractHotelArea(message string) string {
+	if match := hotelAreaPattern.FindStringSubmatch(message); len(match) > 1 {
+		area := strings.TrimSpace(strings.Trim(match[1], " ，。；;、,"))
+		if area != "" {
+			return area
+		}
+	}
+	return ""
+}
+
+func extractListByPattern(message string, pattern *regexp.Regexp) []string {
+	match := pattern.FindStringSubmatch(message)
+	if len(match) <= 1 {
+		return nil
+	}
+	raw := strings.TrimSpace(match[1])
+	raw = strings.Trim(raw, " ，。；;、,")
+	if raw == "" {
+		return nil
+	}
+	parts := regexp.MustCompile(`[、,，和及/]+`).Split(raw, -1)
+	values := make([]string, 0, len(parts))
+	for _, part := range parts {
+		part = strings.TrimSpace(strings.Trim(part, " ，。；;、,"))
+		if part != "" {
+			values = append(values, part)
+		}
+	}
+	return values
+}
+
+func extractTravelerType(message string) string {
+	switch {
+	case strings.Contains(message, "老人") || strings.Contains(message, "父母") || strings.Contains(message, "长辈"):
+		return "老人"
+	case strings.Contains(message, "孩子") || strings.Contains(message, "儿童") || strings.Contains(message, "亲子"):
+		return "亲子"
+	case strings.Contains(message, "情侣"):
+		return "情侣"
+	case strings.Contains(message, "朋友") || strings.Contains(message, "同学"):
+		return "朋友"
+	case strings.Contains(message, "商务") || strings.Contains(message, "出差"):
+		return "商务"
+	default:
+		return ""
+	}
+}
+
+func extractBudgetType(message string) string {
+	if strings.Contains(message, "人均") || strings.Contains(strings.ToLower(message), "per person") {
+		return "per_person"
+	}
+	if strings.Contains(message, "总预算") || strings.Contains(message, "总共") || strings.Contains(message, "总计") {
+		return "total"
+	}
+	return ""
+}
+
+func extractBudgetIncludes(message string) []string {
+	lower := strings.ToLower(message)
+	includes := []string{}
+	if strings.Contains(message, "含住宿") || strings.Contains(message, "包含住宿") || strings.Contains(message, "包括住宿") {
+		includes = append(includes, "住宿")
+	}
+	if strings.Contains(message, "含餐") || strings.Contains(message, "包含餐饮") || strings.Contains(message, "包括餐饮") {
+		includes = append(includes, "餐饮")
+	}
+	if strings.Contains(message, "含门票") || strings.Contains(message, "包含门票") || strings.Contains(message, "包括门票") {
+		includes = append(includes, "门票")
+	}
+	if strings.Contains(message, "含交通") || strings.Contains(message, "市内交通") || strings.Contains(message, "打车") {
+		includes = append(includes, "市内交通")
+	}
+	if strings.Contains(message, "大交通") || strings.Contains(message, "往返交通") || strings.Contains(lower, "round trip") {
+		if strings.Contains(message, "不含") || strings.Contains(message, "不包含") {
+			return defaultBudgetIncludesCopy()
+		}
+		includes = append(includes, "往返大交通")
+	}
+	return mergeUniqueStrings(nil, includes)
+}
+
 func extractTransportMode(message string) string {
 	switch {
+	case strings.Contains(message, "交通无要求") || strings.Contains(message, "交通任意"):
+		return "any"
 	case strings.Contains(message, "飞机") || strings.Contains(message, "航班"):
 		return "flight_taxi"
 	case strings.Contains(message, "地铁"):
@@ -619,8 +869,17 @@ func formatTravelInfoSummary(req domain.TravelRequest) string {
 	if req.Budget > 0 {
 		parts = append(parts, "预算"+formatBudget(req.Budget)+"元")
 	}
+	if req.Travelers > 0 {
+		parts = append(parts, fmt.Sprintf("%d人出行", req.Travelers))
+	}
 	if len(req.Interests) > 0 {
 		parts = append(parts, "偏好"+strings.Join(req.Interests, "、"))
+	}
+	if len(req.MustVisit) > 0 {
+		parts = append(parts, "必去"+strings.Join(req.MustVisit, "、"))
+	}
+	if len(req.Avoid) > 0 {
+		parts = append(parts, "避开"+strings.Join(req.Avoid, "、"))
 	}
 	return strings.Join(parts, "，")
 }
@@ -649,5 +908,16 @@ func missingFieldsFromRequest(req domain.TravelRequest) []string {
 	if len(req.Interests) == 0 {
 		missing = append(missing, "兴趣偏好")
 	}
+	if req.Travelers <= 0 {
+		missing = append(missing, "出行人数")
+	}
 	return missing
+}
+
+func normalizeTravelBrief(req domain.TravelRequest) domain.TravelRequest {
+	return domain.NormalizeTravelBrief(req)
+}
+
+func defaultBudgetIncludesCopy() []string {
+	return domain.DefaultBudgetIncludes()
 }

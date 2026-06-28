@@ -16,6 +16,7 @@ func TestMockPlannerPlan(t *testing.T) {
 		Days:            3,
 		Budget:          3000,
 		Interests:       []string{"\u81ea\u7136\u98ce\u5149", "\u7f8e\u98df"},
+		Travelers:       2,
 		TransportMode:   "train_taxi",
 		Pace:            "relaxed",
 	}

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math"
+
+	"travel-agent/internal/domain"
 )
 
 // MockPOITool returns stable POIs without calling external map APIs.
@@ -103,7 +105,11 @@ func (t MockBudgetTool) Run(ctx context.Context, input BudgetToolInput) (domainB
 	if input.Days <= 0 {
 		return domainBudget{}, fmt.Errorf("budget tool days must be positive")
 	}
-	total := roundMoney(input.Request.Budget * 0.92)
+	totalBudget := input.Request.Budget
+	if domain.IsBudgetPerPerson(input.Request.BudgetType) && input.Request.Travelers > 0 {
+		totalBudget *= float64(input.Request.Travelers)
+	}
+	total := roundMoney(totalBudget * 0.92)
 	transport := roundMoney(total * 0.24)
 	food := roundMoney(total * 0.26)
 	hotel := roundMoney(total * 0.30)

@@ -25,6 +25,7 @@
 | 15 | 前端产品化 | [stage-15-frontend-productization.md](./stage-15-frontend-productization.md) |
 | 16 | 用户与业务闭环 | [stage-16-user-business-loop.md](./stage-16-user-business-loop.md) |
 | 17 | DeepSeek 真·流式 SSE 透传 | [stage-17-deepseek-true-streaming.md](./stage-17-deepseek-true-streaming.md) |
+| 18 | Travel Brief 确认与可选偏好默认值 | [stage-18-travel-brief-confirmation.md](./stage-18-travel-brief-confirmation.md) |
 
 ## 使用约定
 
@@ -44,6 +45,6 @@
 
 ## 当前活跃阶段
 
-> 当前优先推进：**Stage 17 — DeepSeek 真·流式 SSE 透传 **。
-> 详见 [stage-17-deepseek-true-streaming.md](./stage-17-deepseek-true-streaming.md)。
+> 当前优先推进：**Stage 18 — Travel Brief 确认与可选偏好默认值**。
+> 详见 [stage-18-travel-brief-confirmation.md](./stage-18-travel-brief-confirmation.md)。
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 
 	"travel-agent/internal/domain"
 )
@@ -23,20 +24,33 @@ func (p *MockPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*doma
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
+	req = domain.NormalizeTravelBrief(req)
 	if req.Days <= 0 {
 		return nil, fmt.Errorf("days must be positive")
 	}
 	if req.Budget <= 0 {
 		return nil, fmt.Errorf("budget must be positive")
 	}
+	if len(req.Interests) == 0 {
+		return nil, fmt.Errorf("interests is required")
+	}
+	if req.Travelers <= 0 {
+		return nil, fmt.Errorf("travelers is required")
+	}
 
 	spots := p.spots[req.DestinationCity]
 	if len(spots) == 0 {
 		spots = p.spots["unknown"]
 	}
+	spots = applySpotPreferences(spots, req)
 
 	days := make([]domain.TravelDay, 0, req.Days)
-	itemBudget := math.Max(req.Budget*0.62/float64(req.Days*2), 20)
+	planningBudget := totalBudget(req)
+	itemBudget := math.Max(planningBudget*0.62/float64(req.Days*2), 20)
+	duration := 150
+	if domain.IsLowWalkingTolerance(req.WalkingTolerance) {
+		duration = 100
+	}
 	for day := 1; day <= req.Days; day++ {
 		first := spots[(day-1)*2%len(spots)]
 		second := spots[((day-1)*2+1)%len(spots)]
@@ -52,7 +66,7 @@ func (p *MockPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*doma
 					Address:         fmt.Sprintf("%s\u6838\u5fc3\u6e38\u89c8\u533a", req.DestinationCity),
 					Reason:          fmt.Sprintf("\u5951\u5408%s\u884c\u7a0b\u4e3b\u9898\uff0c\u9002\u5408\u4f5c\u4e3a\u5f53\u5929\u91cd\u70b9\u4f53\u9a8c\u3002", theme),
 					EstimatedCost:   roundMoney(itemBudget * 0.55),
-					DurationMinutes: 150,
+					DurationMinutes: duration,
 				},
 				{
 					Time:            "14:30",
@@ -70,7 +84,7 @@ func (p *MockPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*doma
 	budget := buildBudget(req)
 	return &domain.TravelPlan{
 		Title:   fmt.Sprintf("%s%d\u65e5\u65c5\u884c\u89c4\u5212", req.DestinationCity, req.Days),
-		Summary: fmt.Sprintf("\u4ece%s\u51fa\u53d1\uff0c\u56f4\u7ed5%s\u5728%s\u5b89\u6392%d\u5929%s\u8282\u594f\u8def\u7ebf\uff0c\u9884\u7b97\u63a7\u5236\u5728%.0f\u5143\u4ee5\u5185\u3002", req.DepartureCity, interestsText(req.Interests), req.DestinationCity, req.Days, paceText(req.Pace), req.Budget),
+		Summary: fmt.Sprintf("\u4ece%s\u51fa\u53d1\uff0c%d\u4eba\u56f4\u7ed5%s\u5728%s\u5b89\u6392%d\u5929%s\u8282\u594f\u8def\u7ebf\uff0c\u9884\u7b97\u63a7\u5236\u5728%.0f\u5143\u4ee5\u5185\u3002", req.DepartureCity, maxInt(req.Travelers, 1), interestsText(req.Interests), req.DestinationCity, req.Days, paceText(req.Pace), budget.Total),
 		Days:    days,
 		Budget:  budget,
 		Warnings: []string{
@@ -80,7 +94,7 @@ func (p *MockPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*doma
 }
 
 func buildBudget(req domain.TravelRequest) domain.TravelBudget {
-	total := roundMoney(req.Budget * 0.9)
+	total := roundMoney(totalBudget(req) * 0.9)
 	transport := roundMoney(total * 0.25)
 	food := roundMoney(total * 0.25)
 	hotel := roundMoney(total * 0.30)
@@ -92,6 +106,48 @@ func buildBudget(req domain.TravelRequest) domain.TravelBudget {
 		Ticket:    ticket,
 		Total:     total,
 	}
+}
+
+func totalBudget(req domain.TravelRequest) float64 {
+	if domain.IsBudgetPerPerson(req.BudgetType) && req.Travelers > 0 {
+		return req.Budget * float64(req.Travelers)
+	}
+	return req.Budget
+}
+
+func applySpotPreferences(spots []string, req domain.TravelRequest) []string {
+	filtered := make([]string, 0, len(spots))
+	for _, spot := range spots {
+		if containsAny(spot, req.Avoid) {
+			continue
+		}
+		filtered = append(filtered, spot)
+	}
+	if len(filtered) == 0 {
+		filtered = append(filtered, spots...)
+	}
+	for i := len(req.MustVisit) - 1; i >= 0; i-- {
+		must := req.MustVisit[i]
+		if must == "" {
+			continue
+		}
+		for idx, spot := range filtered {
+			if spot == must || containsAny(spot, []string{must}) || containsAny(must, []string{spot}) {
+				filtered = append([]string{spot}, append(filtered[:idx], filtered[idx+1:]...)...)
+				break
+			}
+		}
+	}
+	return filtered
+}
+
+func containsAny(text string, values []string) bool {
+	for _, value := range values {
+		if value != "" && (text == value || len(value) > 1 && (strings.Contains(text, value) || strings.Contains(value, text))) {
+			return true
+		}
+	}
+	return false
 }
 
 func citySpots() map[string][]string {
@@ -185,18 +241,23 @@ func interestsText(interests []string) string {
 }
 
 func paceText(pace string) string {
-	switch pace {
-	case "relaxed":
+	switch domain.NormalizePace(pace) {
+	case "轻松":
 		return "\u8f7b\u677e"
-	case "balanced":
-		return "\u5747\u8861"
-	case "intensive":
+	case "紧凑":
 		return "\u7d27\u51d1"
 	default:
-		return "\u5747\u8861"
+		return "\u9002\u4e2d"
 	}
 }
 
 func roundMoney(v float64) float64 {
 	return math.Round(v*100) / 100
+}
+
+func maxInt(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
 }

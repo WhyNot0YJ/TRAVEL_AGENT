@@ -16,6 +16,7 @@ import (
 )
 
 var ErrRateLimited = errors.New("rate limit exceeded")
+var ErrInvalidRequest = errors.New("invalid request")
 
 const (
 	AgentModeQuick  = "quick"
@@ -55,6 +56,9 @@ func NewTravelPlanService(planner agent.TravelPlanner, store TaskStore, limiter 
 func (s *TravelPlanService) CreateTask(ctx context.Context, req CreatePlanRequest, clientKey string) (CreateTaskResponse, error) {
 	if s == nil || s.planner == nil || s.store == nil {
 		return CreateTaskResponse{}, fmt.Errorf("travel plan service is not initialized")
+	}
+	if err := validateCreatePlanRequest(req); err != nil {
+		return CreateTaskResponse{}, err
 	}
 	allowed, err := s.rateLimiter.Allow(ctx, clientRateKey(clientKey))
 	if err != nil {
@@ -121,31 +125,49 @@ func (s *TravelPlanService) Chat(ctx context.Context, req ChatRequest) (ChatResp
 	}
 	agentMode := normalizeAgentMode(req.AgentMode)
 	ctx = agent.WithPlannerOptions(ctx, agent.PlannerOptions{TestMode: req.TestMode, AgentMode: agentMode})
-	current := domain.TravelRequest{
-		DepartureCity:   req.DepartureCity,
-		DestinationCity: req.DestinationCity,
-		Days:            req.Days,
-		Budget:          req.Budget,
-		Interests:       req.Interests,
-		TransportMode:   req.TransportMode,
-		Pace:            req.Pace,
-	}
+	current := domain.NormalizeTravelBrief(domain.TravelRequest{
+		DepartureCity:    req.DepartureCity,
+		DestinationCity:  req.DestinationCity,
+		Days:             req.Days,
+		Budget:           req.Budget,
+		Interests:        req.Interests,
+		Travelers:        req.Travelers,
+		DateRange:        req.DateRange,
+		TransportMode:    req.TransportMode,
+		Pace:             req.Pace,
+		WalkingTolerance: req.WalkingTolerance,
+		HotelArea:        req.HotelArea,
+		MustVisit:        req.MustVisit,
+		Avoid:            req.Avoid,
+		TravelerType:     req.TravelerType,
+		BudgetType:       req.BudgetType,
+		BudgetIncludes:   req.BudgetIncludes,
+	})
 	result, err := s.extractor.Extract(ctx, req.Message, current)
 	if err != nil {
 		return ChatResponse{}, err
 	}
 	return ChatResponse{
-		DepartureCity:   result.DepartureCity,
-		DestinationCity: result.DestinationCity,
-		Days:            result.Days,
-		Budget:          result.Budget,
-		Interests:       result.Interests,
-		TransportMode:   result.TransportMode,
-		Pace:            result.Pace,
-		Reply:           result.Reply,
-		Missing:         result.Missing,
-		IsComplete:      result.IsComplete,
-		AgentMode:       agentMode,
+		DepartureCity:    result.DepartureCity,
+		DestinationCity:  result.DestinationCity,
+		Days:             result.Days,
+		Budget:           result.Budget,
+		Interests:        result.Interests,
+		Travelers:        result.Travelers,
+		DateRange:        result.DateRange,
+		TransportMode:    result.TransportMode,
+		Pace:             result.Pace,
+		WalkingTolerance: result.WalkingTolerance,
+		HotelArea:        result.HotelArea,
+		MustVisit:        result.MustVisit,
+		Avoid:            result.Avoid,
+		TravelerType:     result.TravelerType,
+		BudgetType:       result.BudgetType,
+		BudgetIncludes:   result.BudgetIncludes,
+		Reply:            result.Reply,
+		Missing:          result.Missing,
+		IsComplete:       result.IsComplete,
+		AgentMode:        agentMode,
 	}, nil
 }
 
@@ -419,6 +441,28 @@ func normalizeAgentMode(value string) string {
 	default:
 		return AgentModeQuick
 	}
+}
+
+func validateCreatePlanRequest(req CreatePlanRequest) error {
+	if strings.TrimSpace(req.DepartureCity) == "" {
+		return fmt.Errorf("%w: departure_city is required", ErrInvalidRequest)
+	}
+	if strings.TrimSpace(req.DestinationCity) == "" {
+		return fmt.Errorf("%w: destination_city is required", ErrInvalidRequest)
+	}
+	if req.Days <= 0 {
+		return fmt.Errorf("%w: days must be positive", ErrInvalidRequest)
+	}
+	if req.Budget <= 0 {
+		return fmt.Errorf("%w: budget must be positive", ErrInvalidRequest)
+	}
+	if len(req.Interests) == 0 {
+		return fmt.Errorf("%w: interests is required", ErrInvalidRequest)
+	}
+	if req.Travelers <= 0 {
+		return fmt.Errorf("%w: travelers is required", ErrInvalidRequest)
+	}
+	return nil
 }
 
 func chunkText(text string, size int) []string {

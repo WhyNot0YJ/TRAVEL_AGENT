@@ -72,7 +72,7 @@ func (t RealRouteTool) querySegment(ctx context.Context, path, mode string, from
 func routePath(mode string) string {
 	lower := strings.ToLower(mode)
 	switch {
-	case strings.Contains(lower, "walk"):
+	case strings.Contains(lower, "walk"), strings.Contains(mode, "步行"):
 		return "/direction/walking"
 	case strings.Contains(lower, "bike"):
 		return "/direction/bicycling"

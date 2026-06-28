@@ -14,15 +14,24 @@ const initialBrief: TravelBrief = {
   days: "",
   budget: "",
   interests: [],
-  transportMode: "train_taxi",
-  pace: "balanced",
+  travelers: "",
+  dateRange: "任意",
+  transportMode: "任意",
+  pace: "适中",
+  walkingTolerance: "任意",
+  hotelArea: "任意",
+  mustVisit: [],
+  avoid: [],
+  travelerType: "无要求",
+  budgetType: "总预算",
+  budgetIncludes: ["住宿", "餐饮", "门票", "市内交通"],
 };
 
 const initialMessages: ChatMessage[] = [
   {
     id: "welcome",
     role: "assistant",
-    text: "你好，我会先把出发地、目的地、天数、预算和偏好收集完整。信息齐了以后，我会在这里给你一个生成行程按钮。",
+    text: "你好，我会先确认出发地、目的地、天数、预算、兴趣和出行人数。其他偏好没有要求时会用默认值，信息齐了以后我会给你一张确认卡。",
   },
 ];
 
@@ -47,6 +56,9 @@ function missingFields(brief: TravelBrief): string[] {
   if (brief.interests.length === 0) {
     missing.push("兴趣偏好");
   }
+  if (!brief.travelers) {
+    missing.push("出行人数");
+  }
   return missing;
 }
 
@@ -58,8 +70,17 @@ function chatPayloadFromBrief(message: string, brief: TravelBrief, testMode: boo
     days: Number(brief.days) || undefined,
     budget: Number(brief.budget) || undefined,
     interests: brief.interests.length > 0 ? brief.interests : undefined,
+    travelers: Number(brief.travelers) || undefined,
+    date_range: brief.dateRange || undefined,
     transport_mode: brief.transportMode || undefined,
     pace: brief.pace || undefined,
+    walking_tolerance: brief.walkingTolerance || undefined,
+    hotel_area: brief.hotelArea || undefined,
+    must_visit: brief.mustVisit.length > 0 ? brief.mustVisit : undefined,
+    avoid: brief.avoid.length > 0 ? brief.avoid : undefined,
+    traveler_type: brief.travelerType || undefined,
+    budget_type: brief.budgetType || undefined,
+    budget_includes: brief.budgetIncludes.length > 0 ? brief.budgetIncludes : undefined,
     test_mode: testMode,
     agent_mode: agentMode,
   };
@@ -71,8 +92,17 @@ function applyBriefResponse(response: {
   days?: number;
   budget?: number;
   interests?: string[];
+  travelers?: number;
+  date_range?: string;
   transport_mode?: string;
   pace?: string;
+  walking_tolerance?: string;
+  hotel_area?: string;
+  must_visit?: string[];
+  avoid?: string[];
+  traveler_type?: string;
+  budget_type?: string;
+  budget_includes?: string[];
 }): TravelBrief {
   return {
     departureCity: response.departure_city || "",
@@ -80,8 +110,17 @@ function applyBriefResponse(response: {
     days: response.days || "",
     budget: response.budget || "",
     interests: response.interests || [],
-    transportMode: response.transport_mode || "train_taxi",
-    pace: response.pace || "balanced",
+    travelers: response.travelers || "",
+    dateRange: response.date_range || "任意",
+    transportMode: response.transport_mode || "任意",
+    pace: response.pace || "适中",
+    walkingTolerance: response.walking_tolerance || "任意",
+    hotelArea: response.hotel_area || "任意",
+    mustVisit: response.must_visit || [],
+    avoid: response.avoid || [],
+    travelerType: response.traveler_type || "无要求",
+    budgetType: response.budget_type || "总预算",
+    budgetIncludes: response.budget_includes || ["住宿", "餐饮", "门票", "市内交通"],
   };
 }
 

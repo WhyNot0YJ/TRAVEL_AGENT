@@ -41,6 +41,16 @@ func TestTravelPlanServiceReusesRequestHash(t *testing.T) {
 	}
 }
 
+func TestTravelPlanServiceRejectsMissingTravelers(t *testing.T) {
+	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60), nil)
+	req := validCreateRequest()
+	req.Travelers = 0
+	_, err := service.CreateTask(context.Background(), req, "127.0.0.1")
+	if !errors.Is(err, ErrInvalidRequest) {
+		t.Fatalf("expected ErrInvalidRequest, got %v", err)
+	}
+}
+
 func TestTravelPlanServiceRateLimit(t *testing.T) {
 	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(1), nil)
 	if _, err := service.CreateTask(context.Background(), validCreateRequest(), "127.0.0.1"); err != nil {
@@ -140,6 +150,25 @@ func TestRequestHashIncludesAgentMode(t *testing.T) {
 	}
 }
 
+func TestRequestHashIncludesTravelBriefFields(t *testing.T) {
+	req := validCreateRequest().ToDomain("task")
+	base, err := RequestHashWithOptions(req, false, AgentModeQuick)
+	if err != nil {
+		t.Fatalf("RequestHashWithOptions returned error: %v", err)
+	}
+	changed := req
+	changed.MustVisit = []string{"西湖"}
+	changed.Avoid = []string{"网红店"}
+	changed.WalkingTolerance = "低"
+	other, err := RequestHashWithOptions(changed, false, AgentModeQuick)
+	if err != nil {
+		t.Fatalf("RequestHashWithOptions returned error: %v", err)
+	}
+	if base == other {
+		t.Fatal("brief fields should affect request hash")
+	}
+}
+
 func TestTravelPlanServiceChatStreamEmitsDeltas(t *testing.T) {
 	service := NewTravelPlanService(stubPlanner{}, NewMemoryTaskStore(), NewMemoryRateLimiter(60), simpleExtractor{})
 	var events []TaskEvent
@@ -190,6 +219,8 @@ func validCreateRequest() CreatePlanRequest {
 		DestinationCity: "杭州",
 		Days:            2,
 		Budget:          1000,
+		Interests:       []string{"美食"},
+		Travelers:       2,
 	}
 }
 
@@ -228,13 +259,22 @@ type simpleExtractor struct{}
 
 func (simpleExtractor) Extract(ctx context.Context, message string, current domain.TravelRequest) (*agent.TravelInfoResult, error) {
 	return &agent.TravelInfoResult{
-		DepartureCity:   "上海",
-		DestinationCity: "杭州",
-		Days:            2,
-		Budget:          1000,
-		Interests:       []string{"美食"},
-		Reply:           "信息已经整理好，可以生成行程。",
-		IsComplete:      true,
+		DepartureCity:    "上海",
+		DestinationCity:  "杭州",
+		Days:             2,
+		Budget:           1000,
+		Interests:        []string{"美食"},
+		Travelers:        2,
+		DateRange:        "任意",
+		TransportMode:    "任意",
+		Pace:             "适中",
+		WalkingTolerance: "任意",
+		HotelArea:        "任意",
+		TravelerType:     "无要求",
+		BudgetType:       "总预算",
+		BudgetIncludes:   []string{"住宿", "餐饮", "门票", "市内交通"},
+		Reply:            "信息已经整理好，可以生成行程。",
+		IsComplete:       true,
 	}, nil
 }
 

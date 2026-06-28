@@ -60,8 +60,29 @@ func buildChatReplyMessages(prior *agent.TravelInfoResult, userMessage string) [
 		if prior.Budget > 0 {
 			sb.WriteString("预算=" + floatToStr(prior.Budget) + "; ")
 		}
+		if prior.Travelers > 0 {
+			sb.WriteString("人数=" + intToStr(prior.Travelers) + "; ")
+		}
 		if len(prior.Interests) > 0 {
 			sb.WriteString("偏好=" + strings.Join(prior.Interests, "、") + "; ")
+		}
+		if prior.DateRange != "" {
+			sb.WriteString("日期=" + prior.DateRange + "; ")
+		}
+		if prior.Pace != "" {
+			sb.WriteString("节奏=" + prior.Pace + "; ")
+		}
+		if prior.TransportMode != "" {
+			sb.WriteString("交通=" + prior.TransportMode + "; ")
+		}
+		if prior.WalkingTolerance != "" {
+			sb.WriteString("步行=" + prior.WalkingTolerance + "; ")
+		}
+		if len(prior.MustVisit) > 0 {
+			sb.WriteString("必去=" + strings.Join(prior.MustVisit, "、") + "; ")
+		}
+		if len(prior.Avoid) > 0 {
+			sb.WriteString("避开=" + strings.Join(prior.Avoid, "、") + "; ")
 		}
 		if len(prior.Missing) > 0 {
 			sb.WriteString("Missing=" + strings.Join(prior.Missing, "、") + "; ")

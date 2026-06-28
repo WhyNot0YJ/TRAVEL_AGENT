@@ -1,6 +1,6 @@
-# External APIs
+# 外部 API
 
-## 1. LLM Provider
+## 1. LLM Provider 配置
 
 阶段 3 已支持可选真实 LLM，用于在 Eino Graph 的 `GenerateTravelPlanNode` 中生成结构化 `TravelPlan`。
 
@@ -85,7 +85,7 @@ submit_travel_plan
 
 所有 object 字段都列入 `required`。本地解析时继续拒绝 unknown fields，并校验天数、预算、空字段、负数和目的地关键词。
 
-## 4. 其他 Provider
+## 4. 其他 Provider 配置
 
 `openai` 或 `compatible` provider 会优先使用 OpenAI Structured Outputs 风格：
 
@@ -99,7 +99,7 @@ submit_travel_plan
 
 如果 provider 不支持 JSON Schema 输出或返回结构不符合本地校验，系统不会降级到 prompt-only JSON，而是 fallback 到 deterministic generator。
 
-## 4.1 Streaming Chat Completion（OpenAI 兼容 wire format）
+## 4.1 流式 Chat Completion（OpenAI 兼容 wire format）
 
 `TRAVEL_AGENT_LLM_STREAM_ENABLED=true`（默认）时，信息抽取、规划生成和自然语言回复都会以 OpenAI/DeepSeek 兼容的 `text/event-stream` 协议消费：
 
@@ -124,7 +124,7 @@ data: [DONE]
 
 回滚：把 `TRAVEL_AGENT_LLM_STREAM_ENABLED` 设为 `false`，全部链路退回到非流式 + `chunkText` 等长切片。
 
-## 5. 高德 / 天气 / POI Tools
+## 5. 高德 / 天气 / POI Tools 配置
 
 阶段 4 已为 Eino Tools 增加真实外部 API 能力。默认仍使用 Mock Tools；只有显式设置 real mode 且配置 API Key 时才调用真实外部接口。
 

@@ -15,6 +15,10 @@ func parseTravelRequestNode(ctx context.Context, req domain.TravelRequest) (Trav
 	if err := ctx.Err(); err != nil {
 		return TravelPlanningState{}, err
 	}
+	req = domain.NormalizeTravelBrief(req)
+	if req.DepartureCity == "" {
+		return TravelPlanningState{}, fmt.Errorf("departure_city is required")
+	}
 	if req.DestinationCity == "" {
 		return TravelPlanningState{}, fmt.Errorf("destination_city is required")
 	}
@@ -24,15 +28,19 @@ func parseTravelRequestNode(ctx context.Context, req domain.TravelRequest) (Trav
 	if req.Budget <= 0 {
 		return TravelPlanningState{}, fmt.Errorf("budget must be positive")
 	}
-	if req.Pace == "" {
-		req.Pace = "balanced"
+	if len(req.Interests) == 0 {
+		return TravelPlanningState{}, fmt.Errorf("interests is required")
 	}
-	if req.TransportMode == "" {
-		req.TransportMode = "walk_taxi"
+	if req.Travelers <= 0 {
+		return TravelPlanningState{}, fmt.Errorf("travelers is required")
+	}
+	routeMode := req.TransportMode
+	if routeMode == domain.DefaultTransportMode {
+		routeMode = "步行 + 打车"
 	}
 	interests := req.Interests
-	if len(interests) == 0 {
-		interests = []string{"\u57ce\u5e02\u63a2\u7d22"}
+	if len(req.MustVisit) > 0 {
+		interests = mergeUniqueStrings(interests, req.MustVisit)
 	}
 
 	state := TravelPlanningState{
@@ -41,7 +49,7 @@ func parseTravelRequestNode(ctx context.Context, req domain.TravelRequest) (Trav
 		NormalizedDays:        req.Days,
 		NormalizedBudget:      req.Budget,
 		Interests:             interests,
-		TransportMode:         req.TransportMode,
+		TransportMode:         routeMode,
 		Pace:                  req.Pace,
 		Warnings:              []string{},
 		Trace:                 []TraceEvent{},
@@ -154,9 +162,12 @@ func optimizeItineraryNode(ctx context.Context, state TravelPlanningState) (Trav
 	if len(state.POIs) == 0 {
 		return state, fmt.Errorf("cannot optimize itinerary without pois")
 	}
+	state.POIs = applyPOIPreferences(state.POIs, state.Request)
 
 	itemsPerDay := 2
-	if state.Pace == "intensive" {
+	if domain.IsRelaxedPace(state.Pace) || domain.IsLowWalkingTolerance(state.Request.WalkingTolerance) {
+		itemsPerDay = 2
+	} else if domain.IsIntensivePace(state.Pace) && !domain.IsLowWalkingTolerance(state.Request.WalkingTolerance) {
 		itemsPerDay = 3
 	}
 	days := make([]domain.TravelDay, 0, state.NormalizedDays)
@@ -169,7 +180,7 @@ func optimizeItineraryNode(ctx context.Context, state TravelPlanningState) (Trav
 				Type:            poi.Category,
 				Name:            poi.Name,
 				Address:         poi.Address,
-				Reason:          fmt.Sprintf("matches %s preference in %s", interestsText(state.Interests), state.NormalizedDestination),
+				Reason:          itineraryReason(state, poi),
 				EstimatedCost:   poi.EstimatedCost,
 				DurationMinutes: poi.SuggestedDurationMinutes,
 			})
@@ -311,6 +322,59 @@ func generateDeterministicTravelPlan(ctx context.Context, state TravelPlanningSt
 	}, nil
 }
 
+func applyPOIPreferences(pois []MockPOI, req domain.TravelRequest) []MockPOI {
+	if len(pois) == 0 {
+		return pois
+	}
+	filtered := make([]MockPOI, 0, len(pois))
+	for _, poi := range pois {
+		if containsAnyPreference(poi.Name+" "+poi.Category+" "+poi.Address, req.Avoid) {
+			continue
+		}
+		filtered = append(filtered, poi)
+	}
+	if len(filtered) == 0 {
+		filtered = append(filtered, pois...)
+	}
+	for i := len(req.MustVisit) - 1; i >= 0; i-- {
+		name := strings.TrimSpace(req.MustVisit[i])
+		if name == "" {
+			continue
+		}
+		for idx, poi := range filtered {
+			if strings.Contains(poi.Name, name) || strings.Contains(name, poi.Name) {
+				filtered = append([]MockPOI{poi}, append(filtered[:idx], filtered[idx+1:]...)...)
+				break
+			}
+		}
+	}
+	return filtered
+}
+
+func containsAnyPreference(text string, prefs []string) bool {
+	for _, pref := range prefs {
+		pref = strings.TrimSpace(pref)
+		if pref != "" && strings.Contains(text, pref) {
+			return true
+		}
+	}
+	return false
+}
+
+func itineraryReason(state TravelPlanningState, poi MockPOI) string {
+	parts := []string{fmt.Sprintf("matches %s preference in %s", interestsText(state.Interests), state.NormalizedDestination)}
+	if containsAnyPreference(poi.Name, state.Request.MustVisit) {
+		parts = append(parts, "marked as must-visit by the user")
+	}
+	if domain.IsLowWalkingTolerance(state.Request.WalkingTolerance) {
+		parts = append(parts, "keeps walking intensity low")
+	}
+	if state.Request.Travelers > 0 {
+		parts = append(parts, fmt.Sprintf("planned for %d travelers", state.Request.Travelers))
+	}
+	return strings.Join(parts, "; ")
+}
+
 func validatePlanNode(ctx context.Context, plan *domain.TravelPlan) (*domain.TravelPlan, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -372,10 +436,10 @@ func interestsText(interests []string) string {
 }
 
 func paceItemRange(pace string) (int, int) {
-	switch strings.ToLower(strings.TrimSpace(pace)) {
-	case "relaxed":
+	switch domain.NormalizePace(pace) {
+	case "轻松":
 		return 1, 2
-	case "intensive":
+	case "紧凑":
 		return 3, 4
 	default:
 		return 2, 3

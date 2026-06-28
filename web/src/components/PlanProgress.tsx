@@ -12,22 +12,84 @@ interface PlanProgressProps {
 
 const stepLabels = ["提交需求", "连接进度", "生成路线", "完成"];
 
+const nodeLabels: Record<string, string> = {
+  ParseTravelRequestNode: "理解旅行需求",
+  SearchPOIsToolNode: "筛选候选地点",
+  GetWeatherToolNode: "查询天气影响",
+  ComputeRouteToolNode: "估算路程时间",
+  EstimateBudgetToolNode: "拆分预算",
+  OptimizeItineraryNode: "优化每日顺序",
+  ValidateRouteFeasibilityNode: "校验路线可行性",
+  GenerateTravelPlanNode: "生成行程文本",
+  ValidatePlanNode: "校验最终结果",
+};
+
+const statusLabels: Record<string, string> = {
+  pending: "等待中",
+  running: "进行中",
+  success: "已完成",
+  succeeded: "已完成",
+  failed: "失败",
+  error: "失败",
+  creating: "提交中",
+  empty: "未开始",
+};
+
+const progressMessages: Record<string, string> = {
+  "stream connected": "实时连接已建立",
+  "planner started": "规划任务已开始",
+  "task finished": "规划任务已完成",
+};
+
 function eventTitle(event: TaskEvent): string {
   if (event.type === "node") {
-    return event.node_name || "planner node";
+    return event.node_name ? (nodeLabels[event.node_name] ?? "规划步骤") : "规划步骤";
   }
   if (event.type === "assistant_delta" || event.type === "assistant_done") {
     return "助手输出";
   }
-  return event.type;
+  if (event.type === "progress") {
+    return "进度";
+  }
+  if (event.type === "warning") {
+    return "提醒";
+  }
+  if (event.type === "error") {
+    return "错误";
+  }
+  if (event.type === "done") {
+    return "完成";
+  }
+  return "事件";
 }
 
 function eventMessage(event: TaskEvent): string {
   if (event.type === "node") {
     const duration = typeof event.duration_ms === "number" ? ` · ${event.duration_ms}ms` : "";
-    return `${event.node_status || "running"}${duration}`;
+    const status = event.node_status ? (statusLabels[event.node_status] ?? event.node_status) : "进行中";
+    return `${status}${duration}`;
   }
-  return event.message || event.status || "收到事件";
+  if (event.message && progressMessages[event.message]) {
+    return progressMessages[event.message];
+  }
+  return event.message || (event.status ? (statusLabels[event.status] ?? event.status) : "收到事件");
+}
+
+function statusText(status: string): string {
+  return statusLabels[status] ?? status;
+}
+
+function eventKey(event: TaskEvent, index: number): string {
+  const stableParts = [
+    event.type,
+    event.created_at ?? event.time ?? "",
+    event.node_name ?? "",
+    event.node_status ?? "",
+    event.message ?? "",
+    event.duration_ms ?? "",
+    index,
+  ];
+  return stableParts.join("|");
 }
 
 export default function PlanProgress({ taskId, status, events, connected, polling, error, creating }: PlanProgressProps) {
@@ -40,13 +102,13 @@ export default function PlanProgress({ taskId, status, events, connected, pollin
   }
 
   const activeIndex = status === "succeeded" ? 3 : connected || polling || status === "running" ? 2 : taskId ? 1 : 0;
-  const statusText = creating ? "creating" : status;
+  const rawStatusText = creating ? "creating" : status;
   const connectionText = creating ? "正在提交" : connected ? "SSE 已连接" : polling ? "轮询中" : "等待连接";
 
   return (
     <section className="progress-panel" data-testid="progress-panel">
       <div className="status-row">
-        <span className={`status-pill ${statusText}`}>{statusText}</span>
+        <span className={`status-pill ${rawStatusText}`}>{statusText(rawStatusText)}</span>
         <span className="connection-state">{connectionText}</span>
       </div>
       {error ? <p className="inline-error">{error}</p> : null}
@@ -63,7 +125,7 @@ export default function PlanProgress({ taskId, status, events, connected, pollin
           <p className="muted">{creating ? "正在把需求交给规划服务。" : "任务已创建，等待第一条实时事件。"}</p>
         ) : (
           events.map((event, index) => (
-            <div className="event-item" key={`${event.type}-${event.created_at ?? index}`}>
+            <div className="event-item" key={eventKey(event, index)}>
               <span>{eventTitle(event)}</span>
               <p>{eventMessage(event)}</p>
             </div>

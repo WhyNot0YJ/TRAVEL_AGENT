@@ -185,7 +185,7 @@ func TestStreamingTravelPlanReportsSummaryDeltas(t *testing.T) {
 	}
 	rep := &captureReporter{}
 	state := TravelPlanningState{
-		Request:               domain.TravelRequest{DestinationCity: "杭州", Days: 1, Budget: 100, Pace: "balanced", TransportMode: "train_taxi"},
+		Request:               domain.TravelRequest{DepartureCity: "上海", DestinationCity: "杭州", Days: 1, Budget: 100, Interests: []string{"美食"}, Travelers: 2, Pace: "balanced", TransportMode: "train_taxi"},
 		NormalizedDestination: "杭州",
 		NormalizedDays:        1,
 		NormalizedBudget:      100,

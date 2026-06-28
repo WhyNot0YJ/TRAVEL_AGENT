@@ -1,4 +1,4 @@
-# Evaluation Harness 设计文档
+# 评估 Harness 设计文档
 
 ## 1. 背景
 
@@ -98,9 +98,12 @@ type TravelPlanner interface {
 9. 低预算和极低预算路线
 10. 高预算深度路线
 11. 长天数 POI 循环分配
-12. 空兴趣、空交通方式和空节奏默认值
+12. 空交通方式、空节奏和 Travel Brief 可选项默认值
 13. 同城游
 14. 老人友好、亲子、商务间隙、年轻人高强度等人群或目的场景
+15. Stage 18 richer brief：出行人数、避开内容、必去地点、低步行强度和只给必填项的默认值路径
+
+每个后端 case 的具体测试场景、输入摘要和验证点见 [Backend Harness Case Catalog](../testdata/harness-cases.md)。新增、删除或重命名后端 case 时必须同步更新该文档。
 
 ## 6. 评估指标
 
@@ -203,7 +206,7 @@ go run ./cmd/harness -planner eino
 
 不要把真实 API Key 写入报告、测试数据或文档。无 Key 时，real mode 会稳定 fallback 到 mock tools。
 
-## 8.1 Frontend UI Harness
+## 8.1 前端 UI Harness
 
 前端 UI Harness 与 Go Agent Harness 分开运行，避免让 `internal/harness` 依赖浏览器、HTTP server 或 Playwright。
 
@@ -230,6 +233,8 @@ reports/ui_eval_report.json
 
 UI Harness 关注交互、状态展示、SSE/done 渲染和移动端可用性；Go Harness 继续关注 `TravelPlanner` 输出质量。两者报告彼此独立，后续可由 CI 或聚合脚本统一运行。
 
+每个 UI test 的测试场景、mock 契约和验证点见 [UI Harness Case Catalog](../web/e2e/harness-cases.md)。
+
 ## 9. 如何新增测试用例
 
 在 `testdata/travel_cases.json` 中新增 case。要求：
@@ -239,6 +244,9 @@ UI Harness 关注交互、状态展示、SSE/done 渲染和移动端可用性；
 3. `input` 必须包含 `destination_city`、`days`、`budget` 等核心字段
 4. `expectation` 必须包含 `min_days`、`max_budget_ratio`、`required_keywords`
 5. 新增边界 case 时要说明目的
+6. 必须同步更新 [Backend Harness Case Catalog](../testdata/harness-cases.md)，说明该 case 覆盖的场景和主要验证点
+
+新增前端 UI Harness case 时，在 `web/e2e` 中增加 Playwright test，并同步更新 [UI Harness Case Catalog](../web/e2e/harness-cases.md) 的前端表格。
 
 ## 10. EinoTravelPlanner
 

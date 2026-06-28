@@ -20,7 +20,7 @@ func TestHandlerCreateAndGetTask(t *testing.T) {
 	router.POST("/plans", handler.CreatePlan)
 	router.GET("/plans/:task_id", handler.GetPlan)
 
-	body := `{"departure_city":"上海","destination_city":"杭州","days":2,"budget":1000}`
+	body := `{"departure_city":"上海","destination_city":"杭州","days":2,"budget":1000,"interests":["美食"],"travelers":2}`
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/plans", strings.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")

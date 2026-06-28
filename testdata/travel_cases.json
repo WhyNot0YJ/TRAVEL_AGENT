@@ -8,14 +8,20 @@
       "destination_city": "杭州",
       "days": 3,
       "budget": 3000,
-      "interests": ["自然风光", "美食"],
+      "interests": [
+        "自然风光",
+        "美食"
+      ],
       "transport_mode": "train_taxi",
-      "pace": "relaxed"
+      "pace": "relaxed",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 3,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["杭州"]
+      "required_keywords": [
+        "杭州"
+      ]
     }
   },
   {
@@ -27,14 +33,20 @@
       "destination_city": "南京",
       "days": 2,
       "budget": 1500,
-      "interests": ["历史文化", "美食"],
+      "interests": [
+        "历史文化",
+        "美食"
+      ],
       "transport_mode": "train_walk",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 2,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["南京"]
+      "required_keywords": [
+        "南京"
+      ]
     }
   },
   {
@@ -46,14 +58,20 @@
       "destination_city": "北京",
       "days": 4,
       "budget": 5000,
-      "interests": ["亲子", "博物馆"],
+      "interests": [
+        "亲子",
+        "博物馆"
+      ],
       "transport_mode": "subway_taxi",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 3
     },
     "expectation": {
       "min_days": 4,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["北京"]
+      "required_keywords": [
+        "北京"
+      ]
     }
   },
   {
@@ -65,14 +83,20 @@
       "destination_city": "成都",
       "days": 3,
       "budget": 2500,
-      "interests": ["美食", "休闲"],
+      "interests": [
+        "美食",
+        "休闲"
+      ],
       "transport_mode": "flight_taxi",
-      "pace": "relaxed"
+      "pace": "relaxed",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 3,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["成都"]
+      "required_keywords": [
+        "成都"
+      ]
     }
   },
   {
@@ -84,14 +108,20 @@
       "destination_city": "广州",
       "days": 2,
       "budget": 1800,
-      "interests": ["citywalk", "美食"],
+      "interests": [
+        "citywalk",
+        "美食"
+      ],
       "transport_mode": "train_walk",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 2,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["广州"]
+      "required_keywords": [
+        "广州"
+      ]
     }
   },
   {
@@ -103,14 +133,19 @@
       "destination_city": "西安",
       "days": 3,
       "budget": 2200,
-      "interests": ["历史文化"],
+      "interests": [
+        "历史文化"
+      ],
       "transport_mode": "flight_subway",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 3,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["西安"]
+      "required_keywords": [
+        "西安"
+      ]
     }
   },
   {
@@ -122,14 +157,20 @@
       "destination_city": "苏州",
       "days": 1,
       "budget": 800,
-      "interests": ["园林", "轻松"],
+      "interests": [
+        "园林",
+        "轻松"
+      ],
       "transport_mode": "train_walk",
-      "pace": "relaxed"
+      "pace": "relaxed",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 1,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["苏州"]
+      "required_keywords": [
+        "苏州"
+      ]
     }
   },
   {
@@ -141,14 +182,20 @@
       "destination_city": "未知城市",
       "days": 2,
       "budget": 1000,
-      "interests": ["探索", "小众"],
+      "interests": [
+        "探索",
+        "小众"
+      ],
       "transport_mode": "train_walk",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 2,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["未知城市"]
+      "required_keywords": [
+        "未知城市"
+      ]
     }
   },
   {
@@ -160,14 +207,20 @@
       "destination_city": "杭州",
       "days": 2,
       "budget": 600,
-      "interests": ["自然风光", "城市漫步"],
+      "interests": [
+        "自然风光",
+        "城市漫步"
+      ],
       "transport_mode": "train_walk",
-      "pace": "relaxed"
+      "pace": "relaxed",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 2,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["杭州"]
+      "required_keywords": [
+        "杭州"
+      ]
     }
   },
   {
@@ -179,14 +232,21 @@
       "destination_city": "北京",
       "days": 5,
       "budget": 12000,
-      "interests": ["历史文化", "博物馆", "亲子"],
+      "interests": [
+        "历史文化",
+        "博物馆",
+        "亲子"
+      ],
       "transport_mode": "flight_subway",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 5,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["北京"]
+      "required_keywords": [
+        "北京"
+      ]
     }
   },
   {
@@ -198,33 +258,44 @@
       "destination_city": "成都",
       "days": 2,
       "budget": 1600,
-      "interests": ["美食", "夜生活"],
+      "interests": [
+        "美食",
+        "夜生活"
+      ],
       "transport_mode": "train_taxi",
-      "pace": "intensive"
+      "pace": "intensive",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 2,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["成都"]
+      "required_keywords": [
+        "成都"
+      ]
     }
   },
   {
     "id": "case_012",
-    "description": "测试广州空兴趣输入，覆盖兴趣缺省时是否能回退到城市探索主题。",
+    "description": "测试广州单日城市探索路线，覆盖必填兴趣已提供时的默认偏好路径。",
     "input": {
       "id": "case_012",
       "departure_city": "佛山",
       "destination_city": "广州",
       "days": 1,
       "budget": 500,
-      "interests": [],
+      "interests": [
+        "城市探索"
+      ],
       "transport_mode": "subway_walk",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 1,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["广州"]
+      "required_keywords": [
+        "广州"
+      ]
     }
   },
   {
@@ -236,14 +307,21 @@
       "destination_city": "苏州",
       "days": 6,
       "budget": 4800,
-      "interests": ["园林", "博物馆", "美食"],
+      "interests": [
+        "园林",
+        "博物馆",
+        "美食"
+      ],
       "transport_mode": "train_walk",
-      "pace": "relaxed"
+      "pace": "relaxed",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 6,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["苏州"]
+      "required_keywords": [
+        "苏州"
+      ]
     }
   },
   {
@@ -255,14 +333,20 @@
       "destination_city": "西安",
       "days": 1,
       "budget": 900,
-      "interests": ["历史文化", "夜游"],
+      "interests": [
+        "历史文化",
+        "夜游"
+      ],
       "transport_mode": "train_subway",
-      "pace": "intensive"
+      "pace": "intensive",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 1,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["西安"]
+      "required_keywords": [
+        "西安"
+      ]
     }
   },
   {
@@ -274,14 +358,20 @@
       "destination_city": "南京",
       "days": 2,
       "budget": 900,
-      "interests": ["亲子", "博物馆"],
+      "interests": [
+        "亲子",
+        "博物馆"
+      ],
       "transport_mode": "train_subway",
-      "pace": "relaxed"
+      "pace": "relaxed",
+      "travelers": 3
     },
     "expectation": {
       "min_days": 2,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["南京"]
+      "required_keywords": [
+        "南京"
+      ]
     }
   },
   {
@@ -293,14 +383,20 @@
       "destination_city": "杭州",
       "days": 2,
       "budget": 1200,
-      "interests": ["本地生活", "咖啡"],
+      "interests": [
+        "本地生活",
+        "咖啡"
+      ],
       "transport_mode": "subway_walk",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 2,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["杭州"]
+      "required_keywords": [
+        "杭州"
+      ]
     }
   },
   {
@@ -312,14 +408,21 @@
       "destination_city": "北京",
       "days": 3,
       "budget": 3600,
-      "interests": ["老人友好", "公园", "博物馆"],
+      "interests": [
+        "老人友好",
+        "公园",
+        "博物馆"
+      ],
       "transport_mode": "train_taxi",
-      "pace": "relaxed"
+      "pace": "relaxed",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 3,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["北京"]
+      "required_keywords": [
+        "北京"
+      ]
     }
   },
   {
@@ -331,14 +434,21 @@
       "destination_city": "成都",
       "days": 4,
       "budget": 4200,
-      "interests": ["美食", "潮流街区", "夜生活"],
+      "interests": [
+        "美食",
+        "潮流街区",
+        "夜生活"
+      ],
       "transport_mode": "flight_taxi",
-      "pace": "intensive"
+      "pace": "intensive",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 4,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["成都"]
+      "required_keywords": [
+        "成都"
+      ]
     }
   },
   {
@@ -350,14 +460,21 @@
       "destination_city": "广州",
       "days": 3,
       "budget": 3500,
-      "interests": ["商务间隙", "美食", "citywalk"],
+      "interests": [
+        "商务间隙",
+        "美食",
+        "citywalk"
+      ],
       "transport_mode": "flight_taxi",
-      "pace": "relaxed"
+      "pace": "relaxed",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 3,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["广州"]
+      "required_keywords": [
+        "广州"
+      ]
     }
   },
   {
@@ -369,14 +486,20 @@
       "destination_city": "苏州",
       "days": 1,
       "budget": 300,
-      "interests": ["园林", "步行"],
+      "interests": [
+        "园林",
+        "步行"
+      ],
       "transport_mode": "train_walk",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 1,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["苏州"]
+      "required_keywords": [
+        "苏州"
+      ]
     }
   },
   {
@@ -388,14 +511,21 @@
       "destination_city": "未知城市",
       "days": 5,
       "budget": 2500,
-      "interests": ["小众", "探索", "本地生活"],
+      "interests": [
+        "小众",
+        "探索",
+        "本地生活"
+      ],
       "transport_mode": "train_walk",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 5,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["未知城市"]
+      "required_keywords": [
+        "未知城市"
+      ]
     }
   },
   {
@@ -407,14 +537,21 @@
       "destination_city": "西安",
       "days": 5,
       "budget": 9000,
-      "interests": ["历史文化", "博物馆", "夜游"],
+      "interests": [
+        "历史文化",
+        "博物馆",
+        "夜游"
+      ],
       "transport_mode": "flight_taxi",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 5,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["西安"]
+      "required_keywords": [
+        "西安"
+      ]
     }
   },
   {
@@ -426,14 +563,20 @@
       "destination_city": "南京",
       "days": 3,
       "budget": 2400,
-      "interests": ["城市漫步", "历史文化"],
+      "interests": [
+        "城市漫步",
+        "历史文化"
+      ],
       "transport_mode": "",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 3,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["南京"]
+      "required_keywords": [
+        "南京"
+      ]
     }
   },
   {
@@ -445,14 +588,20 @@
       "destination_city": "杭州",
       "days": 4,
       "budget": 4200,
-      "interests": ["自然风光", "茶文化"],
+      "interests": [
+        "自然风光",
+        "茶文化"
+      ],
       "transport_mode": "train_taxi",
-      "pace": ""
+      "pace": "",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 4,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["杭州"]
+      "required_keywords": [
+        "杭州"
+      ]
     }
   },
   {
@@ -464,14 +613,20 @@
       "destination_city": "杭州",
       "days": 3,
       "budget": 3000,
-      "interests": ["美食", "自然风光"],
+      "interests": [
+        "美食",
+        "自然风光"
+      ],
       "transport_mode": "train_taxi",
-      "pace": "relaxed"
+      "pace": "relaxed",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 3,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["杭州"]
+      "required_keywords": [
+        "杭州"
+      ]
     }
   },
   {
@@ -483,14 +638,126 @@
       "destination_city": "北京",
       "days": 5,
       "budget": 12000,
-      "interests": ["亲子", "历史文化", "博物馆"],
+      "interests": [
+        "亲子",
+        "历史文化",
+        "博物馆"
+      ],
       "transport_mode": "flight_taxi",
-      "pace": "balanced"
+      "pace": "balanced",
+      "travelers": 2
     },
     "expectation": {
       "min_days": 5,
       "max_budget_ratio": 1.1,
-      "required_keywords": ["北京"]
+      "required_keywords": [
+        "北京"
+      ]
+    }
+  },
+  {
+    "id": "case_027",
+    "description": "Stage 18：带出行人数和步行强度的杭州两日轻松路线，验证人数与低步行强度进入 planner。",
+    "input": {
+      "id": "case_027",
+      "departure_city": "上海",
+      "destination_city": "杭州",
+      "days": 2,
+      "budget": 2600,
+      "interests": [
+        "美食",
+        "自然风光"
+      ],
+      "travelers": 2,
+      "transport_mode": "高铁 + 打车",
+      "pace": "轻松",
+      "walking_tolerance": "低",
+      "date_range": "任意",
+      "hotel_area": "西湖附近",
+      "must_visit": [
+        "西湖"
+      ],
+      "avoid": [],
+      "traveler_type": "情侣",
+      "budget_type": "总预算",
+      "budget_includes": [
+        "住宿",
+        "餐饮",
+        "门票",
+        "市内交通"
+      ]
+    },
+    "expectation": {
+      "min_days": 2,
+      "max_budget_ratio": 1.1,
+      "required_keywords": [
+        "杭州"
+      ]
+    }
+  },
+  {
+    "id": "case_028",
+    "description": "Stage 18：带避开内容的南京三日历史文化路线，验证 avoid 字段参与 POI 选择和文案。",
+    "input": {
+      "id": "case_028",
+      "departure_city": "上海",
+      "destination_city": "南京",
+      "days": 3,
+      "budget": 3600,
+      "interests": [
+        "历史文化",
+        "美食"
+      ],
+      "travelers": 2,
+      "transport_mode": "高铁 + 地铁",
+      "pace": "适中",
+      "walking_tolerance": "中",
+      "date_range": "任意",
+      "hotel_area": "夫子庙附近",
+      "must_visit": [
+        "南京博物院"
+      ],
+      "avoid": [
+        "夜游"
+      ],
+      "traveler_type": "朋友",
+      "budget_type": "总预算",
+      "budget_includes": [
+        "住宿",
+        "餐饮",
+        "门票",
+        "市内交通"
+      ]
+    },
+    "expectation": {
+      "min_days": 3,
+      "max_budget_ratio": 1.1,
+      "required_keywords": [
+        "南京"
+      ]
+    }
+  },
+  {
+    "id": "case_029",
+    "description": "Stage 18：只给必填项的苏州两日路线，验证可选偏好统一走默认值。",
+    "input": {
+      "id": "case_029",
+      "departure_city": "上海",
+      "destination_city": "苏州",
+      "days": 2,
+      "budget": 1800,
+      "interests": [
+        "园林",
+        "美食"
+      ],
+      "travelers": 2
+    },
+    "expectation": {
+      "min_days": 2,
+      "max_budget_ratio": 1.1,
+      "required_keywords": [
+        "苏州"
+      ]
     }
   }
 ]

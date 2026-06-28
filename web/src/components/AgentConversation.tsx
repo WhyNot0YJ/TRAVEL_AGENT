@@ -7,8 +7,17 @@ export interface TravelBrief {
   days: number | "";
   budget: number | "";
   interests: string[];
+  travelers: number | "";
+  dateRange: string;
   transportMode: string;
   pace: string;
+  walkingTolerance: string;
+  hotelArea: string;
+  mustVisit: string[];
+  avoid: string[];
+  travelerType: string;
+  budgetType: string;
+  budgetIncludes: string[];
 }
 
 export interface ChatMessage {
@@ -41,7 +50,7 @@ interface AgentConversationProps {
   planningText: string;
 }
 
-const quickReplies = ["上海出发，杭州 3 天，预算 3000", "想轻松一点，喜欢美食和自然风光", "高铁优先，少走回头路"];
+const quickReplies = ["上海出发，杭州 3 天，2 人，预算 3000", "想轻松一点，喜欢美食和自然风光", "高铁优先，少走回头路"];
 
 function buildRequest(brief: TravelBrief): TravelPlanRequest {
   return {
@@ -50,16 +59,18 @@ function buildRequest(brief: TravelBrief): TravelPlanRequest {
     days: Number(brief.days),
     budget: Number(brief.budget),
     interests: brief.interests,
+    travelers: Number(brief.travelers),
+    date_range: brief.dateRange,
     transport_mode: brief.transportMode,
     pace: brief.pace,
+    walking_tolerance: brief.walkingTolerance,
+    hotel_area: brief.hotelArea,
+    must_visit: brief.mustVisit,
+    avoid: brief.avoid,
+    traveler_type: brief.travelerType,
+    budget_type: brief.budgetType,
+    budget_includes: brief.budgetIncludes,
   };
-}
-
-function modeLabel(testMode: boolean, agentMode: AgentMode): string {
-  if (testMode) {
-    return "测试模式";
-  }
-  return agentMode === "expert" ? "真实 LLM · 专家" : "真实 LLM · 快速";
 }
 
 export default function AgentConversation({
@@ -109,52 +120,35 @@ export default function AgentConversation({
           <span>Travel Agent</span>
           <strong>{canGenerate ? "需求已完整" : "正在确认需求"}</strong>
         </div>
-
-        <div className="mode-bar" aria-label="运行模式">
-          <label className="mode-toggle">
-            <input
-              type="checkbox"
-              checked={testMode}
-              disabled={disabled}
-              onChange={(event) => onTestModeChange(event.target.checked)}
-            />
-            <span aria-hidden="true" />
-            <strong>{testMode ? "测试" : "真实"}</strong>
-          </label>
-          <div className="agent-mode-tabs" aria-label="DeepSeek 模式">
-            <button
-              type="button"
-              className={agentMode === "quick" ? "active" : ""}
-              disabled={disabled}
-              onClick={() => onAgentModeChange("quick")}
-              title={testMode ? "测试模式不调用真实 LLM；切到真实模式后此选择生效" : "使用 deepseek-v4-flash，速度优先"}
-            >
-              快速
-            </button>
-            <button
-              type="button"
-              className={agentMode === "expert" ? "active" : ""}
-              disabled={disabled}
-              onClick={() => onAgentModeChange("expert")}
-              title={testMode ? "测试模式不调用真实 LLM；切到真实模式后此选择生效" : "使用 deepseek-v4-pro，更强推理（成本更高）"}
-            >
-              专家
-            </button>
-          </div>
-        </div>
       </header>
 
       <div className="message-rail" data-testid="message-rail">
-        <div className="mode-strip">{modeLabel(testMode, agentMode)}</div>
         {messages.map((message) => (
           <article className={`message ${message.role}`} data-testid={`message-${message.role}`} key={message.id}>
             <p>{message.text || "正在输入..."}</p>
           </article>
         ))}
 
+        {!canGenerate && !showPlanningMessage && messages.length > 1 ? (
+          <article className="message assistant assistant-result-message" data-testid="brief-review-message">
+            <p>我先把已确认的信息放在这里。</p>
+            <div className="assistant-result-content">
+              <div className="result-block result-brief">{briefPanel}</div>
+              <div className="confirm-actions">
+                <button type="button" data-testid="generate-plan" disabled>
+                  生成行程
+                </button>
+                <button type="button" onClick={() => onInputChange("补充：")}>
+                  继续补充
+                </button>
+              </div>
+            </div>
+          </article>
+        ) : null}
+
         {canGenerate && !showPlanningMessage ? (
           <article className="message assistant assistant-result-message" data-testid="planning-message" ref={planCardRef}>
-            <p>信息齐了，可以开始生成行程。</p>
+            <p>核心信息齐了，请确认这份旅行 brief。</p>
             <div className="assistant-result-content">
               <div className="result-block result-brief">{briefPanel}</div>
               <div className="confirm-actions">
@@ -199,9 +193,6 @@ export default function AgentConversation({
       </div>
 
       <form className="chat-composer" onSubmit={handleSubmit}>
-        <button className="composer-tool" type="button" disabled aria-label="更多">
-          +
-        </button>
         <label className="sr-only" htmlFor="travel-chat-input">
           输入旅行需求
         </label>
@@ -214,9 +205,48 @@ export default function AgentConversation({
           rows={1}
           disabled={disabled}
         />
-        <button className="send-action" type="submit" data-testid="send-message" disabled={disabled || input.trim().length === 0}>
-          发送
-        </button>
+        <div className="composer-footer">
+          <div className="composer-modes" aria-label="运行模式">
+            <label className="mode-toggle">
+              <input
+                type="checkbox"
+                checked={testMode}
+                disabled={disabled}
+                onChange={(event) => onTestModeChange(event.target.checked)}
+              />
+              <span aria-hidden="true" />
+              <strong>{testMode ? "测试" : "真实"}</strong>
+            </label>
+            <div className="agent-mode-tabs" aria-label="DeepSeek 模式">
+              <button
+                type="button"
+                className={agentMode === "quick" ? "active" : ""}
+                disabled={disabled}
+                onClick={() => onAgentModeChange("quick")}
+                title={testMode ? "测试模式不调用真实 LLM；切到真实模式后此选择生效" : "使用 deepseek-v4-flash，速度优先"}
+              >
+                快速
+              </button>
+              <button
+                type="button"
+                className={agentMode === "expert" ? "active" : ""}
+                disabled={disabled}
+                onClick={() => onAgentModeChange("expert")}
+                title={testMode ? "测试模式不调用真实 LLM；切到真实模式后此选择生效" : "使用 deepseek-v4-pro，更强推理（成本更高）"}
+              >
+                专家
+              </button>
+            </div>
+          </div>
+          <div className="composer-actions">
+            <button className="composer-tool" type="button" disabled aria-label="更多">
+              +
+            </button>
+            <button className="send-action" type="submit" data-testid="send-message" disabled={disabled || input.trim().length === 0}>
+              发送
+            </button>
+          </div>
+        </div>
       </form>
     </section>
   );

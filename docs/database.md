@@ -1,6 +1,6 @@
-# Database
+# 数据库
 
-## Current Stage
+## 当前阶段
 
 当前阶段已支持可选 MySQL 持久化。未配置 SQL 时，系统继续使用 Redis 或内存开发模式。
 
@@ -26,7 +26,7 @@ migrations/mysql/001_travel_persistence.sql
 
 如果 `TRAVEL_AGENT_SQL_ENABLED=true` 但 DSN 为空、连接失败或 ping 失败，server 会保留 Redis/内存 store 并记录日志。
 
-## MySQL Tables
+## MySQL 表
 
 ### `travel_tasks`
 
@@ -70,7 +70,7 @@ migrations/mysql/001_travel_persistence.sql
 
 预留给节点/tool/LLM 事件。当前迁移已建表，后续阶段会写入节点名、tool、provider、耗时、状态和 fallback reason。
 
-## Redis Keys
+## Redis Key
 
 | Key | Value | TTL |
 | --- | --- | --- |
@@ -78,7 +78,7 @@ migrations/mysql/001_travel_persistence.sql
 | `travel:request_hash:{hash}` | 对应的 `task_id` | `TRAVEL_AGENT_CACHE_TTL_SECONDS` |
 | `travel:rate:{client}` | 当前窗口内请求计数 | 1 minute |
 
-## Task Status
+## 任务状态
 
 任务状态：
 
@@ -87,7 +87,7 @@ migrations/mysql/001_travel_persistence.sql
 * `succeeded`
 * `failed`
 
-## Notes
+## 说明
 
 * `internal/domain` 不包含 Redis key 或任务状态管理。
 * SQL 原始表结构不污染 `internal/domain`。

@@ -1,45 +1,59 @@
-# Frontend Skills
+# 前端 Skills
 
-This project installs two external GitHub skills for Codex.
+本项目为 Codex 准备了外部 GitHub skills，用于前端设计和浏览器测试。
 
-## Installed Skills
+## 已安装 Skills
 
 ### frontend-design
 
-Source:
+来源：
 
-https://github.com/anthropics/skills/tree/main/skills/frontend-design
+https://github.com/am-will/codex-skills/tree/main/skills/frontend-design
 
-Use it before creating or redesigning frontend UI.
+在创建或重新设计前端 UI 之前使用。
 
-Example:
+示例：
 
 ```txt
 $frontend-design 请优化这个页面，让它更像真实产品，不要 AI 味太重。
 ```
 
-### playwright-skill
+### playwright
 
-Source:
+来源：
 
-https://github.com/lackeyjb/playwright-skill
+https://github.com/openai/skills/tree/main/skills/.curated/playwright
 
-Use it after frontend changes to test pages with Playwright.
+在前端改动后使用，用 Playwright 测试页面、交互、截图、console 和网络错误。
 
-Example:
+示例：
 
 ```txt
-$playwright-skill 请启动本地前端页面，测试首页、核心交互、移动端截图，并检查 console 和 network 错误。
+$playwright 请启动本地前端页面，测试首页、核心交互、移动端截图，并检查 console 和 network 错误。
 ```
 
-## Recommended Workflow
+### andrej-karpathy-skill
+
+来源：
+
+https://github.com/duolahypercho/andrej-karpathy-skills/tree/main/skills/andrej-karpathy-skill
+
+在写代码、审查、调试或重构时使用，用于提醒 Codex 先明确假设、保持改动克制、避免过度工程化，并定义可验证的完成标准。
+
+示例：
+
+```txt
+$andrej-karpathy-skill 请按这个风格审查这次改动，重点看假设、边界和验证方式。
+```
+
+## 推荐工作流
 
 ```txt
 $frontend-design 先给这个页面做设计审查和改版方案。
 ```
 
-Then implement the UI.
+然后实现 UI。
 
 ```txt
-$playwright-skill 启动项目并验收刚刚修改的页面，截图、点击关键交互、检查报错。
+$playwright 启动项目并验收刚刚修改的页面，截图、点击关键交互、检查报错。
 ```

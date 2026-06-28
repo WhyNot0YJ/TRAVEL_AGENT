@@ -2,7 +2,7 @@
 
 本项目是一个基于 React + Go Gin + CloudWeGo Eino 的高并发智能旅游路线规划应用。当前仓库已经包含后端 Evaluation Harness、Gin 异步任务 API、Eino Travel Planner、Redis/内存任务存储，以及 React H5 对话式前端，用于持续评估和演示路线规划 Agent 的稳定性、正确性、耗时和结构化输出质量。
 
-## Travel Agent Evaluation Harness
+## Travel Agent 评估 Harness
 
 当前 Harness 用于评估旅游路线规划 Agent 的输出质量。
 
@@ -67,7 +67,7 @@ go run ./cmd/server
 ```bash
 curl -X POST http://localhost:8080/api/v1/travel/plans \
   -H "Content-Type: application/json" \
-  -d "{\"departure_city\":\"上海\",\"destination_city\":\"杭州\",\"days\":3,\"budget\":3000,\"interests\":[\"自然风光\",\"美食\"],\"transport_mode\":\"train_taxi\",\"pace\":\"relaxed\"}"
+  -d "{\"departure_city\":\"上海\",\"destination_city\":\"杭州\",\"days\":3,\"budget\":3000,\"interests\":[\"自然风光\",\"美食\"],\"travelers\":2,\"transport_mode\":\"高铁 + 打车\",\"pace\":\"轻松\"}"
 ```
 
 查询任务：
@@ -76,7 +76,7 @@ curl -X POST http://localhost:8080/api/v1/travel/plans \
 curl http://localhost:8080/api/v1/travel/plans/{task_id}
 ```
 
-当前 HTTP API 返回任务状态。POST 返回 `task_id`、`request_hash`、`status` 和 `cached`，GET 返回 `pending` / `running` / `succeeded` / `failed` 以及最终 plan 或错误。
+当前 HTTP API 返回任务状态。POST 返回 `task_id`、`request_hash`、`status` 和 `cached`，GET 返回 `pending` / `running` / `succeeded` / `failed` 以及最终 plan 或错误。创建任务要求出发地、目的地、天数、预算、兴趣偏好和出行人数；日期、节奏、交通偏好、步行强度、酒店区域、必去地点、避开内容、同行人群和预算口径缺失时会使用 Travel Brief 默认值。
 
 Redis 配置：
 
@@ -119,23 +119,23 @@ curl -N http://localhost:8080/api/v1/travel/plans/{task_id}/stream
 
 `node` 事件用于观测 planner 节点耗时，包含 `request_id`、`task_id`、`node_name`、`node_status` 和 `duration_ms`。不需要节点级进度的前端可以忽略该事件。
 
-## React H5 Frontend
+## React H5 前端
 
-The H5 client lives in `web` and is built with Vite, React, and TypeScript. It talks to the Gin API through the same async task contract:
+H5 客户端位于 `web` 目录，基于 Vite、React 和 TypeScript 构建。它通过同一套异步任务契约与 Gin API 通信：
 
-Quick start on Windows:
+Windows 快速启动：
 
 ```powershell
 .\quick-start.ps1
 ```
 
-Stop the dev services started by the script:
+停止脚本启动的开发服务：
 
 ```powershell
 .\quick-start.ps1 -Stop
 ```
 
-Optional ports and planner:
+可选端口和 planner：
 
 ```powershell
 .\quick-start.ps1 -BackendPort 18085 -FrontendPort 5175 -Planner eino
@@ -147,14 +147,14 @@ npm install
 npm run dev
 ```
 
-By default, Vite proxies `/api` to `http://localhost:8080`. To call another backend directly:
+默认情况下，Vite 会把 `/api` 代理到 `http://localhost:8080`。如果要直接调用其他后端：
 
 ```bash
 set VITE_API_BASE_URL=http://localhost:8080
 npm run dev
 ```
 
-Production build:
+生产构建：
 
 ```bash
 cd web
@@ -163,18 +163,18 @@ npm run lint
 npm run build
 ```
 
-Frontend UI harness:
+前端 UI Harness：
 
 ```bash
 cd web
 npm run harness:ui
 ```
 
-The UI harness uses Playwright, mocks the travel API/SSE contract in the browser test, runs desktop and mobile Chromium projects, and writes `reports/ui_eval_report.json`.
+UI Harness 使用 Playwright，在浏览器测试中 mock 旅行 API/SSE 契约，分别运行桌面和移动端 Chromium 项目，并写入 `reports/ui_eval_report.json`。
 
-The first screen is a conversational travel agent. The chat collects a live travel brief, creates a task with `POST /api/v1/travel/plans` once the required details are present, subscribes to `GET /api/v1/travel/plans/{task_id}/stream`, falls back to `GET /api/v1/travel/plans/{task_id}` polling if SSE disconnects, and renders the final `TravelPlan`.
+首屏是对话式旅行 Agent。聊天流程会实时收集旅行需求；必填信息齐全后，通过 `POST /api/v1/travel/plans` 创建任务，订阅 `GET /api/v1/travel/plans/{task_id}/stream`，当 SSE 断开时回退到 `GET /api/v1/travel/plans/{task_id}` 轮询，并渲染最终 `TravelPlan`。
 
-The route detail view is productized for mobile scanning: each day renders as a station-style timeline, warnings and fallback messages are grouped with human-readable labels, budget categories are shown as proportional bars, and local refinement actions can feed follow-up requests back into the chat. The progress panel also consumes `node` SSE events so users can see planner node activity before the final plan arrives.
+路线详情页针对移动端快速浏览做了产品化处理：每天以站点式时间线展示，warning 和 fallback 信息按易读标签分组，预算分类使用比例条展示，本地调整动作可以把后续需求回填到聊天中。进度面板也会消费 `node` SSE 事件，让用户在最终计划到达前看到 planner 节点活动。
 
 说明：
 
@@ -281,7 +281,9 @@ route feasibility: check=poi_coordinates score=90 message=some POIs do not have 
 
 `required_keywords` 至少应包含目的地城市，用于校验标题、摘要或路线内容是否命中核心目的地。
 
-当前数据集包含常规多日游、单日游、低预算、高预算、长天数、空兴趣、未知城市、同城游、不同节奏和不同交通方式等 24 条覆盖 case。
+新增、删除或重命名后端 case 时，必须同步更新 `testdata/harness-cases.md`；新增、删除或重命名前端 UI Harness test 时，必须同步更新 `web/e2e/harness-cases.md`。两份文档分别说明 case 覆盖的场景、输入摘要和主要验证点。
+
+当前数据集包含常规多日游、单日游、低预算、高预算、长天数、未知城市、同城游、不同节奏、不同交通方式，以及 Stage 18 的人数、避开内容、必去地点和默认值路径等 29 条覆盖 case。
 
 ## 报告输出
 
@@ -345,4 +347,4 @@ func (p *EinoTravelPlanner) Plan(ctx context.Context, req domain.TravelRequest) 
 * 增加 Eino Graph 节点级耗时统计
 * 增加失败 case 自动保存输入和输出快照
 
-更多说明见 `docs/evaluation-harness.md`。
+更多说明见 `docs/evaluation-harness.md`、`testdata/harness-cases.md` 和 `web/e2e/harness-cases.md`。
