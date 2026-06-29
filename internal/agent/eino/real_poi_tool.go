@@ -98,9 +98,9 @@ type amapPOIItem struct {
 	CityName     string         `json:"cityname"`
 	ADCode       string         `json:"adcode"`
 	ADName       string         `json:"adname"`
-	EntrLocation string         `json:"entr_location"`
-	ExitLocation string         `json:"exit_location"`
-	NaviPOIID    string         `json:"navi_poiid"`
+	EntrLocation any            `json:"entr_location"`
+	ExitLocation any            `json:"exit_location"`
+	NaviPOIID    any            `json:"navi_poiid"`
 	BusinessArea any            `json:"business_area"`
 	Tag          any            `json:"tag"`
 	BizExt       amapPOIBizExt  `json:"biz_ext"`
@@ -113,7 +113,7 @@ type amapPOIBizExt struct {
 }
 
 type amapPOIPhoto struct {
-	Title string `json:"title"`
+	Title any    `json:"title"`
 	URL   string `json:"url"`
 }
 
@@ -124,10 +124,11 @@ func (p amapPOIItem) metadata() domain.POIMetadata {
 	}
 	photos := make([]domain.POIPhoto, 0, len(p.Photos))
 	for _, photo := range p.Photos {
-		if photo.Title == "" && photo.URL == "" {
+		title := normalizeAMapText(photo.Title)
+		if title == "" && photo.URL == "" {
 			continue
 		}
-		photos = append(photos, domain.POIPhoto{Title: photo.Title, URL: photo.URL})
+		photos = append(photos, domain.POIPhoto{Title: title, URL: photo.URL})
 	}
 	rating, _ := parseAMapFloatPtr(p.BizExt.Rating)
 	return domain.POIMetadata{
@@ -146,9 +147,9 @@ func (p amapPOIItem) metadata() domain.POIMetadata {
 		CityName:     p.CityName,
 		ADCode:       p.ADCode,
 		ADName:       p.ADName,
-		EntrLocation: p.EntrLocation,
-		ExitLocation: p.ExitLocation,
-		NaviPOIID:    p.NaviPOIID,
+		EntrLocation: normalizeAMapText(p.EntrLocation),
+		ExitLocation: normalizeAMapText(p.ExitLocation),
+		NaviPOIID:    normalizeAMapText(p.NaviPOIID),
 		BusinessArea: normalizeAMapText(p.BusinessArea),
 		Tag:          normalizeAMapText(p.Tag),
 		Rating:       rating,

@@ -124,7 +124,7 @@ func routePath(mode string) string {
 	}
 }
 
-func routeCost(mode, path, taxiCost, tolls string) domain.CostInfo {
+func routeCost(mode, path string, taxiCost, tolls any) domain.CostInfo {
 	if path == "/direction/walking" || path == "/direction/bicycling" {
 		return domain.NotApplicableCost("per_trip", "amap.route.no_cost")
 	}
@@ -140,7 +140,7 @@ func routeCost(mode, path, taxiCost, tolls string) domain.CostInfo {
 	return domain.UnavailableCost("per_trip", "amap.route.taxi_cost")
 }
 
-func transitCost(cost string) domain.CostInfo {
+func transitCost(cost any) domain.CostInfo {
 	if amount, ok := parseAMapFloat(cost); ok {
 		return domain.AvailableCost(amount, "per_person", "amap.route.transits.cost", true)
 	}
@@ -155,18 +155,18 @@ type amapRouteResponse struct {
 
 type amapRouteBody struct {
 	Paths    []amapRoutePath    `json:"paths"`
-	TaxiCost string             `json:"taxi_cost"`
+	TaxiCost any                `json:"taxi_cost"`
 	Transits []amapTransitRoute `json:"transits"`
 }
 
 type amapRoutePath struct {
 	Distance string `json:"distance"`
 	Duration string `json:"duration"`
-	Tolls    string `json:"tolls"`
+	Tolls    any    `json:"tolls"`
 }
 
 type amapTransitRoute struct {
-	Cost            string `json:"cost"`
+	Cost            any    `json:"cost"`
 	Duration        string `json:"duration"`
 	WalkingDistance string `json:"walking_distance"`
 }
