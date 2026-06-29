@@ -26,6 +26,9 @@
 | 16 | 用户与业务闭环 | [stage-16-user-business-loop.md](./stage-16-user-business-loop.md) |
 | 17 | DeepSeek 真·流式 SSE 透传 | [stage-17-deepseek-true-streaming.md](./stage-17-deepseek-true-streaming.md) |
 | 18 | Travel Brief 确认与可选偏好默认值 | [stage-18-travel-brief-confirmation.md](./stage-18-travel-brief-confirmation.md) |
+| 19 | 真实价格数据与可信预算改造 | [stage-19-real-data-budget.md](./stage-19-real-data-budget.md) |
+| 20 | 业务事件级路线流式生成 | [stage-20-business-event-streaming.md](./stage-20-business-event-streaming.md) |
+| 21 | 账户、首页与旅行计划社区 | [stage-21-auth-home-plan-community.md](./stage-21-auth-home-plan-community.md) |
 
 ## 专项需求
 
@@ -51,6 +54,6 @@
 
 ## 当前活跃阶段
 
-> 当前优先推进：**Stage 18 — Travel Brief 确认与可选偏好默认值**。
-> 详见 [stage-18-travel-brief-confirmation.md](./stage-18-travel-brief-confirmation.md)。
+> 当前优先推进：**Stage 21 — 账户、首页与旅行计划社区**。
+> 详见 [stage-21-auth-home-plan-community.md](./stage-21-auth-home-plan-community.md)。
 

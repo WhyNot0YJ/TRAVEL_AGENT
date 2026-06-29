@@ -11,7 +11,7 @@
 * 消息队列承担异步规划任务解耦、削峰填谷、失败重试和任务恢复。
 * Worker 池承担 Planner 执行隔离，避免 HTTP 进程被慢 LLM / 外部 API 拖垮。
 * 通过超时、重试、熔断、降级、幂等、死信和补偿机制提升系统高可用。
-* 通过 benchmark、观测性、告警和容量规划，让性能优化可度量、可回归、可运营。
+* 通过结构化日志、错误追踪、benchmark、观测性、告警和容量规划，让性能优化可定位、可度量、可回归、可运营。
 
 ## 当前上下文
 
@@ -37,6 +37,7 @@
 * 相同 request hash 的并发请求可能重复触发 planner 执行，需要分布式级幂等与 singleflight。
 * SSE EventBus 当前更适合单进程内事件分发，多实例部署时需要考虑事件恢复和查询兜底。
 * LLM、外部 Tool、数据库、Redis、消息队列都需要统一超时、重试、熔断和降级策略。
+* 当前日志仍分散在 `log.Printf` 调用中，缺少稳定字段、错误分类和跨 HTTP / Worker / Planner / Tool 的统一排障入口。
 * 目前缺少系统级容量指标，例如 QPS、并发任务数、队列积压、缓存命中率、DB 慢查询、worker 饱和度。
 
 ## 后端优化方向总览
@@ -49,6 +50,7 @@
 | P0 | 幂等、去重与分布式锁 | 避免重复规划、重复扣费式外部调用和缓存击穿 |
 | P1 | Worker 池与任务调度 | 控制并发、隔离慢任务、支持优先级和超时取消 |
 | P1 | 熔断、降级与 fallback | 外部依赖异常时保持核心链路可用 |
+| P1 | 结构化日志与错误追踪 | 通过 request id、trace id、task id 快速还原错误链路 |
 | P1 | 可观测性、告警与容量指标 | 能发现、定位和量化高可用问题 |
 | P2 | 数据库性能与归档 | 索引、分页、冷热分层、历史数据治理 |
 | P2 | 多实例部署与故障恢复 | 进程重启、实例宕机、队列重放后任务不丢 |
@@ -69,6 +71,7 @@
 ```text
 HTTP Client
   -> Gin Router / Middleware
+  -> Request Context / Structured Logger
   -> Travel Handler
   -> TravelPlanService
   -> MySQL Task Repository
@@ -78,6 +81,7 @@ HTTP Client
   -> agent.TravelPlanner
   -> Eino / Mock Planner
   -> MySQL Result / RunLog Repository
+  -> Error Trace / Audit Log Repository
   -> Redis Hot Result Cache
   -> SSE Query / Event Recovery
 ```
@@ -89,6 +93,8 @@ HTTP Client
 * SSE 优先消费内存事件；断线、跨实例或事件丢失时通过 MySQL 任务状态和结果查询兜底。
 * Redis 不是权威数据源，权威状态以 MySQL 为准；Redis 失效不应导致任务数据丢失。
 * MQ 不是业务数据库，消息可重放、可重复投递，消费者必须幂等。
+* 日志上下文从 HTTP middleware 创建并注入 `context.Context`，在 service、repository、queue、worker、planner、tool 和 SSE 中延续同一组追踪字段。
+* 错误日志既要写标准输出供容器采集，也要在关键任务失败、重试和死信场景写入 MySQL，保证服务重启后仍可按 `request_id`、`trace_id`、`task_id` 复盘。
 
 ## 数据分层要求
 
@@ -101,12 +107,14 @@ MySQL 作为后端权威持久化层，至少承载：
 * `travel_plan_results`：最终结构化 `TravelPlan` JSON、结果版本、生成耗时。
 * `travel_planner_runs`：每次 planner run 的执行记录，包括 worker id、attempt、started_at、finished_at、duration_ms、fallback 信息。
 * `travel_node_traces`：可选，记录 Eino 节点级耗时、状态和 warning，用于性能归因。
+* `travel_error_logs`：记录关键错误事件，包含 `request_id`、`trace_id`、`task_id`、`run_id`、`component`、`operation`、`error_category`、`error_code`、`retryable`、`attempt`、`message`、`stack_hash`、`created_at`。
 
 实现要求：
 
 * `task_id` 唯一索引。
 * `request_hash` 建唯一或组合唯一约束，支持幂等创建。
 * `status + updated_at` 建索引，支持扫描超时 / 卡住任务。
+* `trace_id + created_at`、`task_id + created_at`、`error_category + created_at` 建索引，支持按链路、任务和错误类型检索。
 * 大 JSON 字段与高频状态字段分表或至少避免在状态轮询路径反复读取大字段。
 * 所有写入必须考虑事务边界：任务创建、请求快照、MQ outbox 记录应保持一致。
 * 数据库连接池配置来自环境变量，不能写死。
@@ -258,9 +266,19 @@ pending -> queued -> running -> succeeded
 ### G8：观测性与告警
 
 * request id / trace id 必须贯穿 HTTP、MySQL、Redis、MQ、Worker、Planner 和 SSE。
-* 结构化日志字段保持稳定：`request_id`、`trace_id`、`task_id`、`request_hash`、`status`、`attempt`、`worker_id`、`duration_ms`、`error_category`。
+* 统一日志入口应封装在独立包中，业务代码只写稳定字段和事件语义，不直接拼接自由格式错误文本。
+* 结构化日志字段保持稳定：`request_id`、`trace_id`、`span_id`、`parent_span_id`、`task_id`、`request_hash`、`status`、`attempt`、`worker_id`、`component`、`operation`、`duration_ms`、`error_category`、`error_code`、`retryable`。
+* 日志事件命名保持有限集合，例如 `http.request`、`task.created`、`task.queued`、`worker.started`、`planner.node.finished`、`tool.call.failed`、`store.query.failed`、`sse.disconnected`，避免随意扩散。
+* 错误分类至少覆盖：`validation`、`rate_limited`、`db`、`redis`、`mq`、`llm`、`external_tool`、`timeout`、`canceled`、`panic`、`serialization`、`unknown`。
+* HTTP middleware 负责生成或接收 `X-Request-ID`，并生成内部 `trace_id`；异步任务、MQ 消息、Worker 执行和 Eino callback 必须继承同一个 `trace_id`。
+* `TaskEvent`、planner trace、run log 和 error log 中的 `request_id` / `trace_id` / `task_id` 必须一致，方便从 SSE 用户问题反查后台执行链路。
 * 必须记录关键业务事件：任务创建、入队、出队、开始执行、成功、失败、重试、死信、取消。
 * 必须记录关键依赖事件：DB error、Redis error、MQ publish / consume error、LLM timeout、Tool fallback。
+* panic recovery 必须记录 `stack_hash` 和有限长度 stack 摘要；标准输出可保留完整 stack，持久化日志只保存可检索摘要，避免大字段膨胀。
+* 外部 API 日志不得记录完整 URL、API Key、Authorization、Cookie、用户敏感原文和未脱敏响应体；响应体只允许在显式 debug 开关下截断采样。
+* 任务失败、重试、死信、panic、依赖熔断打开和 fallback 触发必须写入可持久化错误日志；普通成功访问只写标准输出和指标。
+* 日志级别建议保持 `debug`、`info`、`warn`、`error` 四档，生产默认 `info`，debug 需要环境变量显式打开并限制敏感字段。
+* 提供按 `request_id`、`trace_id`、`task_id`、`error_category` 检索错误链路的内部查询能力，可以先以 repository / CLI / harness report 形式落地，不要求第一阶段暴露公网 API。
 * 告警建议覆盖：队列积压过高、死信增长、任务失败率升高、P95 延迟升高、DB 连接池耗尽、Redis 错误率升高、worker 长时间无消费。
 
 ### G9：安全、配置与运维
@@ -312,6 +330,9 @@ pending -> queued -> running -> succeeded
 * `internal/config/config.go`
 * `internal/server/router.go`
 * `internal/server/middleware.go`
+* `internal/observability/logger.go`
+* `internal/observability/context.go`
+* `internal/observability/errors.go`
 * `internal/travel/service.go`
 * `internal/travel/handler.go`
 * `internal/travel/task.go`
@@ -344,6 +365,7 @@ pending -> queued -> running -> succeeded
 * `internal/travel/retry_policy.go`
 * `internal/travel/dead_letter.go`
 * `internal/travel/circuit_breaker.go`
+* `internal/travel/error_log_store.go`
 * `internal/queue/queue.go`
 * `internal/queue/redis_streams.go`
 * `internal/queue/memory_queue.go`
@@ -361,6 +383,7 @@ pending -> queued -> running -> succeeded
 * `docs/database.md`：说明 MySQL 表结构、索引、Redis key、TTL、MQ topic / stream。
 * `docs/evaluation-harness.md`：如新增性能指标、队列指标或报告字段，必须更新。
 * `docs/performance.md`：记录压测方法、容量目标、基线结果和调优建议。
+* `docs/observability.md`：记录日志字段、事件名、错误分类、脱敏规则、查询方式和告警建议。
 * `README.md`：补充 MySQL、Redis、MQ、worker、benchmark 的运行方式和环境变量。
 
 如新增外部 API 或 provider 配置，必须更新 `docs/external-apis.md`。
@@ -425,6 +448,8 @@ go test ./internal/travel -run EventBus
 * Worker 消费任务具备幂等、超时、panic recovery、重试和死信机制。
 * 外部 LLM / Tool 故障时可熔断、降级或 fallback，不拖垮整体服务。
 * SSE 在任务完成、断线重连、跨实例查询时仍能通过 MySQL 兜底。
+* 任一失败任务都能通过 `request_id`、`trace_id` 或 `task_id` 追查到 HTTP 入口、任务状态流转、Worker attempt、Planner 节点、外部依赖和最终错误分类。
+* 日志和错误表不包含 API Key、数据库密码、Redis 密码、Authorization、Cookie 或用户敏感原文。
 * 关键后端指标可观测：DB、Redis、MQ、Worker、Planner、SSE、fallback。
 * 所有新增配置都有环境变量说明和合理默认值。
 * Harness 不直接依赖 MySQL、Redis、MQ 或 Eino 具体实现。
@@ -436,8 +461,9 @@ go test ./internal/travel -run EventBus
 3. **MQ Outbox PR**：outbox 表、队列接口、producer relay、memory queue 测试实现。
 4. **Worker Pool PR**：consumer、并发控制、任务状态机、重试和死信。
 5. **熔断降级 PR**：LLM / Tool / Redis / MQ timeout、retry、circuit breaker。
-6. **多实例与 SSE 兜底 PR**：EventBus 清理、状态查询恢复、completed event。
-7. **容量与观测 PR**：benchmark、性能报告、指标字段、告警建议和 docs。
+6. **日志与错误追踪 PR**：结构化日志包、错误分类、trace context、错误日志持久化、脱敏规则和查询入口。
+7. **多实例与 SSE 兜底 PR**：EventBus 清理、状态查询恢复、completed event。
+8. **容量与观测 PR**：benchmark、性能报告、指标字段、告警建议和 docs。
 
 ## 最终回复要求
 
