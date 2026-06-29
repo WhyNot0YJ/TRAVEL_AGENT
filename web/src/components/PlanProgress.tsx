@@ -1,4 +1,4 @@
-import type { TaskEvent } from "../api/types";
+import type { POIInfo, RouteInfo, TaskEvent, TravelBudget, TravelDay, WeatherInfo } from "../api/types";
 
 interface PlanProgressProps {
   taskId: string | null;
@@ -8,6 +8,11 @@ interface PlanProgressProps {
   polling: boolean;
   error: string;
   creating: boolean;
+  pois?: POIInfo[];
+  weather?: WeatherInfo[];
+  routes?: RouteInfo[];
+  budget?: TravelBudget;
+  draftDays?: TravelDay[];
 }
 
 const stepLabels = ["提交需求", "连接进度", "生成路线", "完成"];
@@ -48,6 +53,24 @@ function eventTitle(event: TaskEvent): string {
   if (event.type === "assistant_delta" || event.type === "assistant_done") {
     return "助手输出";
   }
+  if (event.type === "brief_delta") {
+    return "需求确认";
+  }
+  if (event.type === "poi_batch") {
+    return "候选地点";
+  }
+  if (event.type === "weather_delta") {
+    return "天气";
+  }
+  if (event.type === "route_delta") {
+    return "路线";
+  }
+  if (event.type === "budget_delta") {
+    return "预算";
+  }
+  if (event.type === "day_delta") {
+    return "路线草稿";
+  }
   if (event.type === "progress") {
     return "进度";
   }
@@ -85,6 +108,7 @@ function eventKey(event: TaskEvent, index: number): string {
     event.created_at ?? event.time ?? "",
     event.node_name ?? "",
     event.node_status ?? "",
+    event.sequence ?? "",
     event.message ?? "",
     event.duration_ms ?? "",
     index,
@@ -92,7 +116,40 @@ function eventKey(event: TaskEvent, index: number): string {
   return stableParts.join("|");
 }
 
-export default function PlanProgress({ taskId, status, events, connected, polling, error, creating }: PlanProgressProps) {
+function money(value: number): string {
+  return `¥${Math.round(value).toLocaleString("zh-CN")}`;
+}
+
+function stageSummary({
+  pois = [],
+  weather = [],
+  routes = [],
+  budget,
+  draftDays = [],
+}: Pick<PlanProgressProps, "pois" | "weather" | "routes" | "budget" | "draftDays">) {
+  return [
+    { label: "地点", value: pois.length > 0 ? `${pois.length} 个` : "等待中" },
+    { label: "天气", value: weather.length > 0 ? `${weather.length} 天` : "等待中" },
+    { label: "路线", value: routes.length > 0 ? `${routes.length} 段` : "等待中" },
+    { label: "预算", value: budget ? money(budget.known_total ?? budget.total) : "等待中" },
+    { label: "草稿", value: draftDays.length > 0 ? `${draftDays.length} 天` : "等待中" },
+  ];
+}
+
+export default function PlanProgress({
+  taskId,
+  status,
+  events,
+  connected,
+  polling,
+  error,
+  creating,
+  pois,
+  weather,
+  routes,
+  budget,
+  draftDays,
+}: PlanProgressProps) {
   if (!taskId && !creating) {
     return (
       <section className="state-panel" data-testid="progress-panel">
@@ -117,6 +174,14 @@ export default function PlanProgress({ taskId, status, events, connected, pollin
           <div className={index <= activeIndex ? "active" : ""} key={label}>
             <span>{index + 1}</span>
             <p>{label}</p>
+          </div>
+        ))}
+      </div>
+      <div className="stage-strip" aria-label="阶段数据">
+        {stageSummary({ pois, weather, routes, budget, draftDays }).map((item) => (
+          <div key={item.label}>
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
           </div>
         ))}
       </div>

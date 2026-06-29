@@ -3,6 +3,8 @@ package agent
 import (
 	"context"
 	"time"
+
+	"travel-agent/internal/domain"
 )
 
 type PlannerMetadata struct {
@@ -37,6 +39,23 @@ type PlannerEventReporter interface {
 	ReportPlannerEvent(ctx context.Context, event PlannerTraceEvent)
 }
 
+type PlannerBusinessEvent struct {
+	Type     string
+	Message  string
+	Brief    *domain.TravelRequest
+	POIs     []domain.POIInfo
+	Weather  []domain.WeatherInfo
+	Routes   []domain.RouteInfo
+	Budget   *domain.TravelBudget
+	Day      *domain.TravelDay
+	NodeName string
+	Draft    bool
+}
+
+type PlannerBusinessEventReporter interface {
+	ReportPlannerBusinessEvent(ctx context.Context, event PlannerBusinessEvent)
+}
+
 // LLMDeltaReporter receives token-level streaming deltas from the LLM.
 // Implementations are expected to forward deltas to the user-visible SSE channel.
 // SawAnyDelta lets non-streaming code paths know whether streaming has already
@@ -48,6 +67,7 @@ type LLMDeltaReporter interface {
 }
 
 type plannerEventReporterKey struct{}
+type plannerBusinessEventReporterKey struct{}
 type llmDeltaReporterKey struct{}
 type plannerOptionsKey struct{}
 
@@ -78,6 +98,21 @@ func ReportPlannerEvent(ctx context.Context, event PlannerTraceEvent) {
 		return
 	}
 	reporter.ReportPlannerEvent(ctx, event)
+}
+
+func WithPlannerBusinessEventReporter(ctx context.Context, reporter PlannerBusinessEventReporter) context.Context {
+	if reporter == nil {
+		return ctx
+	}
+	return context.WithValue(ctx, plannerBusinessEventReporterKey{}, reporter)
+}
+
+func ReportPlannerBusinessEvent(ctx context.Context, event PlannerBusinessEvent) {
+	reporter, ok := ctx.Value(plannerBusinessEventReporterKey{}).(PlannerBusinessEventReporter)
+	if !ok || reporter == nil {
+		return
+	}
+	reporter.ReportPlannerBusinessEvent(ctx, event)
 }
 
 func WithLLMDeltaReporter(ctx context.Context, reporter LLMDeltaReporter) context.Context {

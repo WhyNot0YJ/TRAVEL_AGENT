@@ -38,16 +38,16 @@ func (c *openAICompatibleClient) streamChatReply(ctx context.Context, prior *age
 
 func buildChatReplyMessages(prior *agent.TravelInfoResult, userMessage string) []chatMessage {
 	system := strings.Join([]string{
-		"You are a Chinese travel requirement collection assistant.",
-		"You will be given the structured fields already extracted from the user's message and the missing required fields.",
-		"Reply to the user in concise Chinese: confirm what you have, ask only for missing required fields.",
-		"If every required field is present, tell the user the information is ready for itinerary generation.",
-		"Do not output JSON or markdown. One short paragraph.",
-		"Prompt version: " + chatReplyPromptVersion + ".",
+		"你是中文旅游需求收集助手。",
+		"你会收到已经从用户消息中抽取出的结构化字段，以及仍然缺失的必填字段。",
+		"请用简洁中文回复用户：确认已经收集到的信息，只追问缺失的必填字段。",
+		"如果必填字段都已具备，请告诉用户信息已齐，可以生成行程。",
+		"不要输出 JSON 或 Markdown，只输出一个简短段落。",
+		"提示词版本：" + chatReplyPromptVersion + "。",
 	}, " ")
 	var sb strings.Builder
 	if prior != nil {
-		sb.WriteString("Already collected: ")
+		sb.WriteString("已收集信息：")
 		if prior.DepartureCity != "" {
 			sb.WriteString("出发地=" + prior.DepartureCity + "; ")
 		}
@@ -85,13 +85,13 @@ func buildChatReplyMessages(prior *agent.TravelInfoResult, userMessage string) [
 			sb.WriteString("避开=" + strings.Join(prior.Avoid, "、") + "; ")
 		}
 		if len(prior.Missing) > 0 {
-			sb.WriteString("Missing=" + strings.Join(prior.Missing, "、") + "; ")
+			sb.WriteString("缺失字段=" + strings.Join(prior.Missing, "、") + "; ")
 		}
 		if prior.IsComplete {
-			sb.WriteString("IsComplete=true; ")
+			sb.WriteString("信息是否完整=true; ")
 		}
 	}
-	sb.WriteString("\nUser said: " + userMessage)
+	sb.WriteString("\n用户本轮消息：" + userMessage)
 	return []chatMessage{
 		{Role: "system", Content: system},
 		{Role: "user", Content: sb.String()},

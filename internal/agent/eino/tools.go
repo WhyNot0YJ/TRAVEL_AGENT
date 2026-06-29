@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 
 	"travel-agent/internal/domain"
 )
@@ -29,6 +30,7 @@ func (t MockPOITool) Run(ctx context.Context, input POIToolInput) ([]MockPOI, er
 			Address:                  fmt.Sprintf("%s POI %d", input.City, i+1),
 			SuggestedDurationMinutes: 90 + (i%3)*30,
 			EstimatedCost:            float64(30 + (i%4)*20),
+			Cost:                     domain.UnavailableCost("per_person", "mock.poi"),
 		})
 	}
 	return pois, nil
@@ -86,6 +88,7 @@ func (t MockRouteTool) Run(ctx context.Context, input RouteToolInput) ([]MockRou
 			DurationMinutes: 15 + (i%4)*5,
 			DistanceMeters:  1200 + i*450,
 			Mode:            mode,
+			Cost:            domain.UnavailableCost("per_trip", "mock.route"),
 		})
 	}
 	return routes, nil
@@ -94,41 +97,174 @@ func (t MockRouteTool) Run(ctx context.Context, input RouteToolInput) ([]MockRou
 // MockBudgetTool estimates a deterministic budget without external pricing.
 type MockBudgetTool struct{}
 
-// Run executes mock budget estimation and keeps total within the requested limit.
-func (t MockBudgetTool) Run(ctx context.Context, input BudgetToolInput) (domainBudget, error) {
+// Run summarizes only known real costs and marks unavailable budget lines.
+func (t MockBudgetTool) Run(ctx context.Context, input BudgetToolInput) (domain.TravelBudget, error) {
 	if err := ctx.Err(); err != nil {
-		return domainBudget{}, err
+		return domain.TravelBudget{}, err
 	}
 	if input.Request.Budget <= 0 {
-		return domainBudget{}, fmt.Errorf("budget tool request budget must be positive")
+		return domain.TravelBudget{}, fmt.Errorf("budget tool request budget must be positive")
 	}
 	if input.Days <= 0 {
-		return domainBudget{}, fmt.Errorf("budget tool days must be positive")
+		return domain.TravelBudget{}, fmt.Errorf("budget tool days must be positive")
 	}
-	totalBudget := input.Request.Budget
-	if domain.IsBudgetPerPerson(input.Request.BudgetType) && input.Request.Travelers > 0 {
-		totalBudget *= float64(input.Request.Travelers)
+
+	travelers := input.Request.Travelers
+	if travelers <= 0 {
+		travelers = 1
 	}
-	total := roundMoney(totalBudget * 0.92)
-	transport := roundMoney(total * 0.24)
-	food := roundMoney(total * 0.26)
-	hotel := roundMoney(total * 0.30)
-	ticket := roundMoney(math.Max(total-transport-food-hotel, 0))
-	return domainBudget{
-		Transport: transport,
-		Food:      food,
-		Hotel:     hotel,
-		Ticket:    ticket,
-		Total:     total,
+	poiCosts := map[string]domain.CostInfo{}
+	for _, poi := range input.POIs {
+		poiCosts[poi.Name] = poi.Cost
+	}
+
+	var food, ticket, transport float64
+	foodKnown, ticketKnown, transportKnown := false, false, false
+	for _, day := range input.Itinerary {
+		for _, item := range day.Items {
+			cost := item.Cost
+			if cost.Status == "" {
+				cost = poiCosts[item.Name]
+			}
+			if cost.Status != domain.CostAvailable || cost.Amount == nil || !cost.Included {
+				continue
+			}
+			amount := budgetAmount(cost, travelers)
+			switch {
+			case isFoodCategory(item.Type):
+				food += amount
+				foodKnown = true
+			case isTicketCategory(item.Type):
+				ticket += amount
+				ticketKnown = true
+			}
+		}
+	}
+
+	for _, route := range input.Routes {
+		if route.Cost.Status != domain.CostAvailable || route.Cost.Amount == nil || !route.Cost.Included {
+			continue
+		}
+		transport += budgetAmount(route.Cost, travelers)
+		transportKnown = true
+	}
+
+	food = roundMoney(food)
+	ticket = roundMoney(ticket)
+	transport = roundMoney(transport)
+	hotel := 0.0
+	knownTotal := roundMoney(food + ticket + transport + hotel)
+
+	items := []domain.BudgetLine{
+		budgetLine("food", "餐饮", food, foodKnown, "amap.poi.biz_ext.cost"),
+		budgetLine("transport", "市内交通", transport, transportKnown, "amap.route.cost"),
+		budgetLine("hotel", "住宿", hotel, false, ""),
+		budgetLine("ticket", "门票", ticket, ticketKnown, "amap.poi.biz_ext.cost"),
+	}
+	missing := missingBudgetKeys(items)
+	if needsIntercityTransport(input.Request) {
+		items = append(items, domain.BudgetLine{
+			Key:      "intercity_transport",
+			Label:    "往返大交通",
+			Amount:   nil,
+			Currency: "CNY",
+			Status:   domain.CostUnavailable,
+			Display:  "暂无信息",
+			Included: false,
+		})
+		missing = append(missing, "intercity_transport")
+	}
+
+	return domain.TravelBudget{
+		Transport:  transport,
+		Food:       food,
+		Hotel:      hotel,
+		Ticket:     ticket,
+		Total:      knownTotal,
+		KnownTotal: knownTotal,
+		Complete:   len(missing) == 0,
+		Currency:   "CNY",
+		Items:      items,
+		Missing:    missing,
 	}, nil
 }
 
-type domainBudget struct {
-	Transport float64 `json:"transport"`
-	Food      float64 `json:"food"`
-	Hotel     float64 `json:"hotel"`
-	Ticket    float64 `json:"ticket"`
-	Total     float64 `json:"total"`
+func budgetAmount(cost domain.CostInfo, travelers int) float64 {
+	if cost.Amount == nil {
+		return 0
+	}
+	amount := *cost.Amount
+	if cost.Unit == "per_person" && travelers > 0 {
+		amount *= float64(travelers)
+	}
+	return amount
+}
+
+func budgetLine(key, label string, amount float64, known bool, source string) domain.BudgetLine {
+	if !known {
+		return domain.BudgetLine{
+			Key:      key,
+			Label:    label,
+			Amount:   nil,
+			Currency: "CNY",
+			Status:   domain.CostUnavailable,
+			Display:  "暂无信息",
+			Included: false,
+		}
+	}
+	value := amount
+	return domain.BudgetLine{
+		Key:      key,
+		Label:    label,
+		Amount:   &value,
+		Currency: "CNY",
+		Status:   domain.CostAvailable,
+		Source:   source,
+		Included: true,
+	}
+}
+
+func missingBudgetKeys(items []domain.BudgetLine) []string {
+	missing := []string{}
+	for _, item := range items {
+		if item.Status == domain.CostUnavailable {
+			missing = append(missing, item.Key)
+		}
+	}
+	return missing
+}
+
+func isFoodCategory(category string) bool {
+	text := strings.ToLower(category)
+	for _, token := range []string{"food", "餐饮", "中餐", "火锅", "料理", "餐厅", "肯德基", "咖啡", "茶"} {
+		if strings.Contains(text, strings.ToLower(token)) {
+			return true
+		}
+	}
+	return false
+}
+
+func isTicketCategory(category string) bool {
+	text := strings.ToLower(category)
+	for _, token := range []string{"sightseeing", "landmark", "culture", "nature", "景点", "风景", "自然", "文化", "公园", "湿地", "博物馆", "寺"} {
+		if strings.Contains(text, strings.ToLower(token)) {
+			return true
+		}
+	}
+	return false
+}
+
+func needsIntercityTransport(req domain.TravelRequest) bool {
+	if req.DepartureCity == "" || req.DestinationCity == "" || req.DepartureCity == req.DestinationCity {
+		return false
+	}
+	text := strings.Join(append([]string{req.TransportMode}, req.BudgetIncludes...), " ")
+	for _, token := range []string{"高铁", "火车", "飞机", "往返", "大交通", "跨城"} {
+		if strings.Contains(text, token) {
+			return true
+		}
+	}
+	return false
 }
 
 func cityPOINames(city string) []string {

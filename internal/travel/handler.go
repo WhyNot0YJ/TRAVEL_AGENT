@@ -126,27 +126,31 @@ func (h *Handler) StreamPlan(c *gin.Context) {
 	c.Header("X-Accel-Buffering", "no")
 
 	if current.Status == TaskSucceeded {
-		c.SSEvent(string(EventDone), TaskEvent{
-			Type:      EventDone,
-			RequestID: c.Writer.Header().Get("X-Request-ID"),
-			TaskID:    current.TaskID,
-			Status:    current.Status,
-			Message:   "task already finished",
-			Plan:      current.Plan,
-			CreatedAt: time.Now().UTC(),
-		})
+		if !h.replayHistory(c, current.TaskID) {
+			c.SSEvent(string(EventDone), TaskEvent{
+				Type:      EventDone,
+				RequestID: c.Writer.Header().Get("X-Request-ID"),
+				TaskID:    current.TaskID,
+				Status:    current.Status,
+				Message:   "task already finished",
+				Plan:      current.Plan,
+				CreatedAt: time.Now().UTC(),
+			})
+		}
 		c.Writer.Flush()
 		return
 	}
 	if current.Status == TaskFailed {
-		c.SSEvent(string(EventError), TaskEvent{
-			Type:      EventError,
-			RequestID: c.Writer.Header().Get("X-Request-ID"),
-			TaskID:    current.TaskID,
-			Status:    current.Status,
-			Message:   current.Error,
-			CreatedAt: time.Now().UTC(),
-		})
+		if !h.replayHistory(c, current.TaskID) {
+			c.SSEvent(string(EventError), TaskEvent{
+				Type:      EventError,
+				RequestID: c.Writer.Header().Get("X-Request-ID"),
+				TaskID:    current.TaskID,
+				Status:    current.Status,
+				Message:   current.Error,
+				CreatedAt: time.Now().UTC(),
+			})
+		}
 		c.Writer.Flush()
 		return
 	}
@@ -184,6 +188,21 @@ func (h *Handler) StreamPlan(c *gin.Context) {
 			}
 		}
 	}
+}
+
+func (h *Handler) replayHistory(c *gin.Context, taskID string) bool {
+	history := h.service.EventHistory(taskID)
+	if len(history) == 0 {
+		return false
+	}
+	terminal := false
+	for _, event := range history {
+		c.SSEvent(string(event.Type), event)
+		if event.Type == EventDone || event.Type == EventError {
+			terminal = true
+		}
+	}
+	return terminal
 }
 
 func respondError(c *gin.Context, status int, code, message string) {

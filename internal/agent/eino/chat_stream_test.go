@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -149,10 +150,48 @@ func TestStreamingTravelPlanReportsSummaryDeltas(t *testing.T) {
 	// Stream a strict tool call where the "summary" field is split across
 	// frames. Verify the reporter receives summary characters as they arrive
 	// and the final structured plan parses correctly.
+	rawPlan := mustMarshal(t, domain.TravelPlan{
+		Title:   "杭州",
+		Summary: "从上海出发的3天行程",
+		Days: []domain.TravelDay{{
+			Day:   1,
+			Theme: "美食",
+			Items: []domain.TravelItem{{
+				Time:            "09:30",
+				Type:            "餐厅",
+				Name:            "店",
+				Address:         "a",
+				Reason:          "r",
+				EstimatedCost:   1,
+				Cost:            domain.AvailableCost(1, "per_person", "amap.poi.biz_ext.cost", true),
+				DurationMinutes: 1,
+			}},
+		}},
+		Budget: domain.TravelBudget{
+			Transport:  1,
+			Food:       1,
+			Hotel:      1,
+			Ticket:     1,
+			Total:      4,
+			KnownTotal: 4,
+			Complete:   true,
+			Currency:   "CNY",
+			Items: []domain.BudgetLine{
+				availableBudgetLineForTest("transport", "市内交通", 1),
+				availableBudgetLineForTest("food", "餐饮", 1),
+				availableBudgetLineForTest("hotel", "住宿", 1),
+				availableBudgetLineForTest("ticket", "门票", 1),
+			},
+			Missing: []string{},
+		},
+		Warnings: []string{},
+	})
+	cut1 := strings.Index(rawPlan, "从上") + len("从上")
+	cut2 := strings.Index(rawPlan, "3天行程")
 	frames := []string{
-		`{"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"id":"call_1","type":"function","function":{"name":"submit_travel_plan","arguments":"{\"title\":\"杭州\",\"summary\":\"从上"}}]}}]}`,
-		`{"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"海出发的"}}]}}]}`,
-		`{"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"3天行程\",\"days\":[{\"day\":1,\"theme\":\"美食\",\"items\":[{\"time\":\"09:30\",\"type\":\"餐厅\",\"name\":\"店\",\"address\":\"a\",\"reason\":\"r\",\"estimated_cost\":1,\"duration_minutes\":1}]}],\"budget\":{\"transport\":1,\"food\":1,\"hotel\":1,\"ticket\":1,\"total\":4},\"warnings\":[]}"}}]},"finish_reason":"tool_calls"}]}`,
+		streamToolArgsFrame(rawPlan[:cut1], false, true),
+		streamToolArgsFrame(rawPlan[cut1:cut2], false, false),
+		streamToolArgsFrame(rawPlan[cut2:], true, false),
 	}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "text/event-stream")
@@ -211,4 +250,16 @@ func TestStreamingTravelPlanReportsSummaryDeltas(t *testing.T) {
 	if rep.full != "从上海出发的3天行程" {
 		t.Fatalf("ReportLLMDone payload mismatch: %q", rep.full)
 	}
+}
+
+func streamToolArgsFrame(args string, finish, includeName bool) string {
+	name := ""
+	if includeName {
+		name = `"id":"call_1","type":"function",`
+	}
+	finishReason := ""
+	if finish {
+		finishReason = `,"finish_reason":"tool_calls"`
+	}
+	return `{"choices":[{"index":0,"delta":{"tool_calls":[{"index":0,` + name + `"function":{"name":"submit_travel_plan","arguments":` + strconv.Quote(args) + `}}]}` + finishReason + `}]}`
 }

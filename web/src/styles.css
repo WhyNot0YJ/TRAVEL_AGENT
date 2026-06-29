@@ -532,6 +532,15 @@ textarea:focus-visible {
   background: #0f766e;
 }
 
+.answer-kicker.draft {
+  background: #fff7ed;
+  color: #b45309;
+}
+
+.answer-kicker.draft::before {
+  background: #b45309;
+}
+
 .state-panel {
   min-height: 50px;
 }
@@ -650,6 +659,38 @@ textarea:focus-visible {
 .event-list {
   display: grid;
   gap: 6px;
+}
+
+.stage-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  margin: 8px 0;
+  border: 1px solid rgb(17 24 39 / 8%);
+  border-radius: 8px;
+  background: rgb(17 24 39 / 8%);
+}
+
+.stage-strip div {
+  min-width: 0;
+  background: #ffffff;
+  padding: 8px;
+}
+
+.stage-strip span {
+  display: block;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.stage-strip strong {
+  display: block;
+  margin-top: 2px;
+  color: #0f172a;
+  font-size: 13px;
+  overflow-wrap: anywhere;
 }
 
 .event-item {
@@ -778,6 +819,11 @@ textarea:focus-visible {
 .budget-row strong {
   text-align: right;
   color: #0f172a;
+}
+
+.budget-row .muted-cost {
+  color: #64748b;
+  font-weight: 720;
 }
 
 .warnings {
@@ -1008,6 +1054,10 @@ textarea:focus-visible {
   .timeline-item,
   .warnings article {
     grid-template-columns: 1fr;
+  }
+
+  .stage-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .time-mark {

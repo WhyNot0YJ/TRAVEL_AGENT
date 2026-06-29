@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"travel-agent/internal/agent"
 	"travel-agent/internal/domain"
 )
 
@@ -54,6 +55,12 @@ func parseTravelRequestNode(ctx context.Context, req domain.TravelRequest) (Trav
 		Warnings:              []string{},
 		Trace:                 []TraceEvent{},
 	}
+	agent.ReportPlannerBusinessEvent(ctx, agent.PlannerBusinessEvent{
+		Type:     "brief_delta",
+		Message:  "已理解旅行需求",
+		Brief:    &state.Request,
+		NodeName: "ParseTravelRequestNode",
+	})
 	return appendTrace(ctx, state, "ParseTravelRequestNode", "request normalized", started, true), nil
 }
 
@@ -68,12 +75,24 @@ func searchPOIsToolNode(tool POITool) func(context.Context, TravelPlanningState)
 			if isFallbackError(err) && len(pois) > 0 {
 				state.Warnings = append(state.Warnings, err.Error())
 				state.POIs = pois
+				agent.ReportPlannerBusinessEvent(ctx, agent.PlannerBusinessEvent{
+					Type:     "poi_batch",
+					Message:  fmt.Sprintf("已找到 %d 个候选地点（备用数据）", len(pois)),
+					POIs:     pois,
+					NodeName: "SearchPOIsToolNode",
+				})
 				return appendTrace(ctx, state, "SearchPOIsToolNode", fmt.Sprintf("loaded %d fallback pois", len(pois)), started, true), nil
 			}
 			state = appendTrace(ctx, state, "SearchPOIsToolNode", err.Error(), started, false)
 			return state, err
 		}
 		state.POIs = pois
+		agent.ReportPlannerBusinessEvent(ctx, agent.PlannerBusinessEvent{
+			Type:     "poi_batch",
+			Message:  fmt.Sprintf("已找到 %d 个候选地点", len(pois)),
+			POIs:     pois,
+			NodeName: "SearchPOIsToolNode",
+		})
 		return appendTrace(ctx, state, "SearchPOIsToolNode", fmt.Sprintf("loaded %d pois", len(pois)), started, true), nil
 	}
 }
@@ -89,6 +108,12 @@ func getWeatherToolNode(tool WeatherTool) func(context.Context, TravelPlanningSt
 			if isFallbackError(err) && len(weather) > 0 {
 				state.Warnings = append(state.Warnings, err.Error())
 				state.Weather = weather
+				agent.ReportPlannerBusinessEvent(ctx, agent.PlannerBusinessEvent{
+					Type:     "weather_delta",
+					Message:  fmt.Sprintf("已获取 %d 天天气（备用数据）", len(weather)),
+					Weather:  weather,
+					NodeName: "GetWeatherToolNode",
+				})
 				return appendTrace(ctx, state, "GetWeatherToolNode", fmt.Sprintf("loaded %d fallback weather records", len(weather)), started, true), nil
 			}
 			state = appendTrace(ctx, state, "GetWeatherToolNode", err.Error(), started, false)
@@ -100,6 +125,12 @@ func getWeatherToolNode(tool WeatherTool) func(context.Context, TravelPlanningSt
 				state.Warnings = append(state.Warnings, fmt.Sprintf("day %d weather is rainy; keep indoor backup options", item.Day))
 			}
 		}
+		agent.ReportPlannerBusinessEvent(ctx, agent.PlannerBusinessEvent{
+			Type:     "weather_delta",
+			Message:  fmt.Sprintf("已获取 %d 天天气", len(weather)),
+			Weather:  weather,
+			NodeName: "GetWeatherToolNode",
+		})
 		return appendTrace(ctx, state, "GetWeatherToolNode", fmt.Sprintf("loaded %d weather records", len(weather)), started, true), nil
 	}
 }
@@ -115,12 +146,24 @@ func computeRouteToolNode(tool RouteTool) func(context.Context, TravelPlanningSt
 			if isFallbackError(err) && len(routes) > 0 {
 				state.Warnings = append(state.Warnings, err.Error())
 				state.Routes = routes
+				agent.ReportPlannerBusinessEvent(ctx, agent.PlannerBusinessEvent{
+					Type:     "route_delta",
+					Message:  fmt.Sprintf("已计算 %d 段路线（备用数据）", len(routes)),
+					Routes:   routes,
+					NodeName: "ComputeRouteToolNode",
+				})
 				return appendTrace(ctx, state, "ComputeRouteToolNode", fmt.Sprintf("computed %d fallback route segments", len(routes)), started, true), nil
 			}
 			state = appendTrace(ctx, state, "ComputeRouteToolNode", err.Error(), started, false)
 			return state, err
 		}
 		state.Routes = routes
+		agent.ReportPlannerBusinessEvent(ctx, agent.PlannerBusinessEvent{
+			Type:     "route_delta",
+			Message:  fmt.Sprintf("已计算 %d 段路线", len(routes)),
+			Routes:   routes,
+			NodeName: "ComputeRouteToolNode",
+		})
 		return appendTrace(ctx, state, "ComputeRouteToolNode", fmt.Sprintf("computed %d route segments", len(routes)), started, true), nil
 	}
 }
@@ -129,22 +172,23 @@ func estimateBudgetToolNode(tool BudgetTool) func(context.Context, TravelPlannin
 	return func(ctx context.Context, state TravelPlanningState) (TravelPlanningState, error) {
 		started := time.Now()
 		budget, err := tool.Run(ctx, BudgetToolInput{
-			Request: state.Request,
-			Days:    state.NormalizedDays,
-			POIs:    state.POIs,
-			Routes:  state.Routes,
+			Request:   state.Request,
+			Days:      state.NormalizedDays,
+			POIs:      state.POIs,
+			Routes:    state.Routes,
+			Itinerary: state.Itinerary,
 		})
 		if err != nil {
 			state = appendTrace(ctx, state, "EstimateBudgetToolNode", err.Error(), started, false)
 			return state, err
 		}
-		state.Budget = domain.TravelBudget{
-			Transport: budget.Transport,
-			Food:      budget.Food,
-			Hotel:     budget.Hotel,
-			Ticket:    budget.Ticket,
-			Total:     budget.Total,
-		}
+		state.Budget = budget
+		agent.ReportPlannerBusinessEvent(ctx, agent.PlannerBusinessEvent{
+			Type:     "budget_delta",
+			Message:  "已核算真实可得费用",
+			Budget:   &state.Budget,
+			NodeName: "EstimateBudgetToolNode",
+		})
 		return appendTrace(ctx, state, "EstimateBudgetToolNode", "budget estimated", started, true), nil
 	}
 }
@@ -182,7 +226,9 @@ func optimizeItineraryNode(ctx context.Context, state TravelPlanningState) (Trav
 				Address:         poi.Address,
 				Reason:          itineraryReason(state, poi),
 				EstimatedCost:   poi.EstimatedCost,
+				Cost:            poi.Cost,
 				DurationMinutes: poi.SuggestedDurationMinutes,
+				POI:             poi.Metadata,
 			})
 		}
 		days = append(days, domain.TravelDay{
@@ -192,6 +238,16 @@ func optimizeItineraryNode(ctx context.Context, state TravelPlanningState) (Trav
 		})
 	}
 	state.Itinerary = days
+	for i := range state.Itinerary {
+		day := state.Itinerary[i]
+		agent.ReportPlannerBusinessEvent(ctx, agent.PlannerBusinessEvent{
+			Type:     "day_delta",
+			Message:  fmt.Sprintf("第 %d 天草稿已生成", day.Day),
+			Day:      &day,
+			NodeName: "OptimizeItineraryNode",
+			Draft:    true,
+		})
+	}
 	return appendTrace(ctx, state, "OptimizeItineraryNode", fmt.Sprintf("built %d itinerary days", len(days)), started, true), nil
 }
 
@@ -262,8 +318,8 @@ func validateRouteFeasibility(state TravelPlanningState) RouteValidationResult {
 	addCheck("weather_backup", !rainConflict, "rainy days should include at least one indoor-friendly option", 10)
 
 	sum := state.Budget.Transport + state.Budget.Food + state.Budget.Hotel + state.Budget.Ticket
-	budgetOK := state.Budget.Total > 0 && sum >= state.Budget.Total*0.85 && sum <= state.Budget.Total*1.15
-	addCheck("budget_breakdown", budgetOK, fmt.Sprintf("budget components total %.2f vs total %.2f", sum, state.Budget.Total), 10)
+	budgetOK := state.Budget.KnownTotal >= 0 && roundMoney(sum) == roundMoney(state.Budget.KnownTotal)
+	addCheck("budget_breakdown", budgetOK, fmt.Sprintf("known budget components total %.2f vs known_total %.2f", sum, state.Budget.KnownTotal), 10)
 
 	duplicate := false
 	for _, day := range state.Itinerary {
@@ -391,8 +447,11 @@ func validatePlanNode(ctx context.Context, plan *domain.TravelPlan) (*domain.Tra
 	if len(plan.Days) == 0 {
 		return nil, fmt.Errorf("plan days is empty")
 	}
-	if plan.Budget.Total < 0 {
+	if plan.Budget.Total < 0 || plan.Budget.KnownTotal < 0 {
 		return nil, fmt.Errorf("plan budget total is negative")
+	}
+	if plan.Budget.Currency == "" {
+		return nil, fmt.Errorf("plan budget currency is empty")
 	}
 	for i, day := range plan.Days {
 		expected := i + 1
@@ -408,6 +467,9 @@ func validatePlanNode(ctx context.Context, plan *domain.TravelPlan) (*domain.Tra
 			}
 			if item.EstimatedCost < 0 || item.DurationMinutes < 0 {
 				return nil, fmt.Errorf("day %d item %d has illegal numeric fields", day.Day, idx)
+			}
+			if err := validateCostInfo(item.Cost); err != nil {
+				return nil, fmt.Errorf("day %d item %d has invalid cost: %w", day.Day, idx, err)
 			}
 		}
 	}

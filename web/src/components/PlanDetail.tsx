@@ -1,8 +1,9 @@
-import type { TravelPlan } from "../api/types";
+import type { BudgetLine, CostInfo, TravelPlan } from "../api/types";
 
 interface PlanDetailProps {
   plan?: TravelPlan;
   status?: string;
+  draft?: boolean;
   onRefine?: (text: string) => void;
 }
 
@@ -10,13 +11,51 @@ function money(value: number): string {
   return `¥${Math.round(value).toLocaleString("zh-CN")}`;
 }
 
-function budgetItems(plan: TravelPlan) {
+function budgetTotal(plan: TravelPlan): number {
+  return plan.budget.known_total ?? plan.budget.total;
+}
+
+function budgetItems(plan: TravelPlan): BudgetLine[] {
+  if (plan.budget.items && plan.budget.items.length > 0) {
+    return plan.budget.items;
+  }
   return [
     { label: "交通", value: plan.budget.transport },
     { label: "餐饮", value: plan.budget.food },
     { label: "住宿", value: plan.budget.hotel },
     { label: "门票", value: plan.budget.ticket },
-  ];
+  ].map((item) => ({
+    key: item.label,
+    label: item.label,
+    amount: item.value,
+    currency: "CNY",
+    status: "available",
+    included: true,
+  }));
+}
+
+function costText(cost?: CostInfo, fallback?: number): string {
+  if (!cost) {
+    return typeof fallback === "number" ? money(fallback) : "暂无信息";
+  }
+  if (cost.status === "available" && typeof cost.amount === "number") {
+    const suffix = cost.unit === "per_person" ? "/人" : "";
+    return `${money(cost.amount)}${suffix}`;
+  }
+  if (cost.status === "not_applicable") {
+    return cost.display || "无需费用";
+  }
+  return cost.display || "暂无信息";
+}
+
+function budgetAmountText(item: BudgetLine): string {
+  if (item.status === "available" && typeof item.amount === "number") {
+    return money(item.amount);
+  }
+  if (item.status === "not_applicable") {
+    return item.display || "无需费用";
+  }
+  return item.display || "暂无信息";
 }
 
 function warningLabel(warning: string): string {
@@ -98,7 +137,7 @@ function toolName(tool?: string): string {
   }
 }
 
-export default function PlanDetail({ plan, status = "empty", onRefine }: PlanDetailProps) {
+export default function PlanDetail({ plan, status = "empty", draft = false, onRefine }: PlanDetailProps) {
   if (!plan) {
     const message =
       status === "running" || status === "pending"
@@ -114,13 +153,13 @@ export default function PlanDetail({ plan, status = "empty", onRefine }: PlanDet
 
   return (
     <section className="plan-detail has-plan" data-testid="plan-detail">
-      <p className="answer-kicker">已生成路线</p>
+      <p className={`answer-kicker ${draft ? "draft" : ""}`}>{draft ? "路线草稿" : "已生成路线"}</p>
       <div className="plan-header">
         <div>
           <h2>{plan.title}</h2>
           <p>{plan.summary}</p>
         </div>
-        <strong>{money(plan.budget.total)}</strong>
+        <strong>{money(budgetTotal(plan))}</strong>
       </div>
 
       <div className="refine-bar" aria-label="路线调整入口">
@@ -136,19 +175,23 @@ export default function PlanDetail({ plan, status = "empty", onRefine }: PlanDet
       </div>
 
       <div className="budget-panel" aria-label="预算拆分">
-        <p className="section-label">预算拆分</p>
+        <p className="section-label">已知预算</p>
         <p className="budget-note">
-          当前数字是按总预算、人数和固定比例生成的规划估算，不是实时酒店、门票或交通报价；请以实际平台和现场价格为准。
+          {plan.budget.complete
+            ? "以下金额来自已接入的真实数据源。"
+            : "部分费用暂无真实数据，未计入已知预算。"}
         </p>
         {budgetItems(plan).map((item) => {
-          const pct = plan.budget.total > 0 ? Math.max(4, Math.round((item.value / plan.budget.total) * 100)) : 0;
+          const amount = typeof item.amount === "number" ? item.amount : 0;
+          const total = budgetTotal(plan);
+          const pct = total > 0 && amount > 0 ? Math.max(4, Math.round((amount / total) * 100)) : 0;
           return (
-            <div className="budget-row" key={item.label}>
+            <div className="budget-row" key={item.key || item.label}>
               <span>{item.label}</span>
               <div className="budget-track" aria-hidden="true">
                 <i style={{ width: `${pct}%` }} />
               </div>
-              <strong>{money(item.value)}</strong>
+              <strong className={item.status !== "available" ? "muted-cost" : ""}>{budgetAmountText(item)}</strong>
             </div>
           );
         })}
@@ -186,7 +229,7 @@ export default function PlanDetail({ plan, status = "empty", onRefine }: PlanDet
                     </div>
                     <p>{item.reason}</p>
                     <small>
-                      {item.address} · {item.duration_minutes} 分钟 · {money(item.estimated_cost)}
+                      {item.address} · {item.duration_minutes} 分钟 · {costText(item.cost, item.estimated_cost)}
                     </small>
                   </div>
                 </div>

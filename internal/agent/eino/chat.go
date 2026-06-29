@@ -109,7 +109,7 @@ func (e *chatInfoExtractor) callLLMStreaming(ctx context.Context, message string
 	if err != nil {
 		return nil, err
 	}
-	payload := buildChatCompletionRequest(e.client.config, messages, chatInfoJSONSchema(), extractTravelInfoToolName, "Extract structured travel information from user message.", options.AgentMode)
+	payload := buildChatCompletionRequest(e.client.config, messages, chatInfoJSONSchema(), extractTravelInfoToolName, "从用户消息中抽取结构化旅行需求信息。", options.AgentMode)
 
 	result, err := e.client.chatCompletionStream(ctx, payload, nil, nil)
 	if err != nil {
@@ -134,7 +134,7 @@ func (e *chatInfoExtractor) callLLMBuffered(ctx context.Context, message string,
 	if err != nil {
 		return nil, err
 	}
-	payload := buildChatCompletionRequest(e.client.config, messages, chatInfoJSONSchema(), extractTravelInfoToolName, "Extract structured travel information from user message.", options.AgentMode)
+	payload := buildChatCompletionRequest(e.client.config, messages, chatInfoJSONSchema(), extractTravelInfoToolName, "从用户消息中抽取结构化旅行需求信息。", options.AgentMode)
 
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -329,18 +329,18 @@ func buildChatInfoMessages(message string, current domain.TravelRequest, agentMo
 	}
 
 	system := strings.Join([]string{
-		"You are a Chinese travel requirement collection assistant.",
-		"Extract departure_city, destination_city, days, budget, interests, travelers, date_range, transport_mode, pace, walking_tolerance, hotel_area, must_visit, avoid, traveler_type, budget_type and budget_includes from the user message.",
-		"Merge newly extracted fields with the existing confirmed fields. New explicit values override old values.",
-		"Required fields are departure_city, destination_city, days, budget, interests and travelers.",
-		"Optional fields must use product defaults when unknown: date_range=任意, transport_mode=任意, pace=适中, walking_tolerance=任意, hotel_area=任意, must_visit=[], avoid=[], traveler_type=无要求, budget_type=总预算, budget_includes=[住宿,餐饮,门票,市内交通].",
-		"Prefer product-facing Chinese values. Acceptable legacy values may appear in existing context and should be normalized: transport_mode any/train_taxi/train_walk/subway_walk/flight_taxi/walk_taxi, pace relaxed/balanced/intensive, walking_tolerance any/low/medium/high, budget_type total/per_person.",
-		"Reply to the user in concise Chinese. Confirm collected information and ask only for missing required fields.",
-		"If every required field is present, tell the user the information is ready for itinerary generation.",
+		"你是中文旅游需求收集助手。",
+		"请从用户消息中抽取 departure_city、destination_city、days、budget、interests、travelers、date_range、transport_mode、pace、walking_tolerance、hotel_area、must_visit、avoid、traveler_type、budget_type 和 budget_includes。",
+		"请把新抽取的字段与已有确认字段合并；用户本次明确给出的新值优先覆盖旧值。",
+		"必填字段是 departure_city、destination_city、days、budget、interests 和 travelers。",
+		"可选字段未知时必须使用产品默认值：date_range=任意，transport_mode=任意，pace=适中，walking_tolerance=任意，hotel_area=任意，must_visit=[]，avoid=[]，traveler_type=无要求，budget_type=总预算，budget_includes=[住宿,餐饮,门票,市内交通]。",
+		"优先输出面向用户的中文值。已有上下文中可能出现旧枚举值，需要归一化：transport_mode any/train_taxi/train_walk/subway_walk/flight_taxi/walk_taxi，pace relaxed/balanced/intensive，walking_tolerance any/low/medium/high，budget_type total/per_person。",
+		"请用简洁中文回复用户：确认已收集的信息，只追问缺失的必填字段。",
+		"如果必填字段都已具备，请告诉用户信息已齐，可以生成行程。",
 		plannerModeInstruction(agentMode),
-		"Prompt version: " + chatInfoPromptVersion + ".",
+		"提示词版本：" + chatInfoPromptVersion + "。",
 	}, " ")
-	user := fmt.Sprintf("Conversation context:\n%s", string(data))
+	user := fmt.Sprintf("对话上下文：\n%s", string(data))
 	return []chatMessage{
 		{Role: "system", Content: system},
 		{Role: "user", Content: user},

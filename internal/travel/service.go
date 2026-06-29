@@ -201,10 +201,18 @@ func (s *TravelPlanService) Subscribe(taskID string) (<-chan TaskEvent, func()) 
 	return s.events.Subscribe(taskID)
 }
 
+func (s *TravelPlanService) EventHistory(taskID string) []TaskEvent {
+	if s == nil || s.events == nil {
+		return nil
+	}
+	return s.events.History(taskID)
+}
+
 func (s *TravelPlanService) runTask(task Task) {
 	ctx := WithRequestID(context.Background(), task.RequestID)
 	ctx = agent.WithPlannerOptions(ctx, agent.PlannerOptions{TestMode: task.TestMode, AgentMode: normalizeAgentMode(task.AgentMode)})
 	ctx = agent.WithPlannerEventReporter(ctx, plannerEventReporter{service: s, taskID: task.ID, requestID: task.RequestID})
+	ctx = agent.WithPlannerBusinessEventReporter(ctx, plannerBusinessEventReporter{service: s, taskID: task.ID, requestID: task.RequestID})
 	plannerDelta := newPlannerDeltaReporter(s, task.RequestID, task.ID)
 	ctx = agent.WithLLMDeltaReporter(ctx, plannerDelta)
 	defer func() {
@@ -288,6 +296,12 @@ func (s *TravelPlanService) publishPlanSummary(task Task, plan *domain.TravelPla
 }
 
 type plannerEventReporter struct {
+	service   *TravelPlanService
+	taskID    string
+	requestID string
+}
+
+type plannerBusinessEventReporter struct {
 	service   *TravelPlanService
 	taskID    string
 	requestID string
@@ -405,6 +419,32 @@ func (r plannerEventReporter) ReportPlannerEvent(ctx context.Context, event agen
 		NodeStatus: event.Status,
 		DurationMs: durationMs,
 		CreatedAt:  time.Now().UTC(),
+	})
+}
+
+func (r plannerBusinessEventReporter) ReportPlannerBusinessEvent(_ context.Context, event agent.PlannerBusinessEvent) {
+	if r.service == nil {
+		return
+	}
+	eventType := EventType(event.Type)
+	if eventType == "" {
+		return
+	}
+	r.service.publish(TaskEvent{
+		Type:      eventType,
+		RequestID: r.requestID,
+		TaskID:    r.taskID,
+		Status:    TaskRunning,
+		Message:   event.Message,
+		Brief:     event.Brief,
+		Day:       event.Day,
+		POIs:      event.POIs,
+		Weather:   event.Weather,
+		Routes:    event.Routes,
+		Budget:    event.Budget,
+		NodeName:  event.NodeName,
+		Draft:     event.Draft,
+		CreatedAt: time.Now().UTC(),
 	})
 }
 

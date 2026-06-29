@@ -404,6 +404,7 @@ func (c fakeLLMClient) GenerateTravelPlan(context.Context, TravelPlanningState) 
 
 func llmTestState() TravelPlanningState {
 	req := llmTestRequest()
+	plan := llmValidPlan(req)
 	return TravelPlanningState{
 		Request:               req,
 		NormalizedDestination: req.DestinationCity,
@@ -412,14 +413,8 @@ func llmTestState() TravelPlanningState {
 		Interests:             req.Interests,
 		TransportMode:         req.TransportMode,
 		Pace:                  req.Pace,
-		Budget: domain.TravelBudget{
-			Transport: 500,
-			Food:      600,
-			Hotel:     1000,
-			Ticket:    200,
-			Total:     2300,
-		},
-		Itinerary: llmValidPlan(req).Days,
+		Budget:                plan.Budget,
+		Itinerary:             plan.Days,
 	}
 }
 
@@ -454,6 +449,7 @@ func planWithDays(req domain.TravelRequest, days int) domain.TravelPlan {
 					Address:         "杭州西湖景区",
 					Reason:          "匹配杭州自然风光偏好",
 					EstimatedCost:   80,
+					Cost:            domain.AvailableCost(80, "per_person", "amap.poi.biz_ext.cost", true),
 					DurationMinutes: 120,
 				},
 			},
@@ -464,11 +460,21 @@ func planWithDays(req domain.TravelRequest, days int) domain.TravelPlan {
 		Summary: "围绕杭州安排2天路线。",
 		Days:    planDays,
 		Budget: domain.TravelBudget{
-			Transport: 500,
-			Food:      600,
-			Hotel:     1000,
-			Ticket:    200,
-			Total:     2300,
+			Transport:  500,
+			Food:       600,
+			Hotel:      1000,
+			Ticket:     200,
+			Total:      2300,
+			KnownTotal: 2300,
+			Complete:   true,
+			Currency:   "CNY",
+			Items: []domain.BudgetLine{
+				availableBudgetLineForTest("transport", "市内交通", 500),
+				availableBudgetLineForTest("food", "餐饮", 600),
+				availableBudgetLineForTest("hotel", "住宿", 1000),
+				availableBudgetLineForTest("ticket", "门票", 200),
+			},
+			Missing: []string{},
 		},
 		Warnings: []string{},
 	}
@@ -477,7 +483,21 @@ func planWithDays(req domain.TravelRequest, days int) domain.TravelPlan {
 func planWithBudget(req domain.TravelRequest, total float64) domain.TravelPlan {
 	plan := llmValidPlan(req)
 	plan.Budget.Total = total
+	plan.Budget.KnownTotal = total
 	return plan
+}
+
+func availableBudgetLineForTest(key, label string, amount float64) domain.BudgetLine {
+	value := amount
+	return domain.BudgetLine{
+		Key:      key,
+		Label:    label,
+		Amount:   &value,
+		Currency: "CNY",
+		Status:   domain.CostAvailable,
+		Source:   "test",
+		Included: true,
+	}
 }
 
 func mustMarshal(t *testing.T, value any) string {

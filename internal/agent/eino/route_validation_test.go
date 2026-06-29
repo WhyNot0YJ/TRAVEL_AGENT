@@ -16,7 +16,7 @@ func TestValidateRouteFeasibilityDetectsObviousIssues(t *testing.T) {
 		},
 		Weather: []MockWeather{{Day: 1, Condition: "rainy"}},
 		Routes:  []MockRoute{{From: "西湖", To: "西湖", DurationMinutes: 140}},
-		Budget:  domain.TravelBudget{Transport: 10, Food: 10, Hotel: 10, Ticket: 10, Total: 1000},
+		Budget:  domain.TravelBudget{Transport: 10, Food: 10, Hotel: 10, Ticket: 10, Total: 1000, KnownTotal: 1000, Currency: "CNY"},
 		Itinerary: []domain.TravelDay{
 			{
 				Day:   1,
@@ -50,7 +50,7 @@ func TestValidateRouteFeasibilityPassesBalancedMockShapeWithCoordinates(t *testi
 		},
 		Weather: []MockWeather{{Day: 1, Condition: "sunny"}},
 		Routes:  []MockRoute{{From: "西湖", To: "灵隐寺", DurationMinutes: 30}},
-		Budget:  domain.TravelBudget{Transport: 200, Food: 300, Hotel: 400, Ticket: 100, Total: 1000},
+		Budget:  domain.TravelBudget{Transport: 200, Food: 300, Hotel: 400, Ticket: 100, Total: 1000, KnownTotal: 1000, Currency: "CNY"},
 		Itinerary: []domain.TravelDay{
 			{
 				Day:   1,

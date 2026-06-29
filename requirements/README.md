@@ -27,6 +27,12 @@
 | 17 | DeepSeek 真·流式 SSE 透传 | [stage-17-deepseek-true-streaming.md](./stage-17-deepseek-true-streaming.md) |
 | 18 | Travel Brief 确认与可选偏好默认值 | [stage-18-travel-brief-confirmation.md](./stage-18-travel-brief-confirmation.md) |
 
+## 专项需求
+
+| 类型 | 主题 | 文件 |
+| :--- | :--- | :--- |
+| Backend | 后端高可用与性能优化专项 | [backend-performance-optimization.md](./backend-performance-optimization.md) |
+
 ## 使用约定
 
 1. 每个 stage 文档都是**自包含**的：可以直接复制全文给 Codex 作为单次 PR 的需求规约。

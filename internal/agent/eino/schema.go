@@ -35,22 +35,59 @@ func travelItemSchema() map[string]any {
 			"address":          stringSchema(),
 			"reason":           stringSchema(),
 			"estimated_cost":   numberSchema(),
+			"cost":             costInfoSchema(),
 			"duration_minutes": integerSchema(),
 		},
-		"time", "type", "name", "address", "reason", "estimated_cost", "duration_minutes",
+		"time", "type", "name", "address", "reason", "estimated_cost", "cost", "duration_minutes",
 	)
 }
 
 func travelBudgetSchema() map[string]any {
 	return objectSchema(
 		map[string]any{
-			"transport": numberSchema(),
-			"food":      numberSchema(),
-			"hotel":     numberSchema(),
-			"ticket":    numberSchema(),
-			"total":     numberSchema(),
+			"transport":   numberSchema(),
+			"food":        numberSchema(),
+			"hotel":       numberSchema(),
+			"ticket":      numberSchema(),
+			"total":       numberSchema(),
+			"known_total": numberSchema(),
+			"complete":    booleanSchema(),
+			"currency":    stringSchema(),
+			"items":       arraySchema(budgetLineSchema()),
+			"missing":     arraySchema(stringSchema()),
 		},
-		"transport", "food", "hotel", "ticket", "total",
+		"transport", "food", "hotel", "ticket", "total", "known_total", "complete", "currency", "items", "missing",
+	)
+}
+
+func costInfoSchema() map[string]any {
+	return objectSchema(
+		map[string]any{
+			"amount":   nullableNumberSchema(),
+			"currency": stringSchema(),
+			"unit":     stringSchema(),
+			"status":   enumSchema("available", "unavailable", "not_applicable"),
+			"source":   stringSchema(),
+			"display":  stringSchema(),
+			"included": booleanSchema(),
+		},
+		"amount", "currency", "unit", "status", "included",
+	)
+}
+
+func budgetLineSchema() map[string]any {
+	return objectSchema(
+		map[string]any{
+			"key":      stringSchema(),
+			"label":    stringSchema(),
+			"amount":   nullableNumberSchema(),
+			"currency": stringSchema(),
+			"status":   enumSchema("available", "unavailable", "not_applicable"),
+			"source":   stringSchema(),
+			"display":  stringSchema(),
+			"included": booleanSchema(),
+		},
+		"key", "label", "amount", "currency", "status", "included",
 	)
 }
 
@@ -78,6 +115,18 @@ func numberSchema() map[string]any {
 	return map[string]any{"type": "number"}
 }
 
+func nullableNumberSchema() map[string]any {
+	return map[string]any{"type": []string{"number", "null"}}
+}
+
 func integerSchema() map[string]any {
 	return map[string]any{"type": "integer"}
+}
+
+func booleanSchema() map[string]any {
+	return map[string]any{"type": "boolean"}
+}
+
+func enumSchema(values ...string) map[string]any {
+	return map[string]any{"type": "string", "enum": values}
 }

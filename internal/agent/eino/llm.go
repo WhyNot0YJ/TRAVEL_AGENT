@@ -159,7 +159,7 @@ func (c *openAICompatibleClient) generateTravelPlanBuffered(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-	payload := buildChatCompletionRequest(c.config, messages, travelPlanJSONSchema(), submitTravelPlanToolName, "Submit the final structured travel plan.", agentMode)
+	payload := buildChatCompletionRequest(c.config, messages, travelPlanJSONSchema(), submitTravelPlanToolName, "提交最终的结构化旅行路线。", agentMode)
 
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -220,7 +220,7 @@ func (c *openAICompatibleClient) generateTravelPlanStreaming(ctx context.Context
 	if err != nil {
 		return nil, err
 	}
-	payload := buildChatCompletionRequest(c.config, messages, travelPlanJSONSchema(), submitTravelPlanToolName, "Submit the final structured travel plan.", agentMode)
+	payload := buildChatCompletionRequest(c.config, messages, travelPlanJSONSchema(), submitTravelPlanToolName, "提交最终的结构化旅行路线。", agentMode)
 
 	// Track how much of the summary string the user has already seen so we
 	// only emit the new tail on each frame.
@@ -353,7 +353,7 @@ func buildChatCompletionRequest(cfg LLMConfig, messages []chatMessage, schema ma
 		}
 		desc := toolDesc
 		if desc == "" {
-			desc = "Submit the final structured output."
+			desc = "提交最终的结构化输出。"
 		}
 		req.Tools = []chatTool{
 			{

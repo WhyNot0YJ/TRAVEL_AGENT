@@ -7,7 +7,14 @@ export type StreamEventType =
   | "done"
   | "heartbeat"
   | "assistant_delta"
-  | "assistant_done";
+  | "assistant_done"
+  | "brief_delta"
+  | "poi_batch"
+  | "weather_delta"
+  | "route_delta"
+  | "budget_delta"
+  | "day_delta"
+  | "plan_draft";
 export type AgentMode = "quick" | "expert";
 
 export interface TravelPlanRequest {
@@ -61,9 +68,17 @@ export interface TaskEvent {
   status?: TaskStatus;
   message?: string;
   plan?: TravelPlan;
+  brief?: TravelPlanRequest;
+  day?: TravelDay;
+  pois?: POIInfo[];
+  weather?: WeatherInfo[];
+  routes?: RouteInfo[];
+  budget?: TravelBudget;
   node_name?: string;
   node_status?: string;
   duration_ms?: number;
+  draft?: boolean;
+  sequence?: number;
   created_at?: string;
   time?: string;
 }
@@ -89,7 +104,9 @@ export interface TravelItem {
   address: string;
   reason: string;
   estimated_cost: number;
+  cost?: CostInfo;
   duration_minutes: number;
+  poi?: POIMetadata;
 }
 
 export interface TravelBudget {
@@ -98,6 +115,81 @@ export interface TravelBudget {
   hotel: number;
   ticket: number;
   total: number;
+  known_total?: number;
+  complete?: boolean;
+  currency?: string;
+  items?: BudgetLine[];
+  missing?: string[];
+}
+
+export type CostStatus = "available" | "unavailable" | "not_applicable";
+
+export interface CostInfo {
+  amount: number | null;
+  currency: string;
+  unit: string;
+  status: CostStatus;
+  source?: string;
+  display?: string;
+  included: boolean;
+}
+
+export interface BudgetLine {
+  key: string;
+  label: string;
+  amount: number | null;
+  currency: string;
+  status: CostStatus;
+  source?: string;
+  display?: string;
+  included: boolean;
+}
+
+export interface POIPhoto {
+  title?: string;
+  url?: string;
+}
+
+export interface POIMetadata {
+  provider?: string;
+  id?: string;
+  parent?: string;
+  typecode?: string;
+  biz_type?: string;
+  tel?: string;
+  business_area?: string;
+  tag?: string;
+  rating?: number;
+  photos?: POIPhoto[];
+  cost: CostInfo;
+}
+
+export interface POIInfo {
+  name: string;
+  city: string;
+  category: string;
+  address: string;
+  location?: string;
+  suggested_duration_minutes: number;
+  estimated_cost: number;
+  cost: CostInfo;
+  metadata?: POIMetadata;
+}
+
+export interface WeatherInfo {
+  day: number;
+  condition: string;
+  temperature: string;
+  suggestion: string;
+}
+
+export interface RouteInfo {
+  from: string;
+  to: string;
+  duration_minutes: number;
+  distance_meters: number;
+  mode: string;
+  cost: CostInfo;
 }
 
 export interface ChatRequest {

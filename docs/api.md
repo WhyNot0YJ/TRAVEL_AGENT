@@ -101,12 +101,59 @@
 
 ### GET /api/v1/travel/plans/:task_id/stream
 
-规划任务 SSE 继续返回 `progress`、`node`、`warning`、`error`、`done`、`heartbeat`，并新增：
+规划任务 SSE 继续返回 `progress`、`node`、`warning`、`error`、`done`、`heartbeat`，并新增业务事件：
 
 * `assistant_delta`：生成过程中的助手文本增量。启用流式时，规划链路在结构化 plan 落库前会通过 LLM streaming 推送一段"旁白"（例如"正在为你规划上海到杭州的 3 天行程..."），单帧长度由 LLM token 决定，**不保证等长**。
 * `assistant_done`：助手文本结束。
+* `brief_delta`：已规范化的 Travel Brief。
+* `poi_batch`：POI 查询阶段候选地点，包含地点、地址、坐标、来源和可得价格。
+* `weather_delta`：天气查询阶段结果。
+* `route_delta`：路线计算阶段结果，包含距离、时长和可得交通费用。
+* `budget_delta`：预算阶段结果，只包含真实可得金额合计和缺失项。
+* `day_delta`：初版 itinerary 的单日草稿，`draft=true`。
 
-前端应以最后的 `done.plan` 作为最终结构化行程，以 `assistant_delta` 只作为生成中的可读反馈。`TRAVEL_AGENT_LLM_STREAM_ENABLED=false` 时旁白回退到等长 chunkText 切片（向后兼容）。
+前端应以最后的 `done.plan` 作为最终结构化行程，以 `day_delta` 作为生成中的草稿展示，以 `assistant_delta` 只作为生成中的可读反馈。`TRAVEL_AGENT_LLM_STREAM_ENABLED=false` 时旁白回退到等长 chunkText 切片（向后兼容）。服务端会为每个 task 缓存最近 100 条事件并添加递增 `sequence`，新连接会先收到历史事件；历史缺失时仍会返回最终 `done` 或 `error`。
+
+### TravelPlan 价格与预算字段
+
+`TravelItem` 保留兼容字段 `estimated_cost`，并新增 `cost` 和 `poi`。前端应优先展示 `cost`：
+
+```json
+{
+  "estimated_cost": 0,
+  "cost": {
+    "amount": null,
+    "currency": "CNY",
+    "unit": "per_person",
+    "status": "unavailable",
+    "display": "暂无信息",
+    "included": false
+  }
+}
+```
+
+`cost.status` 可为：
+
+* `available`：`amount` 为真实可得金额，可按 `included=true` 计入预算。
+* `unavailable`：`amount=null`，页面展示“暂无信息”，不计入预算。
+* `not_applicable`：天然无需费用，例如纯步行/骑行。
+
+`TravelBudget` 保留 `transport`、`food`、`hotel`、`ticket`、`total`，并新增：
+
+```json
+{
+  "known_total": 1032,
+  "complete": false,
+  "currency": "CNY",
+  "items": [
+    {"key": "food", "label": "餐饮", "amount": 900, "currency": "CNY", "status": "available", "source": "amap.poi.biz_ext.cost", "included": true},
+    {"key": "hotel", "label": "住宿", "amount": null, "currency": "CNY", "status": "unavailable", "display": "暂无信息", "included": false}
+  ],
+  "missing": ["hotel"]
+}
+```
+
+`total` 与 `known_total` 表示“已知预算”，不代表完整旅行总价；`complete=false` 时页面不得把缺失项显示为 `¥0`。
 
 ## 当前阶段
 
@@ -210,7 +257,12 @@ MySQL 启用后不改变 HTTP API contract。任务创建、查询和 SSE 语义
       "food": 0,
       "hotel": 0,
       "ticket": 0,
-      "total": 0
+      "total": 0,
+      "known_total": 0,
+      "complete": false,
+      "currency": "CNY",
+      "items": [],
+      "missing": ["hotel", "intercity_transport"]
     },
     "warnings": []
   },
@@ -257,6 +309,14 @@ Connection: keep-alive
 * `error`
 * `done`
 * `heartbeat`
+* `assistant_delta`
+* `assistant_done`
+* `brief_delta`
+* `poi_batch`
+* `weather_delta`
+* `route_delta`
+* `budget_delta`
+* `day_delta`
 
 事件 payload：
 
@@ -288,7 +348,7 @@ Connection: keep-alive
 
 新增 `node` 事件保持向后兼容；已有前端可继续只处理 `progress`、`warning`、`error` 和 `done`。
 
-如果任务已完成，新连接会立即返回 `done` 或 `error`。
+如果任务已完成，新连接会先回放缓存的关键过程事件，再返回历史 `done` 或 `error`；如果缓存已不存在，则直接返回合成的 `done` 或 `error`。
 
 示例：
 

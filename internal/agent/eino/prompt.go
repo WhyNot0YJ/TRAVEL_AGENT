@@ -30,23 +30,23 @@ func buildTravelPlanMessages(state TravelPlanningState, agentMode string) ([]cha
 	}
 
 	system := strings.Join([]string{
-		"You are a travel planning component.",
-		"Prompt version: " + travelPlanPromptVersion + ".",
-		"Use the provided planning context to produce a practical itinerary.",
+		"你是旅游路线规划组件。",
+		"提示词版本：" + travelPlanPromptVersion + "。",
+		"请基于给定的规划上下文，生成实用、可执行的旅行行程。",
 		plannerModeInstruction(agentMode),
-		"Return the final plan only through the configured structured-output channel.",
-		"Do not include secrets, API keys, hidden reasoning, or external claims not supported by the context.",
+		"价格和预算只能使用上下文中 status=available 且 included=true 的真实金额。",
+		"status=unavailable 的费用必须展示为“暂无信息”，不要猜测、补全、估算或按比例分摊缺失费用。",
+		"预算合计只能统计真实可得金额；如果预算不完整，必须在 summary 或 warnings 中说明哪些项目暂无信息。",
+		"最终路线只能通过已配置的结构化输出通道返回。",
+		"不要包含密钥、API Key、隐藏推理过程，或任何上下文没有支持的外部断言。",
 	}, " ")
-	user := fmt.Sprintf("Planning context:\n%s", string(data))
+	user := fmt.Sprintf("规划上下文：\n%s", string(data))
 	return []chatMessage{
 		{Role: "system", Content: system},
 		{Role: "user", Content: user},
 	}, nil
 }
 
-func plannerModeInstruction(agentMode string) string {
-	if strings.EqualFold(agentMode, "expert") {
-		return "Expert mode: optimize for stronger route logic, budget consistency, daily pacing, and fewer backtracking legs."
-	}
-	return "Quick mode: produce a concise, practical itinerary with low latency."
+func plannerModeInstruction(_ string) string {
+	return "请在保证信息准确和结构完整的前提下，生成简洁、实用的行程。"
 }

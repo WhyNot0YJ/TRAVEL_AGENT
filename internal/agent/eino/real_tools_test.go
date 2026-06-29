@@ -11,6 +11,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"travel-agent/internal/domain"
 )
 
 func TestRealToolsUseFakeAMapServer(t *testing.T) {
@@ -119,6 +121,80 @@ func TestAMapClientLimitsExternalConcurrency(t *testing.T) {
 	}
 	if got := atomic.LoadInt32(&maxConcurrent); got > 2 {
 		t.Fatalf("expected at most 2 concurrent external calls, got %d", got)
+	}
+}
+
+func TestRealPOIToolParsesExtendedCostMetadata(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Query().Get("extensions") != "all" {
+			t.Fatalf("expected extensions=all, got %q", r.URL.Query().Get("extensions"))
+		}
+		writeJSON(t, w, amapPOIResponse{
+			Status: "1",
+			Info:   "OK",
+			POIs: []amapPOIItem{{
+				ID:           "B0FF",
+				Name:         "牛New寿喜烧(来福士店)",
+				Type:         "餐饮服务;外国餐厅;日本料理",
+				TypeCode:     "050200",
+				Address:      "新业路228号",
+				Location:     "120.212943,30.249170",
+				Tel:          "0571",
+				BusinessArea: "钱江新城",
+				Tag:          "寿喜烧",
+				BizExt:       amapPOIBizExt{Rating: "4.7", Cost: "172"},
+				Photos:       []amapPOIPhoto{{Title: "门店", URL: "https://example.com/a.jpg"}},
+			}},
+		})
+	}))
+	defer server.Close()
+
+	pois, err := (RealPOITool{client: newAMapClient(server.URL, "test-key", defaultExternalAPITimeout)}).Run(context.Background(), POIToolInput{City: "杭州", Interests: []string{"美食"}})
+	if err != nil {
+		t.Fatalf("Run returned error: %v", err)
+	}
+	if len(pois) != 1 {
+		t.Fatalf("unexpected pois: %#v", pois)
+	}
+	if pois[0].Cost.Amount == nil || *pois[0].Cost.Amount != 172 || pois[0].Cost.Status != domain.CostAvailable {
+		t.Fatalf("cost was not parsed: %#v", pois[0].Cost)
+	}
+	if pois[0].Metadata == nil || pois[0].Metadata.ID != "B0FF" || pois[0].Metadata.Rating == nil || *pois[0].Metadata.Rating != 4.7 {
+		t.Fatalf("metadata was not parsed: %#v", pois[0].Metadata)
+	}
+}
+
+func TestRealRouteToolParsesTaxiCost(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/direction/driving" {
+			t.Fatalf("unexpected path: %s", r.URL.Path)
+		}
+		if r.URL.Query().Get("extensions") != "all" {
+			t.Fatalf("expected extensions=all, got %q", r.URL.Query().Get("extensions"))
+		}
+		writeJSON(t, w, amapRouteResponse{
+			Status: "1",
+			Info:   "OK",
+			Route: amapRouteBody{
+				TaxiCost: "28",
+				Paths:    []amapRoutePath{{Distance: "6200", Duration: "1440"}},
+			},
+		})
+	}))
+	defer server.Close()
+
+	routes, err := (RealRouteTool{client: newAMapClient(server.URL, "test-key", defaultExternalAPITimeout)}).Run(context.Background(), RouteToolInput{
+		Mode: "打车",
+		POIs: []MockPOI{
+			{Name: "西湖", City: "杭州", Location: "120.1,30.2"},
+			{Name: "餐厅", City: "杭州", Location: "120.2,30.3"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("Run returned error: %v", err)
+	}
+	if len(routes) != 1 || routes[0].Cost.Amount == nil || *routes[0].Cost.Amount != 28 {
+		t.Fatalf("taxi cost was not parsed: %#v", routes)
 	}
 }
 

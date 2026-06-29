@@ -42,13 +42,15 @@ TravelRequest
   -> SearchPOIsToolNode
   -> GetWeatherToolNode
   -> ComputeRouteToolNode
-  -> EstimateBudgetToolNode
   -> OptimizeItineraryNode
+  -> EstimateBudgetToolNode
   -> ValidateRouteFeasibilityNode
   -> GenerateTravelPlanNode
   -> ValidatePlanNode
   -> TravelPlan
 ```
+
+预算节点在初版 itinerary 之后执行，只汇总已进入草稿行程且真实可得的 POI/路线费用；缺失的住宿、跨城大交通等费用标记为“暂无信息”，不计入 `known_total`。
 
 ## LLM 生成
 
@@ -61,6 +63,8 @@ TravelRequest
 * DeepSeek reasoner 类模型：自动降级到 `response_format=json_schema`，不使用 tool calls。
 
 如果启用了测试模式、LLM 未启用、API key 缺失、provider 返回无效输出、重试耗尽或业务校验失败，该节点会回退到确定性生成，并记录 `LLM fallback` warning。
+
+`travel-plan-v1` 约束 LLM 只能使用上下文中 `status=available` 且 `included=true` 的真实金额。`status=unavailable` 的费用必须保留为“暂无信息”，不得由模型猜测、补全或按比例拆分。
 
 ### 流式 LLM 输出
 
@@ -117,6 +121,13 @@ TRAVEL_AGENT_TOOL_MODE=real
 
 当 `test_mode=true` 时，即使服务端配置为真实工具，tools 也会被强制设置为 mock。
 
+当前工具职责：
+
+* `RealPOITool`：调用高德 `place/text`，使用 `extensions=all`，转换名称、类型、地址、坐标、评分、人均消费、照片等字段。
+* `RealWeatherTool`：先调用高德 `geocode/geo` 获取 adcode，再调用 `weather/weatherInfo` 查询预报。
+* `RealRouteTool`：按交通模式选择 walking / bicycling / driving / transit，并解析可得的 `taxi_cost`、`tolls` 或 `transits[].cost`。
+* `MockBudgetTool`：名称保留，但职责已改为“真实可得费用汇总 + 缺失项标记”，不再按用户预算固定比例拆分。
+
 ## SSE 事件
 
 规划任务流事件：
@@ -126,11 +137,19 @@ TRAVEL_AGENT_TOOL_MODE=real
 * `warning`
 * `assistant_delta`
 * `assistant_done`
+* `brief_delta`
+* `poi_batch`
+* `weather_delta`
+* `route_delta`
+* `budget_delta`
+* `day_delta`
 * `done`
 * `error`
 * `heartbeat`
 
-`done.plan` 是结构化行程数据的最终可信来源。`assistant_delta` 只用于展示面向用户的生成中文本。
+`done.plan` 是结构化行程数据的最终可信来源。`day_delta` 是初版行程草稿，可在前端逐天展示并在 `done.plan` 到达后覆盖。`assistant_delta` 只用于展示面向用户的生成中文本，不能被解析成结构化路线。
+
+每个 task 会在内存 EventBus 中保留最近 100 条事件并带递增 `sequence`，用于新 SSE 连接回放。该缓存是进程内能力，不替代持久化任务 store。
 
 ## 边界
 

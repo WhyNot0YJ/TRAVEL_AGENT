@@ -38,36 +38,17 @@ type RouteTool interface {
 }
 
 type BudgetTool interface {
-	Run(ctx context.Context, input BudgetToolInput) (domainBudget, error)
+	Run(ctx context.Context, input BudgetToolInput) (domain.TravelBudget, error)
 }
 
 // MockPOI is a deterministic POI returned by the local POI tool.
-type MockPOI struct {
-	Name                     string  `json:"name"`
-	City                     string  `json:"city"`
-	Category                 string  `json:"category"`
-	Address                  string  `json:"address"`
-	Location                 string  `json:"location,omitempty"`
-	SuggestedDurationMinutes int     `json:"suggested_duration_minutes"`
-	EstimatedCost            float64 `json:"estimated_cost"`
-}
+type MockPOI = domain.POIInfo
 
 // MockWeather is deterministic weather returned by the local weather tool.
-type MockWeather struct {
-	Day         int    `json:"day"`
-	Condition   string `json:"condition"`
-	Temperature string `json:"temperature"`
-	Suggestion  string `json:"suggestion"`
-}
+type MockWeather = domain.WeatherInfo
 
 // MockRoute is a deterministic route segment returned by the local route tool.
-type MockRoute struct {
-	From            string `json:"from"`
-	To              string `json:"to"`
-	DurationMinutes int    `json:"duration_minutes"`
-	DistanceMeters  int    `json:"distance_meters"`
-	Mode            string `json:"mode"`
-}
+type MockRoute = domain.RouteInfo
 
 // TraceEvent records an internal graph step for future diagnostics.
 type TraceEvent struct {
@@ -109,8 +90,9 @@ type RouteToolInput struct {
 
 // BudgetToolInput is the input for MockBudgetTool.
 type BudgetToolInput struct {
-	Request domain.TravelRequest `json:"request"`
-	Days    int                  `json:"days"`
-	POIs    []MockPOI            `json:"pois"`
-	Routes  []MockRoute          `json:"routes"`
+	Request   domain.TravelRequest `json:"request"`
+	Days      int                  `json:"days"`
+	POIs      []MockPOI            `json:"pois"`
+	Routes    []MockRoute          `json:"routes"`
+	Itinerary []domain.TravelDay   `json:"itinerary"`
 }

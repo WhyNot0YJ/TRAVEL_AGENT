@@ -140,7 +140,8 @@ export default function App() {
   const canGenerate = missing.length === 0;
   const isBusy = isSubmitting || isChatting || (!!taskId && !stream.plan && stream.status !== "failed");
   const planningActive = isSubmitting || Boolean(taskId) || Boolean(stream.plan) || Boolean(createError);
-  const activityKey = `${taskId ?? "no-task"}-${stream.status}-${stream.events.length}-${stream.plan?.title ?? ""}-${isSubmitting}-${stream.assistantText.length}`;
+  const visiblePlan = stream.plan ?? stream.draftPlan;
+  const activityKey = `${taskId ?? "no-task"}-${stream.status}-${stream.events.length}-${visiblePlan?.title ?? ""}-${isSubmitting}-${stream.assistantText.length}`;
 
   const acceptText = async (text: string) => {
     const normalized = text.trim();
@@ -232,9 +233,21 @@ export default function App() {
               polling={stream.polling}
               error={stream.error}
               creating={isSubmitting}
+              pois={stream.pois}
+              weather={stream.weather}
+              routes={stream.routes}
+              budget={stream.budget}
+              draftDays={stream.draftDays}
             />
           }
-          planPanel={<PlanDetail plan={stream.plan} status={stream.status} onRefine={acceptText} />}
+          planPanel={
+            <PlanDetail
+              plan={visiblePlan}
+              status={stream.status}
+              draft={!stream.plan && Boolean(stream.draftPlan)}
+              onRefine={acceptText}
+            />
+          }
         />
       </div>
     </main>

@@ -39,20 +39,152 @@ type TravelDay struct {
 
 // TravelItem describes one scheduled activity or transport segment.
 type TravelItem struct {
-	Time            string  `json:"time"`
-	Type            string  `json:"type"`
-	Name            string  `json:"name"`
-	Address         string  `json:"address"`
-	Reason          string  `json:"reason"`
-	EstimatedCost   float64 `json:"estimated_cost"`
-	DurationMinutes int     `json:"duration_minutes"`
+	Time            string       `json:"time"`
+	Type            string       `json:"type"`
+	Name            string       `json:"name"`
+	Address         string       `json:"address"`
+	Reason          string       `json:"reason"`
+	EstimatedCost   float64      `json:"estimated_cost"`
+	Cost            CostInfo     `json:"cost"`
+	DurationMinutes int          `json:"duration_minutes"`
+	POI             *POIMetadata `json:"poi,omitempty"`
 }
 
 // TravelBudget breaks down the estimated route cost.
 type TravelBudget struct {
-	Transport float64 `json:"transport"`
-	Food      float64 `json:"food"`
-	Hotel     float64 `json:"hotel"`
-	Ticket    float64 `json:"ticket"`
-	Total     float64 `json:"total"`
+	Transport  float64      `json:"transport"`
+	Food       float64      `json:"food"`
+	Hotel      float64      `json:"hotel"`
+	Ticket     float64      `json:"ticket"`
+	Total      float64      `json:"total"`
+	KnownTotal float64      `json:"known_total"`
+	Complete   bool         `json:"complete"`
+	Currency   string       `json:"currency"`
+	Items      []BudgetLine `json:"items"`
+	Missing    []string     `json:"missing"`
+}
+
+type CostStatus string
+
+const (
+	CostAvailable     CostStatus = "available"
+	CostUnavailable   CostStatus = "unavailable"
+	CostNotApplicable CostStatus = "not_applicable"
+)
+
+type CostInfo struct {
+	Amount   *float64   `json:"amount"`
+	Currency string     `json:"currency"`
+	Unit     string     `json:"unit"`
+	Status   CostStatus `json:"status"`
+	Source   string     `json:"source,omitempty"`
+	Display  string     `json:"display,omitempty"`
+	Included bool       `json:"included"`
+}
+
+type BudgetLine struct {
+	Key      string     `json:"key"`
+	Label    string     `json:"label"`
+	Amount   *float64   `json:"amount"`
+	Currency string     `json:"currency"`
+	Status   CostStatus `json:"status"`
+	Source   string     `json:"source,omitempty"`
+	Display  string     `json:"display,omitempty"`
+	Included bool       `json:"included"`
+}
+
+type POIPhoto struct {
+	Title string `json:"title,omitempty"`
+	URL   string `json:"url,omitempty"`
+}
+
+type POIMetadata struct {
+	Provider     string     `json:"provider,omitempty"`
+	ID           string     `json:"id,omitempty"`
+	Parent       string     `json:"parent,omitempty"`
+	TypeCode     string     `json:"typecode,omitempty"`
+	BizType      string     `json:"biz_type,omitempty"`
+	Tel          string     `json:"tel,omitempty"`
+	Postcode     string     `json:"postcode,omitempty"`
+	Website      string     `json:"website,omitempty"`
+	Email        string     `json:"email,omitempty"`
+	PCode        string     `json:"pcode,omitempty"`
+	PName        string     `json:"pname,omitempty"`
+	CityCode     string     `json:"citycode,omitempty"`
+	CityName     string     `json:"cityname,omitempty"`
+	ADCode       string     `json:"adcode,omitempty"`
+	ADName       string     `json:"adname,omitempty"`
+	EntrLocation string     `json:"entr_location,omitempty"`
+	ExitLocation string     `json:"exit_location,omitempty"`
+	NaviPOIID    string     `json:"navi_poiid,omitempty"`
+	BusinessArea string     `json:"business_area,omitempty"`
+	Tag          string     `json:"tag,omitempty"`
+	Rating       *float64   `json:"rating,omitempty"`
+	Photos       []POIPhoto `json:"photos,omitempty"`
+	Cost         CostInfo   `json:"cost"`
+}
+
+type POIInfo struct {
+	Name                     string       `json:"name"`
+	City                     string       `json:"city"`
+	Category                 string       `json:"category"`
+	Address                  string       `json:"address"`
+	Location                 string       `json:"location,omitempty"`
+	SuggestedDurationMinutes int          `json:"suggested_duration_minutes"`
+	EstimatedCost            float64      `json:"estimated_cost"`
+	Cost                     CostInfo     `json:"cost"`
+	Metadata                 *POIMetadata `json:"metadata,omitempty"`
+}
+
+type WeatherInfo struct {
+	Day         int    `json:"day"`
+	Condition   string `json:"condition"`
+	Temperature string `json:"temperature"`
+	Suggestion  string `json:"suggestion"`
+}
+
+type RouteInfo struct {
+	From            string   `json:"from"`
+	To              string   `json:"to"`
+	DurationMinutes int      `json:"duration_minutes"`
+	DistanceMeters  int      `json:"distance_meters"`
+	Mode            string   `json:"mode"`
+	Cost            CostInfo `json:"cost"`
+}
+
+func AvailableCost(amount float64, unit, source string, included bool) CostInfo {
+	value := amount
+	return CostInfo{
+		Amount:   &value,
+		Currency: "CNY",
+		Unit:     unit,
+		Status:   CostAvailable,
+		Source:   source,
+		Included: included,
+	}
+}
+
+func UnavailableCost(unit, source string) CostInfo {
+	return CostInfo{
+		Amount:   nil,
+		Currency: "CNY",
+		Unit:     unit,
+		Status:   CostUnavailable,
+		Source:   source,
+		Display:  "暂无信息",
+		Included: false,
+	}
+}
+
+func NotApplicableCost(unit, source string) CostInfo {
+	value := 0.0
+	return CostInfo{
+		Amount:   &value,
+		Currency: "CNY",
+		Unit:     unit,
+		Status:   CostNotApplicable,
+		Source:   source,
+		Display:  "无需费用",
+		Included: false,
+	}
 }

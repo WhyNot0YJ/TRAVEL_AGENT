@@ -83,7 +83,7 @@ submit_travel_plan
 }
 ```
 
-所有 object 字段都列入 `required`。本地解析时继续拒绝 unknown fields，并校验天数、预算、空字段、负数和目的地关键词。
+所有 object 字段都列入 `required`。本地解析时继续拒绝 unknown fields，并校验天数、预算、空字段、负数、目的地关键词以及 `cost.status` / `budget.items[].status`。价格和预算只能来自上下文中真实可得的 `available` 金额；缺失费用必须保留为 `unavailable`。
 
 ## 4. 其他 Provider 配置
 
@@ -141,9 +141,16 @@ data: [DONE]
 
 当前 real tools：
 
-* `RealPOITool`：调用高德 `place/text` 搜索 POI，并转换为内部 POI 类型。
+* `RealPOITool`：调用高德 `place/text` 搜索 POI，使用 `extensions=all`，并转换名称、类型、地址、坐标、电话、商圈、特色标签、照片、`biz_ext.rating` 和 `biz_ext.cost`。
 * `RealWeatherTool`：先调用高德 `geocode/geo` 获取 adcode，再调用 `weather/weatherInfo` 查询预报。
-* `RealRouteTool`：使用 POI 坐标调用高德路径规划接口，按交通模式选择 walking / bicycling / driving。
+* `RealRouteTool`：使用 POI 坐标调用高德路径规划接口，按交通模式选择 walking / bicycling / driving / transit。driving 使用 `extensions=all` 并解析 `route.taxi_cost`、`paths[0].tolls`；transit 解析 `transits[0].cost`。
+
+预算规则：
+
+* 餐饮/景点等 POI 的 `biz_ext.cost` 作为 `per_person` 参考金额，字段缺失时为 `unavailable`。
+* 打车 `taxi_cost` 作为 `per_trip`，公交/地铁 `transits[].cost` 作为 `per_person`。
+* 步行/骑行标记为 `not_applicable`。
+* 高铁、飞机、实时酒店房价未接入；这些费用展示“暂无信息”，不计入 `known_total`。
 
 所有 real tool 都有 Mock fallback。以下情况会 fallback，并在最终 `TravelPlan.warnings` 中说明原因：
 

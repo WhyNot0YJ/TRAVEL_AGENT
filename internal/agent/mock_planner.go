@@ -66,6 +66,7 @@ func (p *MockPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*doma
 					Address:         fmt.Sprintf("%s\u6838\u5fc3\u6e38\u89c8\u533a", req.DestinationCity),
 					Reason:          fmt.Sprintf("\u5951\u5408%s\u884c\u7a0b\u4e3b\u9898\uff0c\u9002\u5408\u4f5c\u4e3a\u5f53\u5929\u91cd\u70b9\u4f53\u9a8c\u3002", theme),
 					EstimatedCost:   roundMoney(itemBudget * 0.55),
+					Cost:            domain.UnavailableCost("per_person", "mock.planner"),
 					DurationMinutes: duration,
 				},
 				{
@@ -75,6 +76,7 @@ func (p *MockPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*doma
 					Address:         fmt.Sprintf("%s\u7279\u8272\u8857\u533a", req.DestinationCity),
 					Reason:          fmt.Sprintf("\u7ed3\u5408%s\u504f\u597d\uff0c\u8865\u5145\u57ce\u5e02\u6587\u5316\u548c\u7f8e\u98df\u4f53\u9a8c\u3002", interestsText(req.Interests)),
 					EstimatedCost:   roundMoney(itemBudget * 0.45),
+					Cost:            domain.UnavailableCost("per_person", "mock.planner"),
 					DurationMinutes: 120,
 				},
 			},
@@ -84,7 +86,7 @@ func (p *MockPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*doma
 	budget := buildBudget(req)
 	return &domain.TravelPlan{
 		Title:   fmt.Sprintf("%s%d\u65e5\u65c5\u884c\u89c4\u5212", req.DestinationCity, req.Days),
-		Summary: fmt.Sprintf("\u4ece%s\u51fa\u53d1\uff0c%d\u4eba\u56f4\u7ed5%s\u5728%s\u5b89\u6392%d\u5929%s\u8282\u594f\u8def\u7ebf\uff0c\u9884\u7b97\u63a7\u5236\u5728%.0f\u5143\u4ee5\u5185\u3002", req.DepartureCity, maxInt(req.Travelers, 1), interestsText(req.Interests), req.DestinationCity, req.Days, paceText(req.Pace), budget.Total),
+		Summary: fmt.Sprintf("\u4ece%s\u51fa\u53d1\uff0c%d\u4eba\u56f4\u7ed5%s\u5728%s\u5b89\u6392%d\u5929%s\u8282\u594f\u8def\u7ebf\uff0c\u7528\u6237\u9884\u7b97%.0f\u5143\u3002", req.DepartureCity, maxInt(req.Travelers, 1), interestsText(req.Interests), req.DestinationCity, req.Days, paceText(req.Pace), planningBudget),
 		Days:    days,
 		Budget:  budget,
 		Warnings: []string{
@@ -94,17 +96,35 @@ func (p *MockPlanner) Plan(ctx context.Context, req domain.TravelRequest) (*doma
 }
 
 func buildBudget(req domain.TravelRequest) domain.TravelBudget {
-	total := roundMoney(totalBudget(req) * 0.9)
-	transport := roundMoney(total * 0.25)
-	food := roundMoney(total * 0.25)
-	hotel := roundMoney(total * 0.30)
-	ticket := roundMoney(total - transport - food - hotel)
+	items := []domain.BudgetLine{
+		unavailableBudgetLine("transport", "市内交通"),
+		unavailableBudgetLine("food", "餐饮"),
+		unavailableBudgetLine("hotel", "住宿"),
+		unavailableBudgetLine("ticket", "门票"),
+	}
 	return domain.TravelBudget{
-		Transport: transport,
-		Food:      food,
-		Hotel:     hotel,
-		Ticket:    ticket,
-		Total:     total,
+		Transport:  0,
+		Food:       0,
+		Hotel:      0,
+		Ticket:     0,
+		Total:      0,
+		KnownTotal: 0,
+		Complete:   false,
+		Currency:   "CNY",
+		Items:      items,
+		Missing:    []string{"transport", "food", "hotel", "ticket"},
+	}
+}
+
+func unavailableBudgetLine(key, label string) domain.BudgetLine {
+	return domain.BudgetLine{
+		Key:      key,
+		Label:    label,
+		Amount:   nil,
+		Currency: "CNY",
+		Status:   domain.CostUnavailable,
+		Display:  "暂无信息",
+		Included: false,
 	}
 }
 
