@@ -77,8 +77,8 @@ type CostInfo struct {
 	Currency string     `json:"currency"`
 	Unit     string     `json:"unit"`
 	Status   CostStatus `json:"status"`
-	Source   string     `json:"source,omitempty"`
-	Display  string     `json:"display,omitempty"`
+	Source   string     `json:"source"`
+	Display  string     `json:"display"`
 	Included bool       `json:"included"`
 }
 
@@ -88,8 +88,8 @@ type BudgetLine struct {
 	Amount   *float64   `json:"amount"`
 	Currency string     `json:"currency"`
 	Status   CostStatus `json:"status"`
-	Source   string     `json:"source,omitempty"`
-	Display  string     `json:"display,omitempty"`
+	Source   string     `json:"source"`
+	Display  string     `json:"display"`
 	Included bool       `json:"included"`
 }
 

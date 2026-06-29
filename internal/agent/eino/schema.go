@@ -71,7 +71,7 @@ func costInfoSchema() map[string]any {
 			"display":  stringSchema(),
 			"included": booleanSchema(),
 		},
-		"amount", "currency", "unit", "status", "included",
+		"amount", "currency", "unit", "status", "source", "display", "included",
 	)
 }
 
@@ -87,7 +87,7 @@ func budgetLineSchema() map[string]any {
 			"display":  stringSchema(),
 			"included": booleanSchema(),
 		},
-		"key", "label", "amount", "currency", "status", "included",
+		"key", "label", "amount", "currency", "status", "source", "display", "included",
 	)
 }
 
