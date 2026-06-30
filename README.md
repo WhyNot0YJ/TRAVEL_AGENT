@@ -350,3 +350,67 @@ func (p *EinoTravelPlanner) Plan(ctx context.Context, req domain.TravelRequest) 
 * 增加失败 case 自动保存输入和输出快照
 
 更多说明见 `docs/evaluation-harness.md`、`testdata/harness-cases.md` 和 `web/e2e/harness-cases.md`。
+
+## 用户与计划库
+
+Travel Agent 在异步规划之外提供一层用户资产能力：注册登录、计划保存、用户中心 CRUD、发布/取消发布，以及首页公开计划与搜索。
+
+开启方式（`.env.example` 已同步）：
+
+```bash
+TRAVEL_AGENT_AUTH_ENABLED=true
+TRAVEL_AGENT_SESSION_COOKIE_NAME=travel_agent_session
+TRAVEL_AGENT_SESSION_TTL_HOURS=168
+TRAVEL_AGENT_PASSWORD_MIN_LENGTH=8
+TRAVEL_AGENT_PUBLIC_PLAN_PAGE_SIZE=20
+TRAVEL_AGENT_ALLOW_ANONYMOUS_PLAN_GENERATION=false
+TRAVEL_AGENT_COOKIE_SECURE=false
+TRAVEL_AGENT_COOKIE_DOMAIN=
+TRAVEL_AGENT_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
+`TRAVEL_AGENT_ALLOW_ANONYMOUS_PLAN_GENERATION=false` 是默认值，意味着 `/api/v1/travel/plans*` 也要登录。本地希望保留旧的匿名链路时把它改成 `true`。
+
+执行迁移（MySQL 启用时）：
+
+```bash
+mysql -u root -p travel_agent < migrations/mysql/003_users_and_plan_library.sql
+```
+
+未启用 MySQL 也能开起来：服务会回落到 `auth.MemoryUserStore` / `plans.MemoryPlanStore` 等内存实现，进程重启后数据丢失，仅供本地体验与 e2e。
+
+新增接口（详见 `docs/api.md`「Auth & Plan Library API」章节）：
+
+```text
+POST /api/v1/auth/register | login | logout
+GET  /api/v1/auth/me
+POST /api/v1/me/plans                        保存计划
+GET  /api/v1/me/plans                        我的计划列表
+GET  /api/v1/me/plans/:id                    详情（含完整 TravelPlan）
+PATCH/DELETE /api/v1/me/plans/:id            编辑 / 软删除
+POST /api/v1/me/plans/:id/publish | unpublish
+GET  /api/v1/me/current                      首页"当前计划"入口
+GET  /api/v1/public/plans                    公开排行 / 搜索
+GET  /api/v1/public/plans/:id                公开详情
+POST /api/v1/public/plans/:id/save           保存为我的副本
+```
+
+前端：
+
+* 路由由 `react-router-dom` 接管：`/`、`/login`、`/planner`、`/me`、`/me/plans/:planId`、`/public`、`/public/:publicPlanId`。
+* `useAuth` Provider 在 `main.tsx` 顶层注入；`RequireAuth` 包装私有路由，未登录跳 `/login?return_to=...`。
+* 设计 token 在 `web/src/styles.css` 顶部的 `:root` 注入；旧的聊天界面保持原视觉。
+
+测试：
+
+```bash
+go test ./...
+go vet ./...
+cd web
+npm run typecheck
+npm run lint
+npm run build
+npm run harness:ui
+```
+
+后续优化路线见 `requirements/stage-21-auth-home-plan-community.md`。

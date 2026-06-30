@@ -18,6 +18,7 @@ const (
 type Task struct {
 	ID          string               `json:"task_id"`
 	RequestID   string               `json:"request_id,omitempty"`
+	UserID      string               `json:"user_id,omitempty"`
 	RequestHash string               `json:"request_hash"`
 	Status      TaskStatus           `json:"status"`
 	Request     domain.TravelRequest `json:"request"`

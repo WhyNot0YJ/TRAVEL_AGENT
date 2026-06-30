@@ -136,7 +136,7 @@ Stage 21 后，产品应形成三个清晰空间：
 * 不保存明文密码。
 * 不把匿名任务历史自动暴露给任意登录用户。
 * 不把用户原始对话发布到公开首页。
-* 不引入大型前端 UI 框架或状态管理库，除非用户明确批准。
+* 不引入大型前端 UI 组件库或全局状态管理库，除非用户明确批准。客户端路由使用 `react-router-dom`。
 * 不把首页做成纯介绍产品的 landing page。
 
 ## 信息架构
@@ -357,7 +357,7 @@ hot_score =
 
 ### App Shell 与导航
 
-前端可以先使用轻量客户端路由状态，不强制引入 React Router。建议路由结构：
+前端使用 `react-router-dom` 管理客户端路由。建议路由结构：
 
 ```text
 /
@@ -1238,14 +1238,14 @@ internal/plans
 
 ### 前端技术方案
 
-本期不新增大型 UI 框架和全局状态管理库。
+本期不新增大型 UI 组件库和全局状态管理库；客户端路由使用 `react-router-dom`。
 
 推荐实现方式：
 
 * 继续使用 React + TypeScript + Vite。
 * 使用现有 `web/src/api/client.ts` 扩展 auth、plans、public plans API。
 * 使用轻量 `useAuth` hook 管理用户状态。
-* 使用轻量 `view` / `route` 状态或 History API 管理页面切换；如后续路由复杂，再评估 React Router。
+* 使用 `react-router-dom`（v6）管理页面切换；保持路由扁平，仅在确有需要时引入嵌套路由或加载器。
 * 使用现有 CSS 文件扩展 token、布局、组件样式。
 * 表单状态使用 React local state，避免引入表单库。
 * 列表查询使用简单 hook，支持 loading、error、empty、pagination。

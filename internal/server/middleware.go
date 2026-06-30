@@ -43,11 +43,25 @@ func Logger() gin.HandlerFunc {
 	}
 }
 
-func CORS() gin.HandlerFunc {
+// CORS now requires an explicit allowlist when credentials must flow. An
+// empty allowedOrigins falls back to the open dev policy, but production
+// deployments should always pass real origins (the cookie auth needs it).
+func CORS(allowedOrigins []string) gin.HandlerFunc {
+	allowSet := map[string]struct{}{}
+	for _, origin := range allowedOrigins {
+		allowSet[origin] = struct{}{}
+	}
 	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Headers", "Content-Type, X-Request-ID")
-		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		origin := c.GetHeader("Origin")
+		if len(allowSet) == 0 {
+			c.Header("Access-Control-Allow-Origin", "*")
+		} else if _, ok := allowSet[origin]; ok {
+			c.Header("Access-Control-Allow-Origin", origin)
+			c.Header("Vary", "Origin")
+			c.Header("Access-Control-Allow-Credentials", "true")
+		}
+		c.Header("Access-Control-Allow-Headers", "Content-Type, X-Request-ID, Authorization")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
 		if c.Request.Method == http.MethodOptions {
 			c.AbortWithStatus(http.StatusNoContent)
 			return

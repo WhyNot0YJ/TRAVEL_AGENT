@@ -57,3 +57,18 @@ $frontend-design 先给这个页面做设计审查和改版方案。
 ```txt
 $playwright 启动项目并验收刚刚修改的页面，截图、点击关键交互、检查报错。
 ```
+
+## 工作台 / 用户中心专项
+
+工作台路由层使用 AppShell + react-router-dom，把首页、生成页、用户中心、计划详情、公开列表、公开详情拆分成独立路由。在改这块 UI 时建议：
+
+1. 设计阶段使用 `$frontend-design`，重点确认 token (`--ta-route-green`、`--ta-lake-blue`、`--ta-sunset-coral`、`--ta-gold`) 是否覆盖目标视觉、是否避免大面积渐变与营销卡片堆叠。
+2. 实现完后跑 `$playwright-skill`，覆盖以下回归点（已在 `web/e2e/` 提供 spec，只需扩展即可）:
+   - 注册 / 登录 / 登出 / refresh 后 `/auth/me` 恢复
+   - 首页 4 区块 + 移动底栏（mobile project）
+   - 生成完成 → 未登录保存 → 登录引导 → 自动续保存
+   - 我的计划：重命名、编辑、删除二次确认、发布 / 取消发布
+   - 公开详情：保存为副本
+   - 私有计划权限：他人 plan_id 显示 "不存在或已不可见"
+
+3. 每次新增 Playwright case，需要把它写入 `web/e2e/harness-cases.md`，并保证与 `docs/api.md` 的 mock 契约对齐。

@@ -88,3 +88,57 @@ Request id 来源于 `X-Request-ID`，未提供时由 middleware 生成，并写
 * `duration_ms`
 * `status`
 * `error`
+
+## 用户资产层 — Auth + 计划库 + 公开计划
+
+在原有的 travel/agent 链路之外，系统提供一个用户资产层：
+
+```text
+React H5 (react-router-dom)
+  -> AuthProvider + useAuth (HttpOnly cookie)
+  -> /api/v1/auth/*
+  -> /api/v1/me/* (RequireAuth)
+  -> /api/v1/public/*
+
+internal/auth   ── User, Session, Service, Handler, Middleware (memory/mysql stores)
+internal/plans  ── UserPlan, PublicPlan, ConversationArchive, Service, Handler
+internal/travel ── 不变, 通过 auth middleware 拿到 user_id 写入 task
+```
+
+关键关系：
+
+* **匿名 task → 用户 plan → 公开 plan** 是三个层级的资产。task 是生成过程的瞬时单位，user_plan 是用户长期资产，public_plan 是发布后的快照。
+* 保存计划是一次显式动作。`POST /api/v1/me/plans` 校验 task 已 succeeded、归属当前用户，并把当时的 `TravelPlan` 与 Travel Brief 快照写入 `user_plans` / `plan_conversation_archives`。
+* 发布是一次显式动作。`publish` 把当前快照 upsert 到 `public_plans`,并把 `user_plan.publish_status` 改为 `published`。`unpublish` 反向。
+* 删除采用软删除 `user_plans.deleted_at`,同时把对应 `public_plans.status` 改为 `unpublished`。
+* 公开计划永远不暴露 user_id 之外的内部字段；作者信息只返回 `display_name`。
+* 副本流程：`POST /public/plans/:id/save` 为 viewer 创建 source_public_plan_id 指向原作的私有 user_plan,并自增 `save_count`,但不复制 note 和归档。
+
+权限边界：
+
+* `auth.RequireAuth` 中间件读取 cookie / Bearer，校验 session 状态，注入 `auth.User` 到 gin context 与 `WithUserID` 上下文。
+* repository 层每条私有读写都强制带 user_id 条件；service 同时做权限校验，访问他人 plan 一律返回 `ErrPlanNotFound`。
+* CORS 收紧:有 `TRAVEL_AGENT_ALLOWED_ORIGINS` 时返回精确 origin + `Access-Control-Allow-Credentials: true`,空列表回退到旧的 `*` (仅用于本地实验)。
+
+依赖注入：
+
+* `cmd/server/main.go` 装配 stores → service → handler，按 MySQL 是否可用决定使用 mysql_store 还是 memory_store。`travelTaskAdapter` 把 `travel.TaskStore` 包成 `plans.TaskLookup`，`authorAdapter` 把 `auth.UserStore` 包成 `plans.AuthorLookup`，让 plans 包不依赖 travel/auth。
+
+数据流（保存计划为例）：
+
+```text
+React PlannerView "保存计划" 按钮
+  -> fetch POST /api/v1/me/plans (credentials: include)
+  -> auth middleware 校验 cookie -> WithUserID
+  -> plans.Handler.Save -> plans.Service.Save
+  -> plans.TaskLookup.LookupTask -> travel.TaskStore.Get
+  -> 校验 task.UserID 与 user_id 一致
+  -> 同事务: INSERT user_plans + INSERT plan_conversation_archives
+  -> 返回 UserPlanDTO
+```
+
+观测：
+
+* 私有接口的结构化日志额外字段：`user_id`、`plan_id`、`public_plan_id`、`operation`。
+* 公开接口的浏览/保存事件最终写入 `public_plan_events`，并实时刷新 `hot_score`。
+* `analytics_events` 表已预留，后续阶段会启用。

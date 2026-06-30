@@ -97,6 +97,20 @@ function sseBlock(event: string, data: unknown): string {
 }
 
 test.beforeEach(async ({ page }) => {
+  await page.route("**/api/v1/auth/me", async (route) => {
+    await route.fulfill({ status: 401, contentType: "application/json", body: JSON.stringify({ message: "unauthenticated" }) });
+  });
+  await page.route("**/api/v1/public/plans?**", async (route) => {
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: [], total: 0, page: 1, page_size: 6 }) });
+  });
+  await page.route("**/api/v1/public/plans*", async (route) => {
+    if (route.request().url().includes("/save")) {
+      await route.fallback();
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ items: [], total: 0, page: 1, page_size: 6 }) });
+  });
+
   await page.route("**/api/v1/travel/chat/stream", async (route) => {
     await route.fulfill({
       status: 200,
@@ -203,7 +217,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("chat UI generates and displays a travel plan", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/planner");
 
   await expect(page.getByTestId("chat-input")).toBeVisible();
   await expect(page.getByTestId("generate-plan")).toHaveCount(0);
@@ -223,7 +237,7 @@ test("chat UI generates and displays a travel plan", async ({ page }) => {
 });
 
 test("planning stream appends chunks inside one assistant result bubble", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/planner");
 
   await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，2 人，预算 3000，喜欢美食和自然风光，高铁优先");
   await page.getByTestId("send-message").click();
@@ -259,7 +273,7 @@ test("chat UI blocks generation when required brief fields are missing", async (
     });
   });
 
-  await page.goto("/");
+  await page.goto("/planner");
   await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，预算 3000，喜欢美食和自然风光");
   await page.getByTestId("send-message").click();
 
@@ -275,7 +289,7 @@ test("chat UI recovers with polling when SSE disconnects", async ({ page }) => {
     await route.fulfill({ status: 503, body: "stream unavailable" });
   });
 
-  await page.goto("/");
+  await page.goto("/planner");
   await page.getByTestId("chat-input").fill("上海出发，杭州 3 天，2 人，预算 3000，喜欢美食和自然风光，高铁优先");
   await page.getByTestId("send-message").click();
   await page.getByTestId("generate-plan").click();

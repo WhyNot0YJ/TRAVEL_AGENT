@@ -236,3 +236,130 @@ export interface ChatResponse {
   is_complete: boolean;
   agent_mode: AgentMode;
 }
+
+// Stage 21 — auth + plan library types
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  display_name: string;
+  status: string;
+  created_at: string;
+}
+
+export interface AuthMeResponse {
+  user: AuthUser;
+}
+
+export interface AuthRegisterRequest {
+  email: string;
+  password: string;
+  display_name: string;
+}
+
+export interface AuthLoginRequest {
+  email: string;
+  password: string;
+}
+
+export type Visibility = "private" | "public";
+export type PublishStatus = "draft" | "published" | "unpublished";
+
+export interface UserPlan {
+  plan_id: string;
+  user_id: string;
+  task_id?: string;
+  source_public_plan_id?: string;
+  title: string;
+  note?: string;
+  summary?: string;
+  tags: string[];
+  plan?: TravelPlan;
+  destination_city: string;
+  days: number;
+  visibility: Visibility;
+  publish_status: PublishStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserPlanResponse {
+  plan: UserPlan;
+}
+
+export interface UserPlanListResponse {
+  items: UserPlan[];
+  page: number;
+  page_size: number;
+  total: number;
+}
+
+export interface PublicPlanAuthor {
+  display_name: string;
+}
+
+export interface PublicPlan {
+  public_plan_id: string;
+  title: string;
+  summary?: string;
+  tags: string[];
+  plan?: TravelPlan;
+  destination_city: string;
+  days: number;
+  author: PublicPlanAuthor;
+  hot_score: number;
+  view_count: number;
+  save_count: number;
+  published_at: string;
+  updated_at?: string;
+}
+
+export interface PublicPlanResponse {
+  public_plan: PublicPlan;
+}
+
+export interface PublicPlanListResponse {
+  items: PublicPlan[];
+  page: number;
+  page_size: number;
+  total: number;
+}
+
+export interface ConversationArchive {
+  plan_id: string;
+  task_id?: string;
+  brief?: TravelPlanRequest;
+  messages: { role: string; text: string }[];
+  events: { type: string; node_name?: string; message?: string }[];
+  created_at: string;
+}
+
+export interface CurrentResponse {
+  running_task?: {
+    task_id: string;
+    status: string;
+    destination_city: string;
+    updated_at: string;
+  };
+  latest_plan?: UserPlan;
+}
+
+export interface SavePlanRequest {
+  task_id: string;
+  title?: string;
+  note?: string;
+}
+
+export interface PatchPlanRequest {
+  title?: string;
+  note?: string;
+  summary?: string;
+  tags?: string[];
+  visibility?: Visibility;
+}
+
+export interface PublishPlanRequest {
+  title?: string;
+  summary?: string;
+  tags?: string[];
+}

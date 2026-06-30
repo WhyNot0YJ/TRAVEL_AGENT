@@ -13,7 +13,16 @@ func RequestHash(req domain.TravelRequest) (string, error) {
 	return RequestHashWithOptions(req, false)
 }
 
+// RequestHashWithOptions hashes the canonical request shape. Stage 21 added
+// the optional userID dimension via RequestHashForUser; the legacy variant
+// stays here so existing callers keep building anon hashes.
 func RequestHashWithOptions(req domain.TravelRequest, testMode bool, agentModeValues ...string) (string, error) {
+	return RequestHashForUser(req, testMode, "", agentModeValues...)
+}
+
+// RequestHashForUser includes the user_id in the canonical shape so two users
+// generating the same brief still get isolated tasks.
+func RequestHashForUser(req domain.TravelRequest, testMode bool, userID string, agentModeValues ...string) (string, error) {
 	req = domain.NormalizeTravelBrief(req)
 	agentMode := normalizeAgentMode("")
 	if len(agentModeValues) > 0 {
@@ -38,6 +47,7 @@ func RequestHashWithOptions(req domain.TravelRequest, testMode bool, agentModeVa
 		BudgetIncludes   []string `json:"budget_includes"`
 		TestMode         bool     `json:"test_mode"`
 		AgentMode        string   `json:"agent_mode"`
+		UserID           string   `json:"user_id,omitempty"`
 	}{
 		DepartureCity:    req.DepartureCity,
 		DestinationCity:  req.DestinationCity,
@@ -57,6 +67,7 @@ func RequestHashWithOptions(req domain.TravelRequest, testMode bool, agentModeVa
 		BudgetIncludes:   sortedCopy(req.BudgetIncludes),
 		TestMode:         testMode,
 		AgentMode:        agentMode,
+		UserID:           userID,
 	}
 	data, err := json.Marshal(normalized)
 	if err != nil {

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"travel-agent/internal/agent"
+	"travel-agent/internal/auth"
 	"travel-agent/internal/domain"
 )
 
@@ -70,7 +71,8 @@ func (s *TravelPlanService) CreateTask(ctx context.Context, req CreatePlanReques
 	taskID := newTaskID()
 	domainReq := req.ToDomain(taskID)
 	agentMode := normalizeAgentMode(req.AgentMode)
-	requestHash, err := RequestHashWithOptions(domainReq, req.TestMode, agentMode)
+	userID := auth.UserIDFromContext(ctx)
+	requestHash, err := RequestHashForUser(domainReq, req.TestMode, userID, agentMode)
 	if err != nil {
 		return CreateTaskResponse{}, err
 	}
@@ -89,6 +91,7 @@ func (s *TravelPlanService) CreateTask(ctx context.Context, req CreatePlanReques
 	task := Task{
 		ID:          taskID,
 		RequestID:   RequestIDFromContext(ctx),
+		UserID:      userID,
 		RequestHash: requestHash,
 		Status:      TaskPending,
 		Request:     domainReq,
