@@ -26,6 +26,7 @@ export const apiBaseUrl = rawBaseUrl.replace(/\/$/, "");
 // All authenticated routes need cookies; defaulting to "include" keeps a
 // single fetch helper across anonymous and signed-in calls.
 const credentialsMode: RequestCredentials = "include";
+const publicPlanDetailRequests = new Map<string, Promise<PublicPlan>>();
 
 async function parseJson<T>(response: Response): Promise<T> {
   const text = await response.text();
@@ -286,11 +287,20 @@ export async function listPublicPlans(params: {
 }
 
 export async function getPublicPlan(publicPlanId: string): Promise<PublicPlan> {
-  const data = await jsonRequest<{ public_plan: PublicPlan }>(
+  const existing = publicPlanDetailRequests.get(publicPlanId);
+  if (existing) {
+    return existing;
+  }
+  const request = jsonRequest<{ public_plan: PublicPlan }>(
     "GET",
     `/api/v1/public/plans/${encodeURIComponent(publicPlanId)}`,
-  );
-  return data.public_plan;
+  )
+    .then((data) => data.public_plan)
+    .finally(() => {
+      publicPlanDetailRequests.delete(publicPlanId);
+    });
+  publicPlanDetailRequests.set(publicPlanId, request);
+  return request;
 }
 
 export async function savePublicPlanCopy(publicPlanId: string): Promise<UserPlan> {

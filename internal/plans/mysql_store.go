@@ -436,7 +436,7 @@ func (s *MySQLPublicPlanStore) SetStatus(ctx context.Context, id, status string,
 	return nil
 }
 
-func (s *MySQLPublicPlanStore) IncrementCounter(ctx context.Context, id, kind string, now time.Time) error {
+func (s *MySQLPublicPlanStore) IncrementCounter(ctx context.Context, id string, kind PublicCounterKind, now time.Time) error {
 	if s == nil || s.db == nil {
 		return fmt.Errorf("mysql public plan store not initialized")
 	}
@@ -451,21 +451,42 @@ func (s *MySQLPublicPlanStore) IncrementCounter(ctx context.Context, id, kind st
 	default:
 		return fmt.Errorf("unknown counter kind %q", kind)
 	}
-	_, err := s.db.ExecContext(ctx, `
+	result, err := s.db.ExecContext(ctx, `
 UPDATE public_plans
 SET `+column+` = `+column+` + 1,
-    hot_score = view_count + save_count * 5 + copy_count * 3
-       + CASE
-           WHEN ? = 'view' THEN 1
-           WHEN ? = 'save' THEN 5
-           WHEN ? = 'copy' THEN 3
-           ELSE 0
-         END,
+    hot_score = CASE
+      WHEN ? = 'view' THEN (view_count + 1) + save_count * 5 + copy_count * 3
+      WHEN ? = 'save' THEN view_count + (save_count + 1) * 5 + copy_count * 3
+      WHEN ? = 'copy' THEN view_count + save_count * 5 + (copy_count + 1) * 3
+      ELSE view_count + save_count * 5 + copy_count * 3
+    END,
     updated_at = ?
 WHERE id = ?`,
-		kind, kind, kind, now.UTC(), id)
+		string(kind), string(kind), string(kind), now.UTC(), id)
 	if err != nil {
 		return fmt.Errorf("increment %s: %w", kind, err)
+	}
+	if affected, err := result.RowsAffected(); err == nil && affected == 0 {
+		return ErrPublicPlanNotFound
+	}
+	return nil
+}
+
+func (s *MySQLPublicPlanStore) RecordEvent(ctx context.Context, event PublicPlanEvent) error {
+	if s == nil || s.db == nil {
+		return fmt.Errorf("mysql public plan store not initialized")
+	}
+	_, err := s.db.ExecContext(ctx, `
+INSERT INTO public_plan_events (public_plan_id, user_id, event_type, client_hash, created_at)
+VALUES (?, ?, ?, ?, ?)`,
+		event.PublicPlanID,
+		nullableString(event.UserID),
+		event.EventType,
+		nullableString(event.ClientHash),
+		event.CreatedAt.UTC(),
+	)
+	if err != nil {
+		return fmt.Errorf("insert public_plan_event: %w", err)
 	}
 	return nil
 }

@@ -32,15 +32,29 @@ type AuthorLookup interface {
 // Service exposes the use cases behind /me/plans, /public/plans and
 // /me/current.
 type Service struct {
-	plans   PlanStore
-	publics PublicPlanStore
-	tasks   TaskLookup
-	authors AuthorLookup
-	now     func() time.Time
+	plans       PlanStore
+	publics     PublicPlanStore
+	tasks       TaskLookup
+	authors     AuthorLookup
+	viewDeduper PublicViewDeduper
+	now         func() time.Time
 }
 
 func NewService(plans PlanStore, publics PublicPlanStore, tasks TaskLookup, authors AuthorLookup) *Service {
-	return &Service{plans: plans, publics: publics, tasks: tasks, authors: authors, now: time.Now}
+	return &Service{
+		plans:       plans,
+		publics:     publics,
+		tasks:       tasks,
+		authors:     authors,
+		viewDeduper: NewMemoryPublicViewDeduper(0),
+		now:         time.Now,
+	}
+}
+
+func (s *Service) SetPublicViewDeduper(deduper PublicViewDeduper) {
+	if s != nil && deduper != nil {
+		s.viewDeduper = deduper
+	}
 }
 
 // SaveInput is the body of POST /me/plans.
@@ -336,7 +350,7 @@ func (s *Service) ListPublic(ctx context.Context, filter PublicListFilter) ([]Pu
 	return s.publics.List(ctx, filter)
 }
 
-func (s *Service) GetPublic(ctx context.Context, id string, viewerID string) (PublicPlan, error) {
+func (s *Service) GetPublic(ctx context.Context, id string, viewer PublicViewer) (PublicPlan, error) {
 	pub, err := s.publics.Get(ctx, id)
 	if err != nil {
 		return PublicPlan{}, err
@@ -345,11 +359,20 @@ func (s *Service) GetPublic(ctx context.Context, id string, viewerID string) (Pu
 		return PublicPlan{}, ErrPublicPlanNotFound
 	}
 	now := s.now().UTC()
-	// Counter increments are best-effort; failure is logged by caller and
-	// must not block the read path.
-	_ = s.publics.IncrementCounter(ctx, pub.ID, CounterView, now)
-	pub.ViewCount++
-	pub.HotScore = computeHotScore(pub)
+	shouldCount := true
+	viewerKey := viewer.DedupKey()
+	if s.viewDeduper != nil && viewerKey != "" {
+		allowed, err := s.viewDeduper.Allow(ctx, pub.ID, viewerKey, now)
+		shouldCount = err != nil || allowed
+	}
+	if !shouldCount {
+		return pub, nil
+	}
+	// Counter increments are best-effort and must not block the read path.
+	if s.incrementPublicCounter(ctx, pub.ID, CounterView, viewer, now) {
+		pub.ViewCount++
+		pub.HotScore = computeHotScore(pub)
+	}
 	return pub, nil
 }
 
@@ -386,8 +409,22 @@ func (s *Service) SavePublicAsCopy(ctx context.Context, viewerID, publicPlanID s
 	if err := s.plans.Create(ctx, plan); err != nil {
 		return UserPlan{}, err
 	}
-	_ = s.publics.IncrementCounter(ctx, pub.ID, CounterSave, now)
+	_ = s.incrementPublicCounter(ctx, pub.ID, CounterSave, PublicViewer{UserID: viewerID}, now)
 	return plan, nil
+}
+
+func (s *Service) incrementPublicCounter(ctx context.Context, publicPlanID string, kind PublicCounterKind, viewer PublicViewer, now time.Time) bool {
+	if err := s.publics.IncrementCounter(ctx, publicPlanID, kind, now); err != nil {
+		return false
+	}
+	_ = s.publics.RecordEvent(ctx, PublicPlanEvent{
+		PublicPlanID: publicPlanID,
+		UserID:       viewer.UserID,
+		EventType:    string(kind),
+		ClientHash:   viewer.ClientHash,
+		CreatedAt:    now,
+	})
+	return true
 }
 
 // Current returns the user's currently running task (if any) plus the most

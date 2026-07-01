@@ -67,6 +67,32 @@ type PublicPlan struct {
 	UpdatedAt       time.Time
 }
 
+// PublicViewer is the dedup/analytics identity for public plan reads. UserID
+// wins when present; anonymous clients use a hashed client fingerprint.
+type PublicViewer struct {
+	UserID     string
+	ClientHash string
+}
+
+func (v PublicViewer) DedupKey() string {
+	if v.UserID != "" {
+		return "user:" + v.UserID
+	}
+	if v.ClientHash != "" {
+		return "anon:" + v.ClientHash
+	}
+	return ""
+}
+
+// PublicPlanEvent is an audit row for counted public plan interactions.
+type PublicPlanEvent struct {
+	PublicPlanID string
+	UserID       string
+	EventType    string
+	ClientHash   string
+	CreatedAt    time.Time
+}
+
 // ConversationArchive captures the brief and chat that produced this plan. It
 // is private to the owner and never leaks into public details.
 type ConversationArchive struct {

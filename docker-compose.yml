@@ -1,0 +1,96 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: travel-agent-mysql
+    environment:
+      MYSQL_DATABASE: travel_agent
+      MYSQL_USER: travel
+      MYSQL_PASSWORD: travel
+      MYSQL_ROOT_PASSWORD: travel_root
+      TZ: UTC
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./migrations/mysql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -utravel -ptravel --silent"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 20s
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: travel-agent-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: travel-agent-backend
+    working_dir: /app
+    environment:
+      TRAVEL_AGENT_HTTP_ADDR: ":8080"
+      TRAVEL_AGENT_PLANNER: "eino"
+      TRAVEL_AGENT_REDIS_ADDR: "redis:6379"
+      TRAVEL_AGENT_REDIS_PASSWORD: ""
+      TRAVEL_AGENT_REDIS_DB: "0"
+      TRAVEL_AGENT_CACHE_TTL_SECONDS: "1800"
+      TRAVEL_AGENT_REDIS_LOCK_TTL_SECONDS: "15"
+      TRAVEL_AGENT_RATE_LIMIT_PER_MINUTE: "60"
+      TRAVEL_AGENT_SQL_ENABLED: "true"
+      TRAVEL_AGENT_SQL_DSN: "travel:travel@tcp(mysql:3306)/travel_agent?parseTime=true&charset=utf8mb4&loc=UTC"
+      TRAVEL_AGENT_SQL_MAX_OPEN_CONNS: "10"
+      TRAVEL_AGENT_SQL_MAX_IDLE_CONNS: "5"
+      TRAVEL_AGENT_SQL_CONN_MAX_LIFETIME_SECONDS: "1800"
+      TRAVEL_AGENT_AUTH_ENABLED: "true"
+      TRAVEL_AGENT_ALLOW_ANONYMOUS_PLAN_GENERATION: "true"
+      TRAVEL_AGENT_ALLOWED_ORIGINS: "http://localhost:5173,http://127.0.0.1:5173"
+      TRAVEL_AGENT_LLM_ENABLED: "false"
+      TRAVEL_AGENT_TOOL_MODE: "mock"
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - go_mod_cache:/go/pkg/mod
+      - go_build_cache:/root/.cache/go-build
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.dev
+    container_name: travel-agent-frontend
+    working_dir: /app
+    environment:
+      VITE_API_BASE_URL: ""
+      VITE_API_PROXY_TARGET: "http://backend:8080"
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./web:/app
+      - web_node_modules:/app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+  redis_data:
+  go_mod_cache:
+  go_build_cache:
+  web_node_modules:

@@ -1,6 +1,8 @@
 package plans
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"net/http"
 	"strconv"
@@ -290,11 +292,11 @@ func (h *Handler) ListPublic(c *gin.Context) {
 }
 
 func (h *Handler) GetPublic(c *gin.Context) {
-	viewerID := ""
+	viewer := publicPlanViewer(c, "")
 	if user, ok := auth.UserFromGin(c); ok {
-		viewerID = user.ID
+		viewer = publicPlanViewer(c, user.ID)
 	}
-	pub, err := h.service.GetPublic(c.Request.Context(), c.Param("public_plan_id"), viewerID)
+	pub, err := h.service.GetPublic(c.Request.Context(), c.Param("public_plan_id"), viewer)
 	if errors.Is(err, ErrPublicPlanNotFound) {
 		respondError(c, http.StatusNotFound, "not_found", "")
 		return
@@ -304,6 +306,12 @@ func (h *Handler) GetPublic(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"public_plan": ToPublicPlanDTO(pub, true)})
+}
+
+func publicPlanViewer(c *gin.Context, userID string) PublicViewer {
+	raw := c.ClientIP() + "|" + strings.TrimSpace(c.Request.UserAgent())
+	sum := sha256.Sum256([]byte(raw))
+	return PublicViewer{UserID: userID, ClientHash: hex.EncodeToString(sum[:16])}
 }
 
 func (h *Handler) SavePublicAsCopy(c *gin.Context) {

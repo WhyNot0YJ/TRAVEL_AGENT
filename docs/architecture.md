@@ -10,8 +10,8 @@ HTTP Client
   -> Travel Handler
   -> TravelPlanService
   -> EventBus
-  -> TaskStore (MySQL, Redis, or memory fallback)
-  -> RateLimiter (Redis or memory fallback)
+  -> TaskStore (MySQL authoritative, Redis cache, or memory fallback)
+  -> RateLimiter / RequestHashLock (Redis or memory fallback)
   -> agent.TravelPlanner
   -> MockPlanner / EinoTravelPlanner
 ```
@@ -51,15 +51,17 @@ React H5
 
 ## 当前存储
 
-MySQL 可选启用。启用并连接成功时，`TravelPlanService` 使用 `MySQLTaskStore` 保存任务状态、请求 hash 和最终 TravelPlan。服务重启后可继续查询已完成任务。
+MySQL 可选启用。启用并连接成功时，`TravelPlanService` 使用 `MySQLTaskStore` 作为权威存储，保存任务状态、请求快照、最终 TravelPlan、planner run 摘要和失败错误日志。服务重启后可继续查询已完成任务。
 
-Redis 仍用于限流；当未启用 MySQL 时，Redis 也可继续作为任务缓存和 request hash 索引。Redis 未配置或不可用时，开发环境自动降级为内存任务 store 和内存限流。内存模式下服务重启后任务会丢失。
+Redis 负责加速和协调：request hash -> task id 短期映射、终态任务热缓存、IP 限流和 request hash 创建锁。MySQL 与 Redis 同时可用时，server 装配为 `CachedTaskStore(MySQLTaskStore, RedisTaskCache)`；Redis 命中 request hash 后仍回查 MySQL 获取权威状态，避免 stale status 影响轮询。Redis 未配置或不可用时，开发环境自动降级为内存任务 store、内存限流和内存 request hash 锁。内存模式下服务重启后任务会丢失。
 
 职责边界：
 
-* MySQL：长期任务状态、最终计划、后续 planner run/event trace。
-* Redis：短期缓存、request hash 复用、限流计数。
+* MySQL：长期任务状态、请求快照、最终计划、planner run 摘要、关键错误日志。
+* Redis：短期缓存、request hash 复用、限流计数、短锁；Redis 不是权威数据源。
 * 内存：本地开发 fallback。
+
+当前阶段仍未引入 MQ / Worker。`POST /travel/plans` 创建任务后仍由 HTTP 进程启动短后台 goroutine 执行 planner；后续 MQ/Worker 阶段会把执行挪到独立 consumer，并复用现有 MySQL run log 和 Redis 锁边界。
 
 ## SSE 流程
 

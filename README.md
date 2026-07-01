@@ -20,6 +20,51 @@ go run ./cmd/harness
 make harness
 ```
 
+## Docker 一键开发环境
+
+推荐换电脑或从零启动时使用 Docker Compose。它会同时启动 Go 后端、React/Vite 前端、MySQL 8.4 和 Redis 7.4：
+
+```bash
+docker compose up --build
+```
+
+Windows 首次安装 Docker Desktop 后，如果当前终端提示找不到 `docker`，请重新打开终端；如果 `docker info` 提示 daemon 未运行，请先启动 Docker Desktop。启用 WSL2 / 虚拟机平台后，Windows 可能需要重启一次。
+
+也可以用 Makefile：
+
+```bash
+make docker-build
+```
+
+启动后访问：
+
+```text
+前端：http://localhost:5173
+后端：http://localhost:8080
+MySQL：localhost:3306
+Redis：localhost:6379
+```
+
+Compose 服务：
+
+* `backend`：运行 `go run ./cmd/server`，连接 `mysql:3306` 和 `redis:6379`。
+* `frontend`：运行 Vite dev server，浏览器访问同源 `/api`，容器内代理到 `http://backend:8080`。
+* `mysql`：首次创建 `mysql_data` volume 时自动执行 `migrations/mysql/*.sql`。
+* `redis`：开启 AOF，并把数据保存在 `redis_data` volume。
+
+常用命令：
+
+```bash
+docker compose up -d --build
+docker compose logs -f backend
+docker compose down
+docker compose down -v
+```
+
+`docker compose down` 只停止并删除容器，MySQL / Redis 数据仍保存在 Docker volume。`docker compose down -v` 会一起删除 volume，相当于清空数据库后重新初始化迁移。
+
+Docker 默认开发配置在 `docker-compose.yml` 中；可参考 `.env.docker.example` 查看容器内环境变量。后端容器里不能用 `localhost` 连接 MySQL/Redis，必须使用 compose 服务名：`mysql:3306`、`redis:6379`。
+
 也可以指定参数：
 
 ```bash
@@ -85,15 +130,19 @@ set TRAVEL_AGENT_REDIS_ADDR=localhost:6379
 set TRAVEL_AGENT_REDIS_PASSWORD=
 set TRAVEL_AGENT_REDIS_DB=0
 set TRAVEL_AGENT_CACHE_TTL_SECONDS=1800
+set TRAVEL_AGENT_REDIS_LOCK_TTL_SECONDS=15
 set TRAVEL_AGENT_RATE_LIMIT_PER_MINUTE=60
 ```
 
-Redis 不可用时，开发环境会降级为内存任务 store 和内存限流。真实数据库持久化会在后续阶段接入。
+Redis 不可用时，开发环境会降级为内存任务 store、内存限流和内存 request hash 锁。Redis 可用时用于 request hash 短期映射、终态任务热缓存、IP 限流和分布式锁；它不是权威数据源。
 
-MySQL 持久化是可选能力。先执行迁移：
+MySQL 持久化是可选能力。先创建数据库并按顺序执行迁移：
 
 ```bash
 mysql -u root -p travel_agent < migrations/mysql/001_travel_persistence.sql
+mysql -u root -p travel_agent < migrations/mysql/002_observability_request_id.sql
+mysql -u root -p travel_agent < migrations/mysql/003_users_and_plan_library.sql
+mysql -u root -p travel_agent < migrations/mysql/004_backend_performance_persistence.sql
 ```
 
 启用 MySQL task store：
@@ -108,6 +157,8 @@ go run ./cmd/server
 ```
 
 未配置 SQL 或连接失败时，server 会继续使用 Redis/内存 store。Redis 仍可用于限流和无 SQL 模式下的短期任务缓存；MySQL 用于长期保存任务和最终计划。
+
+MySQL 与 Redis 同时可用时，MySQL 是任务、请求快照、最终结果、run log 和错误日志的权威存储；Redis 只做短 TTL 加速和 request hash 锁。Redis 运行时故障会 fail-open 回查 MySQL，不会只写 Redis 造成任务丢失。
 
 订阅任务事件流：
 

@@ -170,6 +170,30 @@ func TestHandlerPublishAndPublicGet(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("public get: expected 200, got %d body=%s", rec.Code, rec.Body.String())
 	}
+	var firstDetail struct {
+		PublicPlan PublicPlanDTO `json:"public_plan"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &firstDetail); err != nil {
+		t.Fatalf("decode first public detail: %v", err)
+	}
+	if firstDetail.PublicPlan.ViewCount != 1 {
+		t.Fatalf("expected first detail view_count=1, got %d", firstDetail.PublicPlan.ViewCount)
+	}
+
+	rec = httptest.NewRecorder()
+	router.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/api/v1/public/plans/"+pubBody.PublicPlan.PublicPlanID, nil))
+	if rec.Code != http.StatusOK {
+		t.Fatalf("second public get: expected 200, got %d body=%s", rec.Code, rec.Body.String())
+	}
+	var secondDetail struct {
+		PublicPlan PublicPlanDTO `json:"public_plan"`
+	}
+	if err := json.Unmarshal(rec.Body.Bytes(), &secondDetail); err != nil {
+		t.Fatalf("decode second public detail: %v", err)
+	}
+	if secondDetail.PublicPlan.ViewCount != 1 {
+		t.Fatalf("expected duplicate detail view_count=1, got %d", secondDetail.PublicPlan.ViewCount)
+	}
 	if !strings.Contains(rec.Body.String(), "杭州亲子游") {
 		t.Fatalf("expected title in public detail, got %s", rec.Body.String())
 	}

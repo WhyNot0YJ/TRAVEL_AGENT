@@ -30,6 +30,8 @@ type TravelPlanService struct {
 	store       TaskStore
 	rateLimiter RateLimiter
 	events      *EventBus
+	requestLock RequestLock
+	plannerType string
 	now         func() time.Time
 }
 
@@ -50,7 +52,21 @@ func NewTravelPlanService(planner agent.TravelPlanner, store TaskStore, limiter 
 		store:       store,
 		rateLimiter: limiter,
 		events:      bus,
+		requestLock: NewMemoryRequestLock(15 * time.Second),
+		plannerType: "unknown",
 		now:         time.Now,
+	}
+}
+
+func (s *TravelPlanService) SetRequestLock(lock RequestLock) {
+	if s != nil && lock != nil {
+		s.requestLock = lock
+	}
+}
+
+func (s *TravelPlanService) SetPlannerType(plannerType string) {
+	if s != nil && strings.TrimSpace(plannerType) != "" {
+		s.plannerType = strings.ToLower(strings.TrimSpace(plannerType))
 	}
 }
 
@@ -76,13 +92,27 @@ func (s *TravelPlanService) CreateTask(ctx context.Context, req CreatePlanReques
 	if err != nil {
 		return CreateTaskResponse{}, err
 	}
+	release := noopRelease
+	if s.requestLock != nil {
+		unlock, acquired, err := s.requestLock.Acquire(ctx, requestHash)
+		if err != nil {
+			log.Printf("request hash lock failed, continuing without lock: %v", err)
+		} else {
+			release = unlock
+			if !acquired {
+				if existing, ok := s.waitForExistingTask(ctx, requestHash, 500*time.Millisecond); ok {
+					return createTaskResponseFromTask(existing), nil
+				}
+			}
+		}
+	}
+	defer func() {
+		if err := release(ctx); err != nil {
+			log.Printf("request hash lock release failed hash=%s: %v", requestHash, err)
+		}
+	}()
 	if existing, ok, err := s.store.FindByHash(ctx, requestHash); err == nil && ok {
-		return CreateTaskResponse{
-			TaskID:      existing.ID,
-			RequestHash: existing.RequestHash,
-			Status:      existing.Status,
-			Cached:      existing.Status == TaskSucceeded,
-		}, nil
+		return createTaskResponseFromTask(existing), nil
 	} else if err != nil {
 		log.Printf("request hash lookup failed, creating new task: %v", err)
 	}
@@ -94,13 +124,18 @@ func (s *TravelPlanService) CreateTask(ctx context.Context, req CreatePlanReques
 		UserID:      userID,
 		RequestHash: requestHash,
 		Status:      TaskPending,
+		PlannerType: s.plannerType,
 		Request:     domainReq,
 		TestMode:    req.TestMode,
 		AgentMode:   agentMode,
+		Attempt:     1,
 		CreatedAt:   now,
 		UpdatedAt:   now,
 	}
 	if err := s.store.Create(ctx, task); err != nil {
+		if existing, ok, lookupErr := s.store.FindByHash(ctx, requestHash); lookupErr == nil && ok {
+			return createTaskResponseFromTask(existing), nil
+		}
 		return CreateTaskResponse{}, err
 	}
 	s.publish(TaskEvent{Type: EventProgress, RequestID: task.RequestID, TaskID: task.ID, Status: task.Status, Message: "task created", CreatedAt: now})
@@ -112,6 +147,28 @@ func (s *TravelPlanService) CreateTask(ctx context.Context, req CreatePlanReques
 		Status:      task.Status,
 		Cached:      false,
 	}, nil
+}
+
+func (s *TravelPlanService) waitForExistingTask(ctx context.Context, requestHash string, timeout time.Duration) (Task, bool) {
+	deadline := time.Now().Add(timeout)
+	for {
+		existing, ok, err := s.store.FindByHash(ctx, requestHash)
+		if err == nil && ok {
+			return existing, true
+		}
+		if err != nil {
+			log.Printf("request hash wait lookup failed: %v", err)
+			return Task{}, false
+		}
+		if time.Now().After(deadline) {
+			return Task{}, false
+		}
+		select {
+		case <-ctx.Done():
+			return Task{}, false
+		case <-time.After(25 * time.Millisecond):
+		}
+	}
 }
 
 func (s *TravelPlanService) GetTask(ctx context.Context, id string) (GetTaskResponse, error) {
@@ -466,6 +523,15 @@ func taskResponse(task Task) GetTaskResponse {
 		Error:       task.Error,
 		CreatedAt:   task.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   task.UpdatedAt.Format(time.RFC3339),
+	}
+}
+
+func createTaskResponseFromTask(task Task) CreateTaskResponse {
+	return CreateTaskResponse{
+		TaskID:      task.ID,
+		RequestHash: task.RequestHash,
+		Status:      task.Status,
+		Cached:      task.Status == TaskSucceeded,
 	}
 }
 

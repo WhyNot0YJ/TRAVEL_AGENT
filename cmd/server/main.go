@@ -26,12 +26,17 @@ func main() {
 
 	store := travel.TaskStore(travel.NewMemoryTaskStore())
 	limiter := travel.RateLimiter(travel.NewMemoryRateLimiter(cfg.RateLimitPerMinute))
-	if client, err := redisclient.NewClient(context.Background(), cfg); err == nil {
-		store = travel.NewRedisTaskStore(client, cfg.CacheTTL)
-		limiter = travel.NewRedisRateLimiter(client, cfg.RateLimitPerMinute)
-		log.Printf("redis enabled addr=%s db=%d", cfg.RedisAddr, cfg.RedisDB)
+	requestLock := travel.RequestLock(travel.NewMemoryRequestLock(cfg.RedisLockTTL))
+	var taskCache travel.TaskCache
+	redisClient, redisErr := redisclient.NewClient(context.Background(), cfg)
+	if redisErr == nil {
+		store = travel.NewRedisTaskStore(redisClient, cfg.CacheTTL)
+		limiter = travel.NewRedisRateLimiter(redisClient, cfg.RateLimitPerMinute)
+		requestLock = travel.NewRedisRequestLock(redisClient, cfg.RedisLockTTL)
+		taskCache = travel.NewRedisTaskCache(redisClient, cfg.CacheTTL)
+		log.Printf("redis enabled addr=%s db=%d cache_ttl=%s lock_ttl=%s", cfg.RedisAddr, cfg.RedisDB, cfg.CacheTTL, cfg.RedisLockTTL)
 	} else {
-		log.Printf("redis unavailable, using memory task store and limiter: %v", err)
+		log.Printf("redis unavailable, using memory task store, limiter and request lock: %v", redisErr)
 	}
 
 	var db *sql.DB
@@ -48,8 +53,14 @@ func main() {
 				log.Printf("mysql ping failed, keeping %T task store: %v", store, err)
 			} else {
 				db = opened
-				store = travel.NewMySQLTaskStore(db)
-				log.Printf("mysql task persistence enabled max_open_conns=%d max_idle_conns=%d", cfg.SQLMaxOpenConns, cfg.SQLMaxIdleConns)
+				mysqlStore := travel.TaskStore(travel.NewMySQLTaskStore(db))
+				if taskCache != nil {
+					store = travel.NewCachedTaskStore(mysqlStore, taskCache)
+					log.Printf("mysql task persistence enabled with redis cache max_open_conns=%d max_idle_conns=%d", cfg.SQLMaxOpenConns, cfg.SQLMaxIdleConns)
+				} else {
+					store = mysqlStore
+					log.Printf("mysql task persistence enabled max_open_conns=%d max_idle_conns=%d", cfg.SQLMaxOpenConns, cfg.SQLMaxIdleConns)
+				}
 			}
 		}
 	} else if cfg.SQLEnabled {
@@ -57,6 +68,8 @@ func main() {
 	}
 
 	travelService := travel.NewTravelPlanService(planner, store, limiter, eino.NewTravelInfoExtractor())
+	travelService.SetPlannerType(cfg.Planner)
+	travelService.SetRequestLock(requestLock)
 
 	// Stage 21 — auth + plan library wiring. The dev fallback uses memory
 	// stores so local laptops without MySQL still get the full UX.
@@ -87,6 +100,9 @@ func main() {
 		})
 
 		plansService := plans.NewService(planStore, publicStore, &travelTaskAdapter{store: store}, &authorAdapter{users: userStore})
+		if redisClient != nil {
+			plansService.SetPublicViewDeduper(plans.NewRedisPublicViewDeduper(redisClient, 0))
+		}
 		plansHandler = plans.NewHandler(plansService, plans.SimpleCurrentTaskLookup(func(userID string) *plans.RunningTask {
 			// Best-effort lookup — store doesn't yet support filter-by-user,
 			// so we return nil and rely on the latest_plan fallback. The

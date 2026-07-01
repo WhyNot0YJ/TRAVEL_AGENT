@@ -30,13 +30,16 @@ type PublicPlanStore interface {
 	GetByPlanID(ctx context.Context, planID string) (PublicPlan, bool, error)
 	List(ctx context.Context, filter PublicListFilter) ([]PublicPlan, int, error)
 	SetStatus(ctx context.Context, id, status string, updatedAt time.Time) error
-	IncrementCounter(ctx context.Context, id, kind string, now time.Time) error
+	IncrementCounter(ctx context.Context, id string, kind PublicCounterKind, now time.Time) error
+	RecordEvent(ctx context.Context, event PublicPlanEvent) error
 }
 
+type PublicCounterKind string
+
 const (
-	CounterView = "view"
-	CounterSave = "save"
-	CounterCopy = "copy"
+	CounterView PublicCounterKind = "view"
+	CounterSave PublicCounterKind = "save"
+	CounterCopy PublicCounterKind = "copy"
 )
 
 // MemoryPlanStore is a single-process fallback. Useful in tests and when MySQL
@@ -200,6 +203,7 @@ type MemoryPublicPlanStore struct {
 	mu          sync.RWMutex
 	plans       map[string]PublicPlan
 	planToPubID map[string]string
+	events      []PublicPlanEvent
 }
 
 func NewMemoryPublicPlanStore() *MemoryPublicPlanStore {
@@ -331,7 +335,7 @@ func (s *MemoryPublicPlanStore) SetStatus(ctx context.Context, id, status string
 	return nil
 }
 
-func (s *MemoryPublicPlanStore) IncrementCounter(ctx context.Context, id, kind string, now time.Time) error {
+func (s *MemoryPublicPlanStore) IncrementCounter(ctx context.Context, id string, kind PublicCounterKind, now time.Time) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -353,6 +357,22 @@ func (s *MemoryPublicPlanStore) IncrementCounter(ctx context.Context, id, kind s
 	plan.UpdatedAt = now
 	s.plans[id] = plan
 	return nil
+}
+
+func (s *MemoryPublicPlanStore) RecordEvent(ctx context.Context, event PublicPlanEvent) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.events = append(s.events, event)
+	return nil
+}
+
+func (s *MemoryPublicPlanStore) Events() []PublicPlanEvent {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return append([]PublicPlanEvent(nil), s.events...)
 }
 
 func computeHotScore(p PublicPlan) int64 {

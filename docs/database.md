@@ -2,10 +2,10 @@
 
 ## 当前阶段
 
-当前阶段已支持可选 MySQL 持久化。未配置 SQL 时，系统继续使用 Redis 或内存开发模式。
+当前阶段已支持可选 MySQL 权威持久化，并把 Redis 收敛为短期缓存、限流和 request hash 锁。未配置 SQL 时，系统继续使用 Redis 或内存开发模式。
 
-* MySQL：长期保存 travel task、最终 TravelPlan，以及后续 planner run / event trace 表。
-* Redis：继续用于无 SQL 模式下的任务缓存、request hash 去重和限流。
+* MySQL：长期保存 travel task、请求快照、最终 TravelPlan、planner run 摘要和关键错误日志。
+* Redis：用于 request hash -> task id 短期映射、终态任务热缓存、IP 限流、request hash 分布式锁；Redis 不是权威数据源。
 * 内存：Redis 和 MySQL 都不可用时的本地开发 fallback，服务重启后数据丢失。
 
 迁移文件：
@@ -14,6 +14,7 @@
 migrations/mysql/001_travel_persistence.sql
 migrations/mysql/002_observability_request_id.sql
 migrations/mysql/003_users_and_plan_library.sql
+migrations/mysql/004_backend_performance_persistence.sql
 ```
 
 ## MySQL 配置
@@ -26,7 +27,7 @@ migrations/mysql/003_users_and_plan_library.sql
 | `TRAVEL_AGENT_SQL_MAX_IDLE_CONNS` | 最大空闲连接数 | `5` |
 | `TRAVEL_AGENT_SQL_CONN_MAX_LIFETIME_SECONDS` | 连接最长生命周期 | `1800` |
 
-如果 `TRAVEL_AGENT_SQL_ENABLED=true` 但 DSN 为空、连接失败或 ping 失败，server 会保留 Redis/内存 store 并记录日志。
+如果 `TRAVEL_AGENT_SQL_ENABLED=true` 但 DSN 为空、连接失败或 ping 失败，server 会保留 Redis/内存 store 并记录日志。生产环境建议把 SQL 连接失败视为启动失败；当前本地开发策略是 fail-open。
 
 ## MySQL 表
 
@@ -38,8 +39,12 @@ migrations/mysql/003_users_and_plan_library.sql
 | --- | --- |
 | `id` | task id，主键 |
 | `request_hash` | 请求 hash，唯一索引，用于复用相同请求 |
-| `status` | `pending`、`running`、`succeeded`、`failed` |
-| `request_json` | `domain.TravelRequest` JSON |
+| `status` | `pending`、`queued`、`running`、`succeeded`、`failed`、`retrying`、`canceled`、`dead_letter` |
+| `planner_type` | `mock` / `eino` / `unknown` |
+| `agent_mode` | `quick` / `expert` |
+| `test_mode` | 是否测试模式 |
+| `attempt` | 当前执行 attempt，内联 HTTP 执行默认为 `1` |
+| `request_json` | 兼容旧迁移保留；新路径同时写入 `travel_task_requests` |
 | `error_text` | 失败错误摘要 |
 | `created_at` / `updated_at` | UTC 时间 |
 
@@ -49,51 +54,83 @@ migrations/mysql/003_users_and_plan_library.sql
 * `UNIQUE KEY ux_travel_tasks_request_hash (request_hash)`
 * `KEY idx_travel_tasks_status_updated_at (status, updated_at)`
 
-### `travel_plans`
+### `travel_task_requests`
 
-保存最终 `domain.TravelPlan` JSON 和摘要字段。
+保存规范化后的请求快照，用于审计、重试和问题复现。
 
 | 字段 | 说明 |
 | --- | --- |
 | `task_id` | task id，主键并引用 `travel_tasks.id` |
+| `request_hash` | 请求 hash |
+| `request_json` | `domain.TravelRequest` JSON |
+| `created_at` / `updated_at` | UTC 时间 |
+
+### `travel_plan_results`
+
+保存最终 `domain.TravelPlan` JSON 和摘要字段。旧表 `travel_plans` 仍保留为兼容读路径；新写入使用 `travel_plan_results`。
+
+| 字段 | 说明 |
+| --- | --- |
+| `task_id` | task id，主键并引用 `travel_tasks.id` |
+| `result_version` | 缓存/结果 schema 版本，当前为 `1` |
 | `plan_json` | `domain.TravelPlan` JSON |
 | `budget_total` | 总预算 |
 | `day_count` | 天数 |
 | `warning_count` | warning 数量 |
-| `updated_at` | UTC 时间 |
+| `generated_duration_ms` | 从 task 创建到终态更新的耗时近似值 |
+| `created_at` / `updated_at` | UTC 时间 |
 
-### `planner_runs`
+### `travel_planner_runs`
 
-预留给 planner 运行摘要。当前迁移已建表，后续阶段会把通用 trace 写入该表。
+保存每次 planner run 的摘要。当前 HTTP 内联执行写入 `worker_id=inline-http`、`attempt=1`；后续 Worker/MQ 会复用该表记录 worker id、重试和死信前的执行状态。
 
-字段包括 planner type、prompt version、tool mode、耗时、fallback、token usage 等。
+关键索引：`UNIQUE(task_id, attempt)`、`(task_id, created_at)`、`(status, finished_at)`。
 
-### `planner_events`
+### `travel_node_traces`
 
-预留给节点/tool/LLM 事件。当前迁移已建表，后续阶段会写入节点名、tool、provider、耗时、状态和 fallback reason。
+预留给 Eino 节点级耗时和 warning。当前 SSE 仍只写进程内 EventBus；后续观测阶段会把节点事件落表。
+
+### `travel_error_logs`
+
+记录关键错误事件。当前 task 失败会写 `component=planner`、`operation=plan`、`error_code=planner_failed`；后续会扩展为统一错误分类与 trace 查询。
+
+索引：
+
+* `KEY idx_travel_error_logs_trace_created (trace_id, created_at)`
+* `KEY idx_travel_error_logs_task_created (task_id, created_at)`
+* `KEY idx_travel_error_logs_category_created (error_category, created_at)`
+* `KEY idx_travel_error_logs_request_created (request_id, created_at)`
 
 ## Redis Key
 
+Public plan views also use `travel:public_plan:view:{public_plan_id}:{viewer_hash}` as a 1-hour SETNX dedupe marker when Redis is available. Without Redis, the server keeps the same 1-hour window in memory.
+
 | Key | Value | TTL |
 | --- | --- | --- |
-| `travel:task:{task_id}` | JSON encoded task，包括状态、请求、结果、错误、时间戳 | `TRAVEL_AGENT_CACHE_TTL_SECONDS` |
-| `travel:request_hash:{hash}` | 对应的 `task_id` | `TRAVEL_AGENT_CACHE_TTL_SECONDS` |
+| `travel:task:{task_id}` | 终态 task 热缓存，包装 `{version, task}`；仅缓存 succeeded / failed / canceled / dead_letter | `TRAVEL_AGENT_CACHE_TTL_SECONDS` |
+| `travel:request_hash:{hash}` | 对应的 `task_id`，命中后仍回查 MySQL 权威状态 | `TRAVEL_AGENT_CACHE_TTL_SECONDS` |
 | `travel:rate:{client}` | 当前窗口内请求计数 | 1 minute |
+| `travel:lock:request_hash:{hash}` | request hash 创建关键区锁，value 为随机 token，Lua 比对释放 | `TRAVEL_AGENT_REDIS_LOCK_TTL_SECONDS` |
 
 ## 任务状态
 
 任务状态：
 
 * `pending`
+* `queued`
 * `running`
 * `succeeded`
 * `failed`
+* `retrying`
+* `canceled`
+* `dead_letter`
 
 ## 说明
 
 * `internal/domain` 不包含 Redis key 或任务状态管理。
 * SQL 原始表结构不污染 `internal/domain`。
 * 不持久化 API Key、完整敏感请求头或外部 provider 原始大响应。
+* Redis 运行时失败采用 fail-open：记录日志后回查 MySQL 或退回本地内存限流 / 锁；不会只写 Redis 造成权威数据丢失。
 * 当前没有自动 TTL 删除 SQL 行；生产部署应按业务保留周期定期清理旧任务和 trace。
 
 ## 用户与计划库表
@@ -166,7 +203,7 @@ migrations/mysql/003_users_and_plan_library.sql
 
 ### `public_plan_events`
 
-记录浏览/保存/复制事件，便于后续做反作弊与去重。当前主链路只用它做 hot_score 增量更新。
+记录已计入计数器的浏览/保存/复制事件，便于后续做反作弊、审计与去重策略分析。当前主链路在 `public_plans` 计数更新成功后写入该表；Redis 或内存 TTL 去重命中的重复浏览不会写入事件。
 
 ### `analytics_events`
 

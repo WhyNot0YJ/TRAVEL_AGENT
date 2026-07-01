@@ -18,6 +18,7 @@ type Config struct {
 	RedisPassword      string
 	RedisDB            int
 	CacheTTL           time.Duration
+	RedisLockTTL       time.Duration
 	RateLimitPerMinute int
 	SQLEnabled         bool
 	SQLDSN             string
@@ -26,15 +27,15 @@ type Config struct {
 	SQLConnMaxLifetime time.Duration
 
 	// Stage 21 — auth, sessions and access policy.
-	AuthEnabled                   bool
-	SessionCookieName             string
-	SessionTTL                    time.Duration
-	PasswordMinLength             int
-	PublicPlanPageSize            int
-	AllowAnonymousPlanGeneration  bool
-	CookieSecure                  bool
-	CookieDomain                  string
-	AllowedOrigins                []string
+	AuthEnabled                  bool
+	SessionCookieName            string
+	SessionTTL                   time.Duration
+	PasswordMinLength            int
+	PublicPlanPageSize           int
+	AllowAnonymousPlanGeneration bool
+	CookieSecure                 bool
+	CookieDomain                 string
+	AllowedOrigins               []string
 }
 
 func Load() Config {
@@ -46,6 +47,7 @@ func Load() Config {
 		RedisPassword:      os.Getenv("TRAVEL_AGENT_REDIS_PASSWORD"),
 		RedisDB:            envInt("TRAVEL_AGENT_REDIS_DB", 0),
 		CacheTTL:           time.Duration(envInt("TRAVEL_AGENT_CACHE_TTL_SECONDS", 1800)) * time.Second,
+		RedisLockTTL:       time.Duration(envInt("TRAVEL_AGENT_REDIS_LOCK_TTL_SECONDS", 15)) * time.Second,
 		RateLimitPerMinute: envInt("TRAVEL_AGENT_RATE_LIMIT_PER_MINUTE", 60),
 		SQLEnabled:         parseBool(os.Getenv("TRAVEL_AGENT_SQL_ENABLED")),
 		SQLDSN:             strings.TrimSpace(os.Getenv("TRAVEL_AGENT_SQL_DSN")),

@@ -25,7 +25,10 @@ func TestMySQLTaskStoreCreateAndGet(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO travel_tasks")).
-		WithArgs(task.ID, task.RequestID, nil, task.RequestHash, task.Status, sqlmock.AnyArg(), nil, task.CreatedAt.UTC(), task.UpdatedAt.UTC()).
+		WithArgs(task.ID, task.RequestID, nil, task.RequestHash, task.Status, "mock", AgentModeQuick, task.TestMode, task.Attempt, sqlmock.AnyArg(), nil, task.CreatedAt.UTC(), task.UpdatedAt.UTC()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO travel_task_requests")).
+		WithArgs(task.ID, task.RequestHash, sqlmock.AnyArg(), task.CreatedAt.UTC(), task.UpdatedAt.UTC()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -33,8 +36,8 @@ func TestMySQLTaskStoreCreateAndGet(t *testing.T) {
 		t.Fatalf("Create returned error: %v", err)
 	}
 
-	rows := sqlmock.NewRows([]string{"id", "request_id", "user_id", "request_hash", "status", "request_json", "error_text", "created_at", "updated_at", "plan_json"}).
-		AddRow(task.ID, task.RequestID, "", task.RequestHash, string(task.Status), mustJSONValue(t, task.Request), "", task.CreatedAt.UTC(), task.UpdatedAt.UTC(), nil)
+	rows := sqlmock.NewRows([]string{"id", "request_id", "user_id", "request_hash", "status", "planner_type", "agent_mode", "test_mode", "attempt", "request_json", "error_text", "created_at", "updated_at", "plan_json"}).
+		AddRow(task.ID, task.RequestID, "", task.RequestHash, string(task.Status), task.PlannerType, task.AgentMode, task.TestMode, task.Attempt, mustJSONValue(t, task.Request), "", task.CreatedAt.UTC(), task.UpdatedAt.UTC(), nil)
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT t.id, COALESCE(t.request_id, ''), COALESCE(t.user_id, ''), t.request_hash, t.status")).
 		WithArgs(task.ID).
 		WillReturnRows(rows)
@@ -74,10 +77,16 @@ func TestMySQLTaskStoreUpdatePersistsPlan(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta("UPDATE travel_tasks")).
-		WithArgs(task.RequestID, nil, task.RequestHash, task.Status, sqlmock.AnyArg(), nil, task.UpdatedAt.UTC(), task.ID).
+		WithArgs(task.RequestID, nil, task.RequestHash, task.Status, "mock", AgentModeQuick, task.TestMode, task.Attempt, sqlmock.AnyArg(), nil, task.UpdatedAt.UTC(), task.ID).
 		WillReturnResult(sqlmock.NewResult(0, 1))
-	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO travel_plans")).
-		WithArgs(task.ID, sqlmock.AnyArg(), task.Plan.Budget.Total, len(task.Plan.Days), len(task.Plan.Warnings), task.UpdatedAt.UTC()).
+	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO travel_task_requests")).
+		WithArgs(task.ID, task.RequestHash, sqlmock.AnyArg(), task.CreatedAt.UTC(), task.UpdatedAt.UTC()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO travel_planner_runs")).
+		WithArgs(task.ID, task.PlannerType, "inline-http", task.Attempt, task.CreatedAt.UTC(), task.UpdatedAt.UTC(), task.UpdatedAt.Sub(task.CreatedAt).Milliseconds(), task.Status, false, nil, task.CreatedAt.UTC(), task.UpdatedAt.UTC()).
+		WillReturnResult(sqlmock.NewResult(0, 1))
+	mock.ExpectExec(regexp.QuoteMeta("INSERT INTO travel_plan_results")).
+		WithArgs(task.ID, taskResultCacheVersion, sqlmock.AnyArg(), task.Plan.Budget.Total, len(task.Plan.Days), len(task.Plan.Warnings), task.UpdatedAt.Sub(task.CreatedAt).Milliseconds(), task.CreatedAt.UTC(), task.UpdatedAt.UTC()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -85,8 +94,8 @@ func TestMySQLTaskStoreUpdatePersistsPlan(t *testing.T) {
 		t.Fatalf("Update returned error: %v", err)
 	}
 
-	rows := sqlmock.NewRows([]string{"id", "request_id", "user_id", "request_hash", "status", "request_json", "error_text", "created_at", "updated_at", "plan_json"}).
-		AddRow(task.ID, task.RequestID, "", task.RequestHash, string(task.Status), mustJSONValue(t, task.Request), "", task.CreatedAt.UTC(), task.UpdatedAt.UTC(), mustJSONValue(t, task.Plan))
+	rows := sqlmock.NewRows([]string{"id", "request_id", "user_id", "request_hash", "status", "planner_type", "agent_mode", "test_mode", "attempt", "request_json", "error_text", "created_at", "updated_at", "plan_json"}).
+		AddRow(task.ID, task.RequestID, "", task.RequestHash, string(task.Status), task.PlannerType, task.AgentMode, task.TestMode, task.Attempt, mustJSONValue(t, task.Request), "", task.CreatedAt.UTC(), task.UpdatedAt.UTC(), mustJSONValue(t, task.Plan))
 	mock.ExpectQuery(regexp.QuoteMeta("SELECT t.id, COALESCE(t.request_id, ''), COALESCE(t.user_id, ''), t.request_hash, t.status")).
 		WithArgs(task.RequestHash).
 		WillReturnRows(rows)
@@ -115,7 +124,7 @@ func TestMySQLTaskStoreUpdateMissingTask(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta("UPDATE travel_tasks")).
-		WithArgs(task.RequestID, nil, task.RequestHash, task.Status, sqlmock.AnyArg(), nil, task.UpdatedAt.UTC(), task.ID).
+		WithArgs(task.RequestID, nil, task.RequestHash, task.Status, "mock", AgentModeQuick, task.TestMode, task.Attempt, sqlmock.AnyArg(), nil, task.UpdatedAt.UTC(), task.ID).
 		WillReturnResult(sqlmock.NewResult(0, 0))
 	mock.ExpectRollback()
 
@@ -134,6 +143,9 @@ func mysqlTestTask() Task {
 		RequestID:   "req_mysql",
 		RequestHash: "hash_mysql",
 		Status:      TaskPending,
+		PlannerType: "mock",
+		AgentMode:   AgentModeQuick,
+		Attempt:     1,
 		Request: domain.TravelRequest{
 			ID:              "case_mysql",
 			DepartureCity:   "上海",

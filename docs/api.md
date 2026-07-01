@@ -168,6 +168,7 @@ TRAVEL_AGENT_REDIS_ADDR=localhost:6379
 TRAVEL_AGENT_REDIS_PASSWORD=
 TRAVEL_AGENT_REDIS_DB=0
 TRAVEL_AGENT_CACHE_TTL_SECONDS=1800
+TRAVEL_AGENT_REDIS_LOCK_TTL_SECONDS=15
 TRAVEL_AGENT_RATE_LIMIT_PER_MINUTE=60
 TRAVEL_AGENT_SQL_ENABLED=false
 TRAVEL_AGENT_SQL_DSN=
@@ -176,7 +177,7 @@ TRAVEL_AGENT_SQL_MAX_IDLE_CONNS=5
 TRAVEL_AGENT_SQL_CONN_MAX_LIFETIME_SECONDS=1800
 ```
 
-MySQL 启用后不改变 HTTP API contract。任务创建、查询和 SSE 语义保持不变；区别是任务和最终 plan 可跨服务重启保留。
+MySQL 启用后不改变 HTTP API contract。任务创建、查询和 SSE 语义保持不变；区别是任务、请求快照、最终 plan、planner run 摘要和失败错误日志可跨服务重启保留。Redis 同时启用时只作为 request hash 映射、终态结果热缓存、限流和短锁。
 
 ## 错误响应
 
@@ -274,9 +275,15 @@ MySQL 启用后不改变 HTTP API contract。任务创建、查询和 SSE 语义
 状态值：
 
 * `pending`
+* `queued`
 * `running`
 * `succeeded`
 * `failed`
+* `retrying`
+* `canceled`
+* `dead_letter`
+
+当前 HTTP 内联执行路径实际使用 `pending`、`running`、`succeeded`、`failed`；其余状态为后续 MQ / Worker 阶段预留。
 
 失败时：
 
@@ -415,7 +422,9 @@ GET    /api/v1/public/plans/:public_plan_id                                     
 POST   /api/v1/public/plans/:public_plan_id/save                                              → 201 {plan}
 ```
 
+* `GET /public/plans/:id` counts a view at most once per public plan and viewer key in a 1-hour window. Redis SETNX is used when Redis is available; otherwise the server uses an in-memory TTL fallback.
 * `sort` 取值 `hot`（默认）/ `latest`。`hot_score = view_count + save_count*5 + copy_count*3`，在每次浏览/保存事件触发时实时更新。
+* 浏览和保存计数更新成功后会写入 `public_plan_events`；计数/事件写入属于 best-effort，不影响公开详情或保存副本的主流程。
 * 公开列表只返回 `status=published`。取消发布或被作者删除后，`/public/plans/:id` 也返回 `404`。
 * `POST /public/plans/:id/save` 会为当前用户创建私有副本，并自增公开计划的 `save_count`；不复制作者的 note 与对话归档。
 

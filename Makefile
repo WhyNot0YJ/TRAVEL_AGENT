@@ -1,4 +1,4 @@
-.PHONY: test harness harness-mock harness-eino server fmt vet
+.PHONY: test harness harness-mock harness-eino server fmt vet docker-up docker-build docker-down docker-logs docker-clean
 
 test:
 	go test ./...
@@ -20,3 +20,18 @@ fmt:
 
 vet:
 	go vet ./...
+
+docker-up:
+	docker compose up
+
+docker-build:
+	docker compose up --build
+
+docker-down:
+	docker compose down
+
+docker-logs:
+	docker compose logs -f
+
+docker-clean:
+	docker compose down -v

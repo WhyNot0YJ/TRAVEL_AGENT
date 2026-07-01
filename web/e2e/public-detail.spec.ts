@@ -47,10 +47,12 @@ const publicPlan = {
 
 test.describe("public detail", () => {
   test("authenticated user can save a public plan as a private copy", async ({ page }) => {
+    let detailRequests = 0;
     await page.route("**/api/v1/auth/me", async (route) => {
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ user: sampleUser }) });
     });
     await page.route("**/api/v1/public/plans/pub_xyz", async (route) => {
+      detailRequests += 1;
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ public_plan: publicPlan }) });
     });
     await page.route("**/api/v1/public/plans/pub_xyz/save", async (route) => {
@@ -101,6 +103,7 @@ test.describe("public detail", () => {
 
     await page.goto("/public/pub_xyz");
     await expect(page.getByTestId("public-detail-page")).toContainText("杭州 3 日 西湖路线");
+    expect(detailRequests).toBe(1);
     await page.getByTestId("public-save-copy").click();
     await expect(page).toHaveURL(/\/me\/plans\/plan_copied/);
     await expect(page.getByTestId("private-detail-title")).toContainText("杭州 3 日 西湖路线");

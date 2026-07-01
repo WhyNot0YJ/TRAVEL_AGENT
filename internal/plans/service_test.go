@@ -209,7 +209,7 @@ func TestServicePublishUnpublishRoundTrip(t *testing.T) {
 	if _, err := publics.Get(context.Background(), pub.ID); err != nil {
 		t.Fatalf("Get from store should still succeed: %v", err)
 	}
-	if _, err := svc.GetPublic(context.Background(), pub.ID, ""); !errors.Is(err, ErrPublicPlanNotFound) {
+	if _, err := svc.GetPublic(context.Background(), pub.ID, PublicViewer{}); !errors.Is(err, ErrPublicPlanNotFound) {
 		t.Fatalf("expected ErrPublicPlanNotFound, got %v", err)
 	}
 }
@@ -241,7 +241,7 @@ func TestServiceDeleteDeactivatesPublicMirror(t *testing.T) {
 
 func TestServiceSavePublicAsCopyCreatesPrivateClone(t *testing.T) {
 	authorSnap := sampleSnapshot("task_a", "user_author")
-	svc, plans, _ := newTestService(t, authorSnap)
+	svc, plans, publics := newTestService(t, authorSnap)
 	original, err := svc.Save(context.Background(), "user_author", SaveInput{TaskID: "task_a"})
 	if err != nil {
 		t.Fatalf("Save: %v", err)
@@ -263,6 +263,10 @@ func TestServiceSavePublicAsCopyCreatesPrivateClone(t *testing.T) {
 	// Viewer should not see author's archive.
 	if _, err := plans.GetArchive(context.Background(), copyPlan.ID, "user_viewer"); !errors.Is(err, ErrPlanNotFound) {
 		t.Fatalf("expected no archive on copy, got %v", err)
+	}
+	events := publics.Events()
+	if len(events) != 1 || events[0].EventType != string(CounterSave) || events[0].UserID != "user_viewer" {
+		t.Fatalf("expected one save event for viewer, got %+v", events)
 	}
 }
 
@@ -291,6 +295,65 @@ func TestServiceListPublicSortAndSearch(t *testing.T) {
 	}
 	if len(noMatch) != 0 {
 		t.Fatalf("expected no match for unknown destination, got %v", noMatch)
+	}
+}
+
+func TestServiceGetPublicDeduplicatesViewsByViewer(t *testing.T) {
+	authorSnap := sampleSnapshot("task_a", "user_author")
+	svc, _, publics := newTestService(t, authorSnap)
+	now := time.Date(2026, 6, 30, 12, 0, 0, 0, time.UTC)
+	svc.now = func() time.Time { return now }
+	svc.SetPublicViewDeduper(NewMemoryPublicViewDeduper(time.Hour))
+
+	plan, err := svc.Save(context.Background(), "user_author", SaveInput{TaskID: "task_a"})
+	if err != nil {
+		t.Fatalf("Save: %v", err)
+	}
+	pub, err := svc.Publish(context.Background(), "user_author", plan.ID, PublishInput{})
+	if err != nil {
+		t.Fatalf("Publish: %v", err)
+	}
+
+	first, err := svc.GetPublic(context.Background(), pub.ID, PublicViewer{ClientHash: "viewer:one"})
+	if err != nil {
+		t.Fatalf("first GetPublic: %v", err)
+	}
+	if first.ViewCount != 1 || first.HotScore != 1 {
+		t.Fatalf("expected first view to count once, got view=%d hot=%d", first.ViewCount, first.HotScore)
+	}
+
+	second, err := svc.GetPublic(context.Background(), pub.ID, PublicViewer{ClientHash: "viewer:one"})
+	if err != nil {
+		t.Fatalf("second GetPublic: %v", err)
+	}
+	if second.ViewCount != 1 || second.HotScore != 1 {
+		t.Fatalf("expected duplicate view to be ignored, got view=%d hot=%d", second.ViewCount, second.HotScore)
+	}
+
+	third, err := svc.GetPublic(context.Background(), pub.ID, PublicViewer{ClientHash: "viewer:two"})
+	if err != nil {
+		t.Fatalf("third GetPublic: %v", err)
+	}
+	if third.ViewCount != 2 || third.HotScore != 2 {
+		t.Fatalf("expected another viewer to count, got view=%d hot=%d", third.ViewCount, third.HotScore)
+	}
+
+	now = now.Add(time.Hour + time.Second)
+	fourth, err := svc.GetPublic(context.Background(), pub.ID, PublicViewer{ClientHash: "viewer:one"})
+	if err != nil {
+		t.Fatalf("fourth GetPublic: %v", err)
+	}
+	if fourth.ViewCount != 3 || fourth.HotScore != 3 {
+		t.Fatalf("expected expired viewer window to count again, got view=%d hot=%d", fourth.ViewCount, fourth.HotScore)
+	}
+	events := publics.Events()
+	if len(events) != 3 {
+		t.Fatalf("expected 3 counted view events, got %+v", events)
+	}
+	for _, event := range events {
+		if event.EventType != string(CounterView) || event.ClientHash == "" {
+			t.Fatalf("expected view events with anonymous client hash, got %+v", events)
+		}
 	}
 }
 
